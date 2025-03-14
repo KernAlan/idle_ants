@@ -3,8 +3,8 @@ IdleAnts.Managers.ResourceManager = class {
     constructor() {
         // Game resources
         this.resources = {
-            food: 1000000, // Start with 1,000,000 food for debugging
-            displayFood: 1000000 // For smooth animation
+            food: 0, // Start with 0 food
+            displayFood: 0 // For smooth animation
         };
         
         // Game stats
