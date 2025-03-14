@@ -43,6 +43,14 @@ IdleAnts.Managers.UIManager = class {
         };
         
         try {
+            // Update food counter directly for immediate feedback
+            const foodCountElement = document.getElementById('food-count');
+            if (foodCountElement) {
+                foodCountElement.textContent = Math.floor(this.resourceManager.resources.food);
+                // Also update the display food value to match the actual food value
+                this.resourceManager.resources.displayFood = this.resourceManager.resources.food;
+            }
+            
             // Update ant counts
             updateElementText('ant-count', this.resourceManager.stats.ants);
             updateElementText('ant-max', this.resourceManager.stats.maxAnts);
@@ -177,7 +185,9 @@ IdleAnts.Managers.UIManager = class {
             const diff = this.resourceManager.resources.food - this.resourceManager.resources.displayFood;
             
             if (Math.abs(diff) > 0.01) {
-                this.resourceManager.resources.displayFood += diff * 0.1;
+                // Increase animation speed for more responsive updates
+                // Change from 0.1 to 0.5 (50% of the difference per frame)
+                this.resourceManager.resources.displayFood += diff * 0.5;
                 const foodCountElement = document.getElementById('food-count');
                 if (foodCountElement) {
                     foodCountElement.textContent = Math.floor(this.resourceManager.resources.displayFood);

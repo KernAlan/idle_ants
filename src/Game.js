@@ -570,6 +570,9 @@ IdleAnts.Game = class {
                 // Update effects
                 this.effectManager.update();
                 
+                // Always animate food counters in every frame for real-time updates
+                this.uiManager.animateCounters();
+                
                 // Increment frame counter
                 this.frameCounter++;
                 
@@ -582,11 +585,17 @@ IdleAnts.Game = class {
             case IdleAnts.Game.States.PAUSED:
                 // Only update visual effects when paused
                 this.effectManager.update();
+                
+                // Continue animating counters even when paused
+                this.uiManager.animateCounters();
                 break;
                 
             case IdleAnts.Game.States.UPGRADING:
                 // Continue updating some visuals but not game logic
                 this.effectManager.update();
+                
+                // Continue animating counters in upgrade menu
+                this.uiManager.animateCounters();
                 break;
         }
         

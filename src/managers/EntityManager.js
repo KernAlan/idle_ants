@@ -476,6 +476,10 @@ IdleAnts.Managers.EntityManager = class {
         
         this.resourceManager.addFood(foodAmount);
         
+        // For more responsive UI updates, also update the displayFood value directly
+        // This makes the counter animation start from a value closer to the actual food amount
+        this.resourceManager.resources.displayFood = this.resourceManager.resources.food;
+        
         // Add food drop effect at nest
         if (this.effectManager) {
             // Use the last food type color for the effect, or default if none
@@ -488,6 +492,11 @@ IdleAnts.Managers.EntityManager = class {
         const pushStrength = ant.speed * 0.8; // Strong enough push to leave nest area
         ant.vx = Math.cos(pushAngle) * pushStrength;
         ant.vy = Math.sin(pushAngle) * pushStrength;
+        
+        // Update the UI to reflect the new food amount
+        if (IdleAnts.app && IdleAnts.app.uiManager) {
+            IdleAnts.app.uiManager.updateUI();
+        }
     }
     
     // Helper to find ants near a specific point or ant
