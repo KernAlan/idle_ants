@@ -1,0 +1,12 @@
+{
+  "name": "idle-ants",
+  "version": "1.0.0",
+  "description": "An idle game about ants collecting food",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "http-server -o -c-1"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+} 

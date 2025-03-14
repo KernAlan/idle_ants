@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Idle Ants - Colony Simulator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        // Clear console for debugging
+        console.clear();
+        console.log("Idle Ants - Starting...");
+    </script>
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui-container">
+            <div id="game-title">
+                <i class="fas fa-bug"></i> Adil Ants
+            </div>
+            <div id="resources">
+                <div id="food">Food: <span id="food-count">0</span></div>
+                <div id="food-rate">Per Second: <span id="food-per-second">0.0</span></div>
+                <div id="ants">Ants: <span id="ant-count">1</span>/<span id="ant-max">10</span></div>
+                <div id="flying-ant-stats" class="hidden">Flying Ants: <span id="flying-ant-count">0</span>/<span id="flying-ant-max">0</span></div>
+            </div>
+            <div id="upgrades">
+                <h3>Upgrades</h3>
+                <button id="buy-ant" class="upgrade-btn"><i class="fas fa-plus"></i> Buy Ant (<span id="ant-cost">10</span> food)</button>
+                <button id="upgrade-food" class="upgrade-btn"><i class="fas fa-arrow-up"></i> Upgrade Food (<span id="food-upgrade-cost">50</span> food)</button>
+                <button id="upgrade-speed" class="upgrade-btn"><i class="fas fa-bolt"></i> Speed Boost (<span id="speed-upgrade-cost">75</span> food)</button>
+                <button id="upgrade-strength" class="upgrade-btn"><i class="fas fa-dumbbell"></i> Strength Boost (<span id="strength-upgrade-cost">100</span> food)</button>
+                <button id="expand-colony" class="upgrade-btn"><i class="fas fa-expand"></i> Expand Colony (<span id="expand-cost">100</span> food)</button>
+                
+                <!-- Flying ant buttons -->
+                <h3>Special Ants</h3>
+                <button id="unlock-flying-ants" class="upgrade-btn special-btn"><i class="fas fa-feather-alt"></i> Unlock Flying Ants (<span id="flying-ant-unlock-cost">500</span> food)</button>
+                <button id="buy-flying-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i> Buy Flying Ant (<span id="flying-ant-cost">100</span> food)</button>
+                <button id="expand-flying-ants" class="upgrade-btn special-btn hidden"><i class="fas fa-expand"></i> Expand Flying Capacity (<span id="expand-flying-cost">150</span> food)</button>
+            </div>
+        </div>
+        <div id="game-canvas-container"></div>
+    </div>
+
+    <!-- Import Pixi.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/pixi.js@7.x/dist/pixi.min.js"></script>
+    
+    <!-- Import our game scripts in correct order -->
+    <script src="src/core/Namespace.js"></script>
+    <!-- Data Classes -->
+    <script src="src/data/FoodTypes.js"></script>
+    <!-- Effect Classes -->
+    <script src="src/effects/Effect.js"></script>
+    <script src="src/effects/SpawnEffect.js"></script>
+    <script src="src/effects/FoodSpawnEffect.js"></script>
+    <script src="src/effects/FoodDropEffect.js"></script>
+    <script src="src/effects/FoodCollectEffect.js"></script>
+    <!-- Managers -->
+    <script src="src/managers/ResourceManager.js"></script>
+    <script src="src/managers/AssetManager.js"></script>
+    <script src="src/managers/BackgroundManager.js"></script>
+    <script src="src/managers/EffectManager.js"></script>
+    <script src="src/managers/EntityManager.js"></script>
+    <script src="src/managers/UIManager.js"></script>
+    <!-- Entities -->
+    <script src="src/entities/AntBase.js"></script>
+    <script src="src/entities/Ant.js"></script>
+    <script src="src/entities/FlyingAnt.js"></script>
+    <script src="src/entities/Food.js"></script>
+    <script src="src/entities/Nest.js"></script>
+    <!-- Game Core -->
+    <script src="src/Game.js"></script>
+    <script src="src/index.js"></script>
+</body>
+</html> 
