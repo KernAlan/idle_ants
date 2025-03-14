@@ -65,6 +65,11 @@ idle_ants/
 ├── index.html           # Main HTML entry point
 ├── styles.css           # Global styles for the game
 ├── package.json         # Project dependencies and metadata
+├── assets/              # Asset definitions for procedural graphics
+│   ├── AssetDefinition.js  # Base class for asset definitions
+│   ├── antAssets.js        # Ant graphics definitions
+│   ├── foodAssets.js       # Food graphics definitions
+│   └── environmentAssets.js # Environment graphics definitions
 ├── src/                 # Source code directory
 │   ├── index.js         # JavaScript entry point
 │   ├── Game.js          # Main game controller
@@ -131,6 +136,27 @@ Visual feedback is handled through the effect system:
 - **FoodDropEffect.js**: Animation shown when food is dropped.
 - **FoodSpawnEffect.js**: Animation shown when new food spawns.
 - **SpawnEffect.js**: Animation shown when a new entity spawns.
+
+### Asset System
+
+The game uses a procedural asset generation system to create game graphics at runtime:
+
+- **AssetManager.js**: Central manager that loads, registers, and provides access to all game assets.
+  - Handles loading asset definition modules
+  - Converts graphics definitions to PIXI.Texture objects
+  - Provides a getTexture() method for retrieving textures by name
+
+- **AssetDefinition.js**: Base class for asset definitions that provides:
+  - Static register() method to register assets with the AssetManager
+  - Helper methods for creating graphics objects
+  - Utility functions for color variations and other common operations
+
+- **Asset Definition Files**:
+  - **antAssets.js**: Defines ant graphics using PIXI.Graphics
+  - **foodAssets.js**: Defines different food types (basic food, cookies, watermelon)
+  - **environmentAssets.js**: Defines environment elements like the nest and ground
+
+Assets are procedurally generated at runtime using PIXI.Graphics to draw shapes and apply colors, which are then converted to textures. This approach eliminates the need for external image files and allows for dynamic variations in appearance.
 
 ### Data System
 

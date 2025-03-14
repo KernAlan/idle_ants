@@ -209,6 +209,12 @@ IdleAnts.Entities.Food = class extends PIXI.Sprite {
             // Adjust glow during spawn
             if (this.glow) {
                 this.glow.alpha = 0.9 - (0.6 * progress);
+                
+                // Don't scale the glow during spawn - it will be handled by updateGlowPulse
+                // Just ensure baseScale is set
+                if (!this.glow.baseScale) {
+                    this.glow.baseScale = 1.0;
+                }
             }
         } else {
             // Spawn complete, transition to available
@@ -256,10 +262,12 @@ IdleAnts.Entities.Food = class extends PIXI.Sprite {
             
             // Apply pulse to the glow
             if (!this.glow.baseScale) {
-                this.glow.baseScale = this.glow.scale.x;
+                // Store the initial scale as the base scale
+                this.glow.baseScale = 1.0;
             }
             
             // Scale the glow based on the pulse factor
+            // We don't modify the actual scale.x/y values directly to avoid compounding scaling effects
             this.glow.scale.set(this.glow.baseScale * pulseFactor);
         }
     }
@@ -370,13 +378,14 @@ IdleAnts.Entities.Food = class extends PIXI.Sprite {
             this.glow.alpha = Math.min(0.9, 0.3 + (antCount * 0.15));
             
             // Also increase the glow size with more ants
+            // We'll adjust the baseScale which is used in updateGlowPulse
             const glowScale = Math.min(1.5, 1 + (antCount * 0.1));
-            this.glow.scale.set(glowScale);
+            this.glow.baseScale = glowScale;
         } else if (this.glow) {
             // Reset to default values
             this.glowPulseSpeed = 1;
             this.glow.alpha = 0.3;
-            this.glow.scale.set(1);
+            this.glow.baseScale = 1.0;
         }
     }
     
@@ -413,16 +422,25 @@ IdleAnts.Entities.Food = class extends PIXI.Sprite {
             const glowColor = this.foodType.glowColor || 0xFFFF99;
             const glowAlpha = this.foodType.glowAlpha || 0.3;
             
+            // Calculate glow size based on food type scale
+            let glowSize = 10; // Default size
+            
+            // If food type has scale defined, use the average of min and max for glow sizing
+            if (this.foodType.scale && typeof this.foodType.scale.min !== 'undefined' && typeof this.foodType.scale.max !== 'undefined') {
+                const avgScale = (this.foodType.scale.min + this.foodType.scale.max) / 2;
+                glowSize = 10 * avgScale; // Scale the glow size proportionally
+            }
+            
             glow.beginFill(glowColor, glowAlpha);
-            glow.drawCircle(0, 0, 10);
+            glow.drawCircle(0, 0, glowSize);
             glow.endFill();
             glow.alpha = 0.6;
             
             // Store a reference to the glow for easier access
             this.glow = glow;
             
-            // Add the glow as a child
-            this.addChild(glow);
+            // Add the glow as the first child so it appears behind the food sprite
+            this.addChildAt(glow, 0);
         } catch (error) {
             console.error("Error creating glow:", error);
             // Create a default glow as fallback
@@ -435,7 +453,8 @@ IdleAnts.Entities.Food = class extends PIXI.Sprite {
             // Store a reference to the glow
             this.glow = glow;
             
-            this.addChild(glow);
+            // Add the glow as the first child
+            this.addChildAt(glow, 0);
         }
     }
     

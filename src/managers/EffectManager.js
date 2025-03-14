@@ -82,7 +82,9 @@ IdleAnts.Managers.EffectManager = class {
     }
     
     // Legacy methods for backward compatibility
-    createSpawnEffect(x, y, color = 0xFFFFFF) {
+    createSpawnEffect(x, y, isFlying = false) {
+        // Use a special color for flying ants (light blue)
+        const color = isFlying === true ? 0x00CCFF : 0xFFFFFF;
         return this.createEffect('spawn', x, y, color);
     }
     

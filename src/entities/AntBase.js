@@ -27,6 +27,10 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         // CRITICAL FIX: Initialize food pickup position tracking
         this.lastFoodPickupPos = null;
         
+        // Add a timeout counter for returning to nest to prevent permanent stuck state
+        this.returningToNestTimeout = 0;
+        this.maxReturningToNestTime = 600; // 10 seconds at 60fps
+        
         // Ant properties
         this.baseSpeed = (1 + Math.random() * 0.5) * 2.0;
         this.speedFactor = speedFactor; // Type-specific speed factor (1 for regular ants, 10 for flying ants, etc.)
@@ -50,10 +54,6 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         // CRITICAL: Ensure zero velocity at start
         this.vx = 0;
         this.vy = 0;
-        
-        // Add a spawn delay so ants don't all rush away at once
-        this.spawnDelay = Math.random() * 60; // Random delay up to 1 second (60 frames at 60fps)
-        this.hasStartedMoving = false;
         
         // The sprite is drawn facing up, but we need it to face right for proper rotation
         this.rotation = -Math.PI / 2;
@@ -87,7 +87,7 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         // Configuration properties based on ant attributes
         this.config = {
             canStackFood: this.capacity > 1,
-            minDistanceToDepositFood: 50, // Minimum distance from pickup to deposit
+            minDistanceToDepositFood: 15, // Reduced from 50 to 15 to allow ants to deposit food more easily
             foodCollectionRadius: 10,     // How close ant needs to be to collect food
             nestRadius: 10,               // How close ant needs to be to nest
             moveSpeedLoaded: this.speed * 0.8,
@@ -190,24 +190,13 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
     
     // Handle spawning state - ant starts at nest and prepares to move
     updateSpawning(nestPosition) {
-        this.spawnDelay--;
+        // Set initial random direction
+        const angle = Math.random() * Math.PI * 2;
+        this.vx = Math.cos(angle) * this.speed * 0.5;
+        this.vy = Math.sin(angle) * this.speed * 0.5;
         
-        // Ensure ant stays at nest position during spawn delay
-        this.x = nestPosition.x;
-        this.y = nestPosition.y;
-        this.vx = 0;
-        this.vy = 0;
-        
-        if (this.spawnDelay <= 0) {
-            // Set initial random direction
-            const angle = Math.random() * Math.PI * 2;
-            this.vx = Math.cos(angle) * this.speed * 0.5;
-            this.vy = Math.sin(angle) * this.speed * 0.5;
-            
-            // Transition to seeking food
-            this.transitionToState(IdleAnts.Entities.AntBase.States.SEEKING_FOOD);
-        }
-        
+        // Immediately transition to seeking food
+        this.transitionToState(IdleAnts.Entities.AntBase.States.SEEKING_FOOD);
         return false;
     }
     
@@ -339,8 +328,26 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         // Move towards nest
         this.moveToNest(nestPosition);
         
+        // Increment timeout counter
+        this.returningToNestTimeout++;
+        
+        // If ant has been stuck for too long, force deposit
+        if (this.returningToNestTimeout > this.maxReturningToNestTime) {
+            // Reset timeout
+            this.returningToNestTimeout = 0;
+            
+            // Force transition to delivering state if we're close enough to the nest
+            if (this.isAtNest(nestPosition)) {
+                this.transitionToState(IdleAnts.Entities.AntBase.States.DELIVERING_FOOD);
+                return true; // Signal to deliver food
+            }
+        }
+        
         // Check if at nest and can deliver food
         if (this.foodCollected > 0 && this.isAtNest(nestPosition) && this.hasMovedFarEnoughFromPickup()) {
+            // Reset timeout
+            this.returningToNestTimeout = 0;
+            
             // Transition to delivering state
             this.transitionToState(IdleAnts.Entities.AntBase.States.DELIVERING_FOOD);
             return true; // Signal to deliver food
@@ -408,37 +415,21 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
     }
     
     isAtNest(nestPosition) {
-        // CRITICAL FIX: First, check if we're close to where we just picked up food
-        // This prevents immediate deposit right after collection
-        if (this.justCollectedFood || this.transitionDelay > 0) {
-            return false; // Never consider at nest during collection transition
+        // If we're in a transition delay, don't consider at nest yet
+        if (this.transitionDelay > 0) {
+            return false;
         }
         
         const dx = nestPosition.x - this.x;
         const dy = nestPosition.y - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        // Make the detection radius much stricter - ants must be very close to nest
-        const atNest = distance < 10; // Reduced from 15 to make it stricter
+        // Use a slightly larger radius for ants carrying food to make it easier to deposit
+        const effectiveRadius = this.foodCollected > 0 ? 
+            this.config.nestRadius * 1.2 : // 20% larger radius when carrying food
+            this.config.nestRadius;
         
-        // If we're at the nest, don't force exact position at nest center anymore
-        // This allows multiple ants to be at the nest simultaneously without stacking
-        if (atNest) {
-            // Instead of forcing all ants to exact nest position, just slow them down
-            // This still makes them visually approach the nest, but allows for overlapping
-            if (Math.abs(this.vx) > 0.1 || Math.abs(this.vy) > 0.1) {
-                this.vx *= 0.7; // Gradually reduce velocity
-                this.vy *= 0.7;
-            }
-            
-            // Only completely stop if very close to center
-            if (distance < 5) {
-                this.vx = 0;
-                this.vy = 0;
-            }
-        }
-        
-        return atNest;
+        return distance < effectiveRadius;
     }
     
     // Add a new method for moving towards a target (food, etc.)
@@ -594,11 +585,6 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
     handleBoundaries(width, height) {
         // Default boundary handling: wrap around but with improved safety
         const padding = 20;
-        
-        // Only apply boundary handling to ants that have started moving
-        if (!this.hasStartedMoving) {
-            return;
-        }
         
         // For regular ants, use wrap-around boundary behavior
         if (this.x < -padding) {
@@ -1018,9 +1004,8 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
     // State transition method
     transitionToState(newState) {
         // Debug logging for state transitions only when capacity is changing
-        if (newState === IdleAnts.Entities.AntBase.States.RETURNING_TO_NEST || 
-            (this.state === IdleAnts.Entities.AntBase.States.COLLECTING_FOOD && newState === IdleAnts.Entities.AntBase.States.SEEKING_FOOD)) {
-            // Keep this log but make it less frequent
+        if (this.capacityWeight > 0) {
+            console.log(`Ant state transition: ${this.state} -> ${newState}, Capacity=${this.capacity}, CurrentWeight=${this.capacityWeight}, FoodCollected=${this.foodCollected}`);
         }
         
         // Exit actions for current state
@@ -1030,14 +1015,21 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
                 break;
                 
             case IdleAnts.Entities.AntBase.States.COLLECTING_FOOD:
-                // Clean up collection state
+                // Clear collection variables
+                this.isCollecting = false;
+                this.collectionTimer = 0;
+                
+                // Remove this ant from the collecting ants list on the food
                 if (this.collectionTarget) {
                     this.collectionTarget.removeCollectingAnt(this);
+                    this.collectionTarget = null;
                 }
-                this.collectionTimer = 0;
                 break;
                 
-            // Handle other state exits as needed
+            case IdleAnts.Entities.AntBase.States.RETURNING_TO_NEST:
+                // Reset the returning to nest timeout when leaving this state
+                this.returningToNestTimeout = 0;
+                break;
         }
         
         // Enter actions for new state
@@ -1108,23 +1100,29 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         return this.capacityWeight < this.capacity;
     }
     
-    // Check if close enough to nest to deliver food
-    isAtNest(nestPosition) {
-        const dx = nestPosition.x - this.x;
-        const dy = nestPosition.y - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        return distance < this.config.nestRadius;
-    }
-    
     // Check if the ant has traveled far enough from pickup point
     hasMovedFarEnoughFromPickup() {
+        // If no pickup position is recorded, allow deposit
         if (!this.lastFoodPickupPos) return true;
         
+        // Calculate distance from pickup point
         const dx = this.x - this.lastFoodPickupPos.x;
         const dy = this.y - this.lastFoodPickupPos.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
+        // Calculate distance from nest to pickup point
+        const nestToPickupDx = this.nestPosition.x - this.lastFoodPickupPos.x;
+        const nestToPickupDy = this.nestPosition.y - this.lastFoodPickupPos.y;
+        const nestToPickupDistance = Math.sqrt(nestToPickupDx * nestToPickupDx + nestToPickupDy * nestToPickupDy);
+        
+        // If food was picked up very close to the nest (less than the minimum distance),
+        // use a smaller threshold to prevent ants from getting stuck
+        if (nestToPickupDistance < this.config.minDistanceToDepositFood) {
+            // Use half the distance between nest and pickup as the minimum
+            return distance >= (nestToPickupDistance / 2);
+        }
+        
+        // Normal case - check against configured minimum distance
         return distance >= this.config.minDistanceToDepositFood;
     }
 }; 

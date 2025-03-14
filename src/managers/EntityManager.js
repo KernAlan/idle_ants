@@ -35,6 +35,10 @@ IdleAnts.Managers.EntityManager = class {
         this.trailInterval = 10;
         this.frameCounter = 0;
         
+        // Food spawn timer settings
+        this.foodSpawnCounter = 0;
+        this.foodSpawnInterval = 180; // Spawn food every 180 frames (about 3 seconds at 60fps)
+        
         // Map bounds - will be set during setup
         this.mapBounds = {
             width: 0,
@@ -64,7 +68,7 @@ IdleAnts.Managers.EntityManager = class {
         this.createAnt();
         
         // Create food sources
-        this.createFood(10); // More food for a larger map
+        this.createFood(20); // More food for a larger map
     }
     
     createNest() {
@@ -126,6 +130,7 @@ IdleAnts.Managers.EntityManager = class {
         
         // Add a sparkly spawning effect for flying ants
         if (this.effectManager) {
+            // Pass true as the isFlying parameter to create a special effect for flying ants
             this.effectManager.createSpawnEffect(flyingAnt.x, flyingAnt.y, true);
         }
     }
@@ -138,22 +143,23 @@ IdleAnts.Managers.EntityManager = class {
                 y: Math.random() * this.mapBounds.height
             };
             
-            // Get the current food type with fallback
-            let currentFoodType;
+            // Always use BASIC food type for random spawns
+            let foodType;
             try {
-                currentFoodType = this.resourceManager.getCurrentFoodType();
+                // Use the basic food type for random spawns
+                foodType = IdleAnts.Data.FoodTypes.BASIC;
                 
                 // Verify that the food type has all required properties
-                if (!currentFoodType || !currentFoodType.scale || typeof currentFoodType.scale.min === 'undefined') {
+                if (!foodType || !foodType.scale || typeof foodType.scale.min === 'undefined') {
                     console.warn("Invalid food type detected, falling back to basic food type");
-                    currentFoodType = IdleAnts.Data.FoodTypes.BASIC;
+                    foodType = IdleAnts.Data.FoodTypes.BASIC;
                 }
             } catch (error) {
                 console.error("Error getting food type:", error);
-                currentFoodType = IdleAnts.Data.FoodTypes.BASIC;
+                foodType = IdleAnts.Data.FoodTypes.BASIC;
             }
             
-            this.addFood(position, currentFoodType);
+            this.addFood(position, foodType);
         }
     }
     
@@ -208,6 +214,16 @@ IdleAnts.Managers.EntityManager = class {
         // Update nest
         if (this.entities.nest && typeof this.entities.nest.update === 'function') {
             this.entities.nest.update();
+        }
+        
+        // Periodically spawn new food
+        this.foodSpawnCounter++;
+        if (this.foodSpawnCounter >= this.foodSpawnInterval) {
+            this.foodSpawnCounter = 0;
+            
+            // Spawn 1-3 food items at random
+            const foodCount = 1 + Math.floor(Math.random() * 3);
+            this.createFood(foodCount);
         }
     }
     
@@ -308,11 +324,6 @@ IdleAnts.Managers.EntityManager = class {
     updateAntEntities(antEntities, shouldCreateTrail, isFlying = false) {
         for (let i = 0; i < antEntities.length; i++) {
             const ant = antEntities[i];
-            
-            // Log debug information for ants carrying food
-            if (ant.foodCollected > 0) {
-                console.log(`Ant update: State=${ant.state}, Capacity=${ant.capacity}, CurrentWeight=${ant.capacityWeight}, FoodCollected=${ant.foodCollected}`);
-            }
             
             // Update the ant with nest position and available foods
             const actionResult = ant.update(this.nestPosition, this.entities.foods);
@@ -423,6 +434,11 @@ IdleAnts.Managers.EntityManager = class {
             const foodIndex = this.entities.foods.indexOf(foodItem);
             if (foodIndex !== -1) {
                 this.entities.foods.splice(foodIndex, 1);
+            }
+            
+            // Add a new food source at a certain chance on harvest
+            if (Math.random() < 0.8) {
+                this.createFood();
             }
         } else {
             // Food is not being removed - this ant's share is determined proportionally

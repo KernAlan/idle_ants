@@ -23,9 +23,18 @@ IdleAnts.Game = class {
                 x: 0,      // Camera position X will be set after setup
                 y: 0,      // Camera position Y will be set after setup
                 speed: 10  // Camera movement speed
+            },
+            zoom: {
+                level: 1.0,    // Initial zoom level (will be adjusted based on map size)
+                min: 0.25,     // Minimum zoom (25% - zoomed out, but will be constrained)
+                max: 2.0,      // Maximum zoom (200% - zoomed in)
+                speed: 0.1     // Zoom speed per wheel tick
             }
         };
 
+        // Frame counter for periodic updates
+        this.frameCounter = 0;
+        
         // Create the PIXI application
         this.app = new PIXI.Application({
             background: '#78AB46', // Grass green background
@@ -44,6 +53,16 @@ IdleAnts.Game = class {
         // Create minimap
         this.minimapContainer = new PIXI.Container();
         this.app.stage.addChild(this.minimapContainer);
+        
+        // Calculate the minimum zoom level based on map and viewport dimensions
+        // We need to wait until the app is created to do this
+        const minZoomX = this.app.view.width / this.mapConfig.width;
+        const minZoomY = this.app.view.height / this.mapConfig.height;
+        const dynamicMinZoom = Math.max(minZoomX, minZoomY);
+        
+        // Update the minimum zoom level and initial zoom level
+        this.mapConfig.zoom.min = Math.max(this.mapConfig.zoom.min, dynamicMinZoom);
+        this.mapConfig.zoom.level = Math.max(1.0, dynamicMinZoom);
         
         // Run any registered initialization functions
         this.runInitHooks();
@@ -64,6 +83,8 @@ IdleAnts.Game = class {
             this.setupEventListeners();
             this.startGameLoop();
             this.setupMinimap();
+            // Update minimap initially to render it on game start
+            this.updateMinimap();
             
             // Center camera on nest after everything is set up
             this.centerCameraOnNest();
@@ -136,8 +157,11 @@ IdleAnts.Game = class {
     }
     
     setupGame() {
-        // Set up the background
+        // Create background with map dimensions
         this.backgroundManager.createBackground(this.mapConfig.width, this.mapConfig.height);
+        
+        // Initialize world container scale based on zoom level
+        this.worldContainer.scale.set(this.mapConfig.zoom.level, this.mapConfig.zoom.level);
         
         // Set up game entities
         this.entityManager.setupEntities();
@@ -145,6 +169,9 @@ IdleAnts.Game = class {
         // Initialize ant attributes
         this.entityManager.updateAntsSpeed();
         this.entityManager.updateAntsCapacity();
+        
+        // Initialize UI by updating it
+        this.uiManager.updateUI();
     }
     
     setupEventListeners() {
@@ -156,14 +183,18 @@ IdleAnts.Game = class {
             }
             
             const rect = this.app.view.getBoundingClientRect();
-            const x = e.clientX - rect.left + this.mapConfig.viewport.x;
-            const y = e.clientY - rect.top + this.mapConfig.viewport.y;
+            const screenX = e.clientX - rect.left;
+            const screenY = e.clientY - rect.top;
+            
+            // Convert screen coordinates to world coordinates with zoom
+            const worldX = (screenX / this.mapConfig.zoom.level) + this.mapConfig.viewport.x;
+            const worldY = (screenY / this.mapConfig.zoom.level) + this.mapConfig.viewport.y;
             
             // Get the current food type based on food tier
             const currentFoodType = this.resourceManager.getCurrentFoodType();
             
             // Place food at the clicked location with the appropriate food type
-            this.entityManager.addFood({ x, y, clickPlaced: true }, currentFoodType);
+            this.entityManager.addFood({ x: worldX, y: worldY, clickPlaced: true }, currentFoodType);
             this.uiManager.updateUI();
         });
         
@@ -251,6 +282,27 @@ IdleAnts.Game = class {
         window.addEventListener('resize', () => {
             this.updateMinimap();
         });
+        
+        // Add event listener for wheel events (zoom)
+        this.app.view.addEventListener('wheel', (e) => {
+            // Only handle wheel events in PLAYING state
+            if (this.state !== IdleAnts.Game.States.PLAYING) {
+                return;
+            }
+            
+            e.preventDefault(); // Prevent page scrolling
+            
+            // Get mouse position relative to canvas
+            const rect = this.app.view.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            // Calculate zoom delta (negative for zoom in, positive for zoom out)
+            const zoomDelta = e.deltaY > 0 ? -this.mapConfig.zoom.speed : this.mapConfig.zoom.speed;
+            
+            // Update zoom with mouse position as focal point
+            this.updateZoom(zoomDelta, mouseX, mouseY);
+        });
     }
     
     updateHoverIndicator(x, y) {
@@ -261,8 +313,8 @@ IdleAnts.Game = class {
         const currentFoodType = this.resourceManager.getCurrentFoodType();
         
         // Calculate world position by adding camera position
-        const worldX = x + this.mapConfig.viewport.x;
-        const worldY = y + this.mapConfig.viewport.y;
+        const worldX = (x / this.mapConfig.zoom.level) + this.mapConfig.viewport.x;
+        const worldY = (y / this.mapConfig.zoom.level) + this.mapConfig.viewport.y;
         
         // Draw a subtle circular indicator where food would be placed
         this.hoverIndicator.lineStyle(1, 0xFFFFFF, 0.5);
@@ -327,29 +379,35 @@ IdleAnts.Game = class {
         const speed = this.mapConfig.viewport.speed;
         let cameraMoved = false;
         
+        // Adjust speed based on zoom level - faster movement when zoomed out
+        const adjustedSpeed = speed / this.mapConfig.zoom.level;
+        
         // Check for key presses and move camera accordingly
         if (this.keysPressed.ArrowLeft || this.keysPressed.a) {
-            this.mapConfig.viewport.x = Math.max(0, this.mapConfig.viewport.x - speed);
+            this.mapConfig.viewport.x = Math.max(0, this.mapConfig.viewport.x - adjustedSpeed);
             cameraMoved = true;
         }
         if (this.keysPressed.ArrowRight || this.keysPressed.d) {
-            const maxX = Math.max(0, this.mapConfig.width - this.app.view.width);
-            this.mapConfig.viewport.x = Math.min(maxX, this.mapConfig.viewport.x + speed);
+            const maxX = Math.max(0, this.mapConfig.width - (this.app.view.width / this.mapConfig.zoom.level));
+            this.mapConfig.viewport.x = Math.min(maxX, this.mapConfig.viewport.x + adjustedSpeed);
             cameraMoved = true;
         }
         if (this.keysPressed.ArrowUp || this.keysPressed.w) {
-            this.mapConfig.viewport.y = Math.max(0, this.mapConfig.viewport.y - speed);
+            this.mapConfig.viewport.y = Math.max(0, this.mapConfig.viewport.y - adjustedSpeed);
             cameraMoved = true;
         }
         if (this.keysPressed.ArrowDown || this.keysPressed.s) {
-            const maxY = Math.max(0, this.mapConfig.height - this.app.view.height);
-            this.mapConfig.viewport.y = Math.min(maxY, this.mapConfig.viewport.y + speed);
+            const maxY = Math.max(0, this.mapConfig.height - (this.app.view.height / this.mapConfig.zoom.level));
+            this.mapConfig.viewport.y = Math.min(maxY, this.mapConfig.viewport.y + adjustedSpeed);
             cameraMoved = true;
         }
         
         // Update world container position if camera moved
         if (cameraMoved) {
-            this.worldContainer.position.set(-this.mapConfig.viewport.x, -this.mapConfig.viewport.y);
+            this.worldContainer.position.set(
+                -this.mapConfig.viewport.x * this.mapConfig.zoom.level,
+                -this.mapConfig.viewport.y * this.mapConfig.zoom.level
+            );
         }
         
         return cameraMoved;
@@ -421,11 +479,21 @@ IdleAnts.Game = class {
         const halfHeight = this.app.screen.height / 2;
         
         // Set the new camera position, centered on the given coordinates
-        this.mapConfig.viewport.x = Math.max(0, Math.min(x - halfWidth, this.mapConfig.width - this.app.screen.width));
-        this.mapConfig.viewport.y = Math.max(0, Math.min(y - halfHeight, this.mapConfig.height - this.app.screen.height));
+        // Adjust for zoom level
+        const viewWidth = this.app.screen.width / this.mapConfig.zoom.level;
+        const viewHeight = this.app.screen.height / this.mapConfig.zoom.level;
+        
+        this.mapConfig.viewport.x = Math.max(0, Math.min(x - (viewWidth / 2), this.mapConfig.width - viewWidth));
+        this.mapConfig.viewport.y = Math.max(0, Math.min(y - (viewHeight / 2), this.mapConfig.height - viewHeight));
         
         // Update world container position
-        this.worldContainer.position.set(-this.mapConfig.viewport.x, -this.mapConfig.viewport.y);
+        this.worldContainer.position.set(
+            -this.mapConfig.viewport.x * this.mapConfig.zoom.level,
+            -this.mapConfig.viewport.y * this.mapConfig.zoom.level
+        );
+        
+        // Update minimap after changing the view position
+        this.updateMinimap();
     }
     
     updateMinimap() {
@@ -470,13 +538,18 @@ IdleAnts.Game = class {
         });
         this.minimapVisuals.endFill();
         
-        // Draw viewport indicator
+        // Draw viewport indicator - adjusted for zoom level
         this.minimapViewport.lineStyle(1, 0xFFFFFF, 0.8);
+        
+        // Calculate the visible area based on zoom level
+        const visibleWidth = (this.app.screen.width / this.mapConfig.zoom.level);
+        const visibleHeight = (this.app.screen.height / this.mapConfig.zoom.level);
+        
         this.minimapViewport.drawRect(
             this.mapConfig.viewport.x * scaleX,
             this.mapConfig.viewport.y * scaleY,
-            this.app.screen.width * scaleX,
-            this.app.screen.height * scaleY
+            visibleWidth * scaleX,
+            visibleHeight * scaleY
         );
     }
     
@@ -497,8 +570,11 @@ IdleAnts.Game = class {
                 // Update effects
                 this.effectManager.update();
                 
-                // Update minimap if camera moved
-                if (cameraMoved) {
+                // Increment frame counter
+                this.frameCounter++;
+                
+                // Update minimap if camera moved or every 60 frames (approximately once per second)
+                if (cameraMoved || this.frameCounter % 60 === 0) {
                     this.updateMinimap();
                 }
                 break;
@@ -708,13 +784,19 @@ IdleAnts.Game = class {
         const nestX = this.mapConfig.width / 2;
         const nestY = this.mapConfig.height / 2;
         
+        // Calculate the minimum zoom level based on map and viewport dimensions
+        const minZoomX = this.app.view.width / this.mapConfig.width;
+        const minZoomY = this.app.view.height / this.mapConfig.height;
+        const dynamicMinZoom = Math.max(minZoomX, minZoomY);
+        
+        // Reset zoom to default or minimum required level
+        this.mapConfig.zoom.level = Math.max(dynamicMinZoom, 1.0);
+        this.worldContainer.scale.set(this.mapConfig.zoom.level, this.mapConfig.zoom.level);
+        
         this.centerViewOnPosition(nestX, nestY);
         
-        console.log("Centered camera on nest at:", nestX, nestY);
-        console.log("Viewport position:", this.mapConfig.viewport.x, this.mapConfig.viewport.y);
-        
-        // Remove tutorial notification - user will add it later
-        // this.showNavigationNotification();
+        // Update minimap after centering on nest
+        this.updateMinimap();
     }
     
     // Navigation helper methods kept for future use
@@ -936,6 +1018,67 @@ IdleAnts.Game = class {
                     console.error('Error in initialization hook:', error);
                 }
             });
+        }
+    }
+
+    updateZoom(zoomDelta, mouseX, mouseY) {
+        // Store old zoom level
+        const oldZoom = this.mapConfig.zoom.level;
+        
+        // Calculate the minimum zoom level based on map and viewport dimensions
+        // This ensures we can't zoom out beyond the map boundaries
+        const minZoomX = this.app.view.width / this.mapConfig.width;
+        const minZoomY = this.app.view.height / this.mapConfig.height;
+        const dynamicMinZoom = Math.max(minZoomX, minZoomY);
+        
+        // Use the calculated minimum zoom or the configured minimum, whichever is larger
+        const effectiveMinZoom = Math.max(this.mapConfig.zoom.min, dynamicMinZoom);
+        
+        // Apply zoom with constraints
+        this.mapConfig.zoom.level = Math.max(
+            effectiveMinZoom,
+            Math.min(this.mapConfig.zoom.level + zoomDelta, this.mapConfig.zoom.max)
+        );
+        
+        // If zoom didn't change, exit early
+        if (oldZoom === this.mapConfig.zoom.level) return;
+        
+        // Get world position under mouse before zoom
+        const worldX = (mouseX / oldZoom) + this.mapConfig.viewport.x;
+        const worldY = (mouseY / oldZoom) + this.mapConfig.viewport.y;
+        
+        // Apply scale to world container
+        this.worldContainer.scale.set(this.mapConfig.zoom.level, this.mapConfig.zoom.level);
+        
+        // Adjust viewport to keep mouse position fixed during zoom
+        this.mapConfig.viewport.x = worldX - (mouseX / this.mapConfig.zoom.level);
+        this.mapConfig.viewport.y = worldY - (mouseY / this.mapConfig.zoom.level);
+        
+        // Constrain viewport to map boundaries
+        const newWorldWidth = this.app.view.width / this.mapConfig.zoom.level;
+        const newWorldHeight = this.app.view.height / this.mapConfig.zoom.level;
+        
+        this.mapConfig.viewport.x = Math.max(0, Math.min(
+            this.mapConfig.viewport.x,
+            this.mapConfig.width - newWorldWidth
+        ));
+        this.mapConfig.viewport.y = Math.max(0, Math.min(
+            this.mapConfig.viewport.y,
+            this.mapConfig.height - newWorldHeight
+        ));
+        
+        // Update world container position
+        this.worldContainer.position.set(
+            -this.mapConfig.viewport.x * this.mapConfig.zoom.level,
+            -this.mapConfig.viewport.y * this.mapConfig.zoom.level
+        );
+        
+        // Update minimap to reflect new zoom level
+        this.updateMinimap();
+        
+        // Update hover indicator if mouse is over canvas
+        if (this.lastMouseX !== undefined && this.lastMouseY !== undefined) {
+            this.updateHoverIndicator(this.lastMouseX, this.lastMouseY);
         }
     }
 }; 

@@ -5,7 +5,12 @@ IdleAnts.Effects.SpawnEffect = class extends IdleAnts.Effects.Effect {
     constructor(app, x, y, color = 0xFFFFFF) {
         super(app, x, y);
         this.color = color;
-        this.duration = 0.5; // Half-second duration for spawn effect
+        
+        // Determine if this is a flying ant spawn based on color
+        this.isFlying = color === 0x00CCFF;
+        
+        // Flying ants have a longer spawn effect
+        this.duration = this.isFlying ? 0.8 : 0.5;
     }
     
     create() {
@@ -14,16 +19,25 @@ IdleAnts.Effects.SpawnEffect = class extends IdleAnts.Effects.Effect {
         this.container.x = this.x;
         this.container.y = this.y;
         
+        // More particles for flying ants
+        const particleCount = this.isFlying ? 12 : 8;
+        
         // Create several particles that expand outward
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < particleCount; i++) {
             const particle = new PIXI.Graphics();
             particle.beginFill(this.color);
-            particle.drawCircle(0, 0, 2);
+            
+            // Larger particles for flying ants
+            const particleSize = this.isFlying ? 3 : 2;
+            particle.drawCircle(0, 0, particleSize);
             particle.endFill();
             
-            const angle = (i / 8) * Math.PI * 2;
-            particle.vx = Math.cos(angle) * 2;
-            particle.vy = Math.sin(angle) * 2;
+            const angle = (i / particleCount) * Math.PI * 2;
+            
+            // Flying ants have faster particles
+            const speed = this.isFlying ? 3 : 2;
+            particle.vx = Math.cos(angle) * speed;
+            particle.vy = Math.sin(angle) * speed;
             particle.alpha = 1;
             
             this.container.addChild(particle);
@@ -41,7 +55,10 @@ IdleAnts.Effects.SpawnEffect = class extends IdleAnts.Effects.Effect {
             const particle = this.container.children[i];
             particle.x += particle.vx;
             particle.y += particle.vy;
-            particle.alpha -= 0.05;
+            
+            // Flying ants fade more slowly
+            const fadeRate = this.isFlying ? 0.03 : 0.05;
+            particle.alpha -= fadeRate;
             
             if (particle.alpha <= 0) {
                 particle.alpha = 0;
