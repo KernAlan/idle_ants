@@ -4,6 +4,10 @@ IdleAnts.Entities.Ant = class extends IdleAnts.Entities.AntBase {
         // Call parent constructor with speed factor of 1 (regular ants)
         super(texture, nestPosition, speedMultiplier, 1);
         
+        // CRITICAL: Ensure position is set directly at the nest
+        this.x = nestPosition.x;
+        this.y = nestPosition.y;
+        
         // Leg animation variables
         this.legPhase = Math.random() * Math.PI * 2;
         this.legAnimationSpeed = 0.2;

@@ -1,11 +1,31 @@
 // src/entities/AntBase.js
 IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
+    // Define state constants
+    static States = {
+        SPAWNING: 'spawning',
+        SEEKING_FOOD: 'seekingFood', 
+        COLLECTING_FOOD: 'collectingFood',
+        RETURNING_TO_NEST: 'returningToNest',
+        DELIVERING_FOOD: 'deliveringFood'
+    };
+    
     constructor(texture, nestPosition, speedMultiplier = 1, speedFactor = 1) {
         super(texture);
         
         this.anchor.set(0.5);
+        
+        // ABSOLUTELY CRITICAL: Ensure position starts at nest
         this.x = nestPosition.x;
         this.y = nestPosition.y;
+        
+        // Store nest position for reference - make a deep copy to avoid reference issues
+        this.nestPosition = { 
+            x: nestPosition.x,
+            y: nestPosition.y 
+        };
+        
+        // CRITICAL FIX: Initialize food pickup position tracking
+        this.lastFoodPickupPos = null;
         
         // Ant properties
         this.baseSpeed = (1 + Math.random() * 0.5) * 2.0;
@@ -27,10 +47,13 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         this.baseScale = this.getBaseScale();
         this.scale.set(this.baseScale, this.baseScale);
         
-        // Random starting velocity
-        const angle = Math.random() * Math.PI * 2;
-        this.vx = Math.cos(angle) * this.speed;
-        this.vy = Math.sin(angle) * this.speed;
+        // CRITICAL: Ensure zero velocity at start
+        this.vx = 0;
+        this.vy = 0;
+        
+        // Add a spawn delay so ants don't all rush away at once
+        this.spawnDelay = Math.random() * 60; // Random delay up to 1 second (60 frames at 60fps)
+        this.hasStartedMoving = false;
         
         // The sprite is drawn facing up, but we need it to face right for proper rotation
         this.rotation = -Math.PI / 2;
@@ -47,6 +70,34 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         this.collectionTimer = 0;
         this.collectionTarget = null;
         this.capacityWeight = 0; // Track weight-based capacity used
+        
+        // Add stuck prevention properties
+        this.stuckPrevention = { active: false, delay: 0 };
+        
+        // Add stuck detection properties - useful for all ant types
+        this.minMovementSpeed = this.speed * 0.1; // Minimum speed even when "stuck"
+        this.stuckCheckCounter = 0;
+        this.lastPosition = { x: this.x, y: this.y };
+        this.stuckThreshold = 1.0; // Distance under which we consider the ant might be stuck
+        
+        // Add flag for smooth transition when moving to nest
+        this.justCollectedFood = false;
+        this.transitionDelay = 0; // Will be set in update method
+        
+        // Configuration properties based on ant attributes
+        this.config = {
+            canStackFood: this.capacity > 1,
+            minDistanceToDepositFood: 50, // Minimum distance from pickup to deposit
+            foodCollectionRadius: 10,     // How close ant needs to be to collect food
+            nestRadius: 10,               // How close ant needs to be to nest
+            moveSpeedLoaded: this.speed * 0.8,
+            turnSpeed: 0.1,
+            stuckThreshold: 1.0,
+            minMovementSpeed: this.speed * 0.1
+        };
+        
+        // State initialization
+        this.state = IdleAnts.Entities.AntBase.States.SPAWNING;
     }
     
     // Template method - subclasses can override to provide different scales
@@ -110,69 +161,218 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
     }
     
     update(nestPosition, foods) {
-        // Perform ant-specific animations
+        // Check if the ant is stuck
+        this.checkIfStuck();
+        
+        // Perform animations regardless of state
         this.performAnimation();
         
-        // Update isAtFullCapacity flag based on current capacity weight
-        this.isAtFullCapacity = this.capacityWeight >= this.capacity;
-        
-        // Handle food collection timer if currently collecting
-        if (this.isCollecting && this.collectionTarget) {
-            this.collectionTimer += 0.016; // Approximate for 60 fps
-            
-            // Generate eating animation/particles
-            this.createEatingEffect();
-            
-            // Check if collection is complete
-            const collectionTime = this.collectionTarget.foodType ? this.collectionTarget.foodType.collectionTime : 0;
-            if (this.collectionTimer >= collectionTime) {
-                this.isCollecting = false;
-                this.collectionTimer = 0;
+        // State-specific behavior
+        switch (this.state) {
+            case IdleAnts.Entities.AntBase.States.SPAWNING:
+                return this.updateSpawning(nestPosition);
                 
-                // Signal to collect the food
-                return true;
-            }
+            case IdleAnts.Entities.AntBase.States.SEEKING_FOOD:
+                return this.updateSeekingFood(foods);
+                
+            case IdleAnts.Entities.AntBase.States.COLLECTING_FOOD:
+                return this.updateCollectingFood();
+                
+            case IdleAnts.Entities.AntBase.States.RETURNING_TO_NEST:
+                return this.updateReturningToNest(nestPosition);
+                
+            case IdleAnts.Entities.AntBase.States.DELIVERING_FOOD:
+                return this.updateDeliveringFood();
+        }
+        
+        return false; // Default no action
+    }
+    
+    // Handle spawning state - ant starts at nest and prepares to move
+    updateSpawning(nestPosition) {
+        this.spawnDelay--;
+        
+        // Ensure ant stays at nest position during spawn delay
+        this.x = nestPosition.x;
+        this.y = nestPosition.y;
+        this.vx = 0;
+        this.vy = 0;
+        
+        if (this.spawnDelay <= 0) {
+            // Set initial random direction
+            const angle = Math.random() * Math.PI * 2;
+            this.vx = Math.cos(angle) * this.speed * 0.5;
+            this.vy = Math.sin(angle) * this.speed * 0.5;
             
-            // Still collecting, don't move
+            // Transition to seeking food
+            this.transitionToState(IdleAnts.Entities.AntBase.States.SEEKING_FOOD);
+        }
+        
+        return false;
+    }
+    
+    // Handle seeking food state - ant looks for closest food source
+    updateSeekingFood(foods) {
+        // If ant can't carry more food, transition to returning to nest
+        if (!this.canCarryMoreFood()) {
+            this.transitionToState(IdleAnts.Entities.AntBase.States.RETURNING_TO_NEST);
             return false;
         }
         
-        // Only return to nest if both conditions are met:
-        // 1. Has collected some food, AND
-        // 2. Is at full capacity OR there are no more foods that will fit in remaining capacity
-        if (this.foodCollected > 0 && (this.isAtFullCapacity || !this.canCollectMoreFood(foods))) {
-            this.moveToNest(nestPosition);
+        // Handle stuck prevention delay
+        if (this.stuckPrevention && this.stuckPrevention.active) {
+            this.stuckPrevention.delay--;
             
-            // Check if we reached the nest
-            if (this.isAtNest(nestPosition)) {
-                return true; // Signal to deliver food
-            }
-        } 
-        // Otherwise, look for food
-        else {
-            const foundFood = this.findAndCollectFood(foods);
-            
-            // If we found food, signal to collect it
-            if (foundFood) {
-                return foundFood; // Signal to collect food
+            if (this.stuckPrevention.delay <= 0) {
+                this.stuckPrevention.active = false;
+            } else {
+                this.wander();
+                this.applyMovement();
+                return false;
             }
         }
         
-        // Apply momentum (slight damping of velocity)
+        // No food available, just wander
+        if (foods.length === 0) {
+            this.wander();
+            this.applyMovement();
+            return false;
+        }
+        
+        // Find closest food that fits in capacity
+        let closestFood = null;
+        let closestDistance = Infinity;
+        
+        for (let i = 0; i < foods.length; i++) {
+            const food = foods[i];
+            const dx = food.x - this.x;
+            const dy = food.y - this.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            // Check if this food will fit in the remaining capacity
+            const foodWeight = food.foodType ? food.foodType.weight : 1;
+            if (this.capacityWeight + foodWeight <= this.capacity && distance < closestDistance) {
+                closestDistance = distance;
+                closestFood = food;
+            }
+        }
+        
+        // Update target food
+        this.targetFood = closestFood;
+        
+        // If reached food, start collecting
+        if (closestFood && closestDistance < this.config.foodCollectionRadius) {
+            // Prepare for collection
+            this.collectionTarget = this.targetFood;
+            this.collectionTimer = 0;
+            
+            // Register this ant with the food item
+            if (this.id === undefined) {
+                this.id = 'ant_' + Math.random().toString(36).substr(2, 9);
+            }
+            this.collectionTarget.addCollectingAnt(this);
+            
+            // Stop moving while collecting
+            this.vx = 0;
+            this.vy = 0;
+            
+            // Record position for pickup/deposit distance tracking
+            this.lastFoodPickupPos = { x: this.x, y: this.y };
+            
+            // Transition to collecting state
+            this.transitionToState(IdleAnts.Entities.AntBase.States.COLLECTING_FOOD);
+            return false;
+        }
+        
+        // No food in range, move towards closest food or wander
+        if (closestFood) {
+            this.moveTowardsTarget(closestFood);
+        } else {
+            this.wander();
+        }
+        
+        this.applyMovement();
+        return false;
+    }
+    
+    // Handle collecting food state
+    updateCollectingFood() {
+        // Verify the food target still exists
+        if (!this.collectionTarget || 
+            (IdleAnts.app.entityManager && 
+             !IdleAnts.app.entityManager.entities.foods.includes(this.collectionTarget))) {
+            // Food is gone, return to seeking
+            this.transitionToState(IdleAnts.Entities.AntBase.States.SEEKING_FOOD);
+            return false;
+        }
+        
+        // Check if this food would exceed capacity
+        const foodWeight = this.collectionTarget.foodType ? this.collectionTarget.foodType.weight : 1;
+        if (this.capacityWeight + foodWeight > this.capacity) {
+            console.log(`Food would exceed capacity: Current=${this.capacityWeight}, Adding=${foodWeight}, Max=${this.capacity}, RETURNING TO NEST`);
+            this.transitionToState(IdleAnts.Entities.AntBase.States.RETURNING_TO_NEST);
+            return false;
+        }
+        
+        // Continue collecting
+        const contributionAmount = 0.016; // For 60fps
+        this.collectionTarget.recordAntContribution(this, contributionAmount);
+        
+        // Get updated collection time
+        const collectionTime = this.collectionTarget.getCollectionTimeForAnt(this);
+        this.collectionTimer += 0.016;
+        
+        // Show eating animation
+        this.createEatingEffect();
+        
+        // Check if collection is complete
+        if (this.collectionTimer >= collectionTime) {
+            // Collection complete, signal to collect food
+            return true;
+        }
+        
+        return false;
+    }
+    
+    // Handle returning to nest state
+    updateReturningToNest(nestPosition) {
+        // Move towards nest
+        this.moveToNest(nestPosition);
+        
+        // Check if at nest and can deliver food
+        if (this.foodCollected > 0 && this.isAtNest(nestPosition) && this.hasMovedFarEnoughFromPickup()) {
+            // Transition to delivering state
+            this.transitionToState(IdleAnts.Entities.AntBase.States.DELIVERING_FOOD);
+            return true; // Signal to deliver food
+        }
+        
+        this.applyMovement();
+        return false;
+    }
+    
+    // Handle delivering food state
+    updateDeliveringFood() {
+        // This state is mostly handled by EntityManager
+        // It should transition back to seeking food once food is delivered
+        // The return value true triggers the EntityManager to call deliverFood
+        return true;
+    }
+    
+    // Helper to apply movement with momentum and rotation
+    applyMovement() {
+        // Apply momentum
         this.vx *= this.momentum;
         this.vy *= this.momentum;
         
-        // Cap velocity to prevent ants from going too fast
+        // Cap velocity
         this.capVelocity();
-        
-        // Update rotation smoothly
-        this.updateRotation();
         
         // Apply movement
         this.x += this.vx;
         this.y += this.vy;
         
-        return false; // No special action needed
+        // Update rotation
+        this.updateRotation();
     }
     
     // Limit velocity to prevent excessive speeds
@@ -194,25 +394,51 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         const dy = nestPosition.y - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        // If very close to nest, just stop
-        if (distance < 1) {
-            this.vx = 0;
-            this.vy = 0;
+        // If very close to nest, just slow down instead of stopping completely
+        if (distance < 10) {
+            const slowdownFactor = distance / 10; // Gradually slow down approaching nest
+            this.vx = (dx / distance) * this.speed * slowdownFactor;
+            this.vy = (dy / distance) * this.speed * slowdownFactor;
             return;
         }
         
         // Simple normalized movement towards nest
         this.vx = (dx / distance) * this.speed;
         this.vy = (dy / distance) * this.speed;
-        
-        // The rotation is now handled by updateRotation() method
     }
     
     isAtNest(nestPosition) {
+        // CRITICAL FIX: First, check if we're close to where we just picked up food
+        // This prevents immediate deposit right after collection
+        if (this.justCollectedFood || this.transitionDelay > 0) {
+            return false; // Never consider at nest during collection transition
+        }
+        
         const dx = nestPosition.x - this.x;
         const dy = nestPosition.y - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        return distance < 10;
+        
+        // Make the detection radius much stricter - ants must be very close to nest
+        const atNest = distance < 10; // Reduced from 15 to make it stricter
+        
+        // If we're at the nest, don't force exact position at nest center anymore
+        // This allows multiple ants to be at the nest simultaneously without stacking
+        if (atNest) {
+            // Instead of forcing all ants to exact nest position, just slow them down
+            // This still makes them visually approach the nest, but allows for overlapping
+            if (Math.abs(this.vx) > 0.1 || Math.abs(this.vy) > 0.1) {
+                this.vx *= 0.7; // Gradually reduce velocity
+                this.vy *= 0.7;
+            }
+            
+            // Only completely stop if very close to center
+            if (distance < 5) {
+                this.vx = 0;
+                this.vy = 0;
+            }
+        }
+        
+        return atNest;
     }
     
     // Add a new method for moving towards a target (food, etc.)
@@ -240,10 +466,69 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
     
     findAndCollectFood(foods) {
         // If already in the process of collecting food, continue with that
-        if (this.isCollecting) {
+        if (this.isCollecting && this.collectionTarget) {
+            // Check if the food target still exists in the game world
+            // If it doesn't exist anymore (was eaten by another ant), stop collecting
+            if (IdleAnts.app.entityManager && 
+                !IdleAnts.app.entityManager.entities.foods.includes(this.collectionTarget)) {
+                // Food is gone, reset collection state
+                this.isCollecting = false;
+                this.collectionTimer = 0;
+                this.collectionTarget = null;
+                this.targetFood = null;
+                return false;
+            }
+            
+            // Before continuing collection, check if the food would exceed capacity
+            const foodWeight = this.collectionTarget.foodType ? this.collectionTarget.foodType.weight : 1;
+            if (this.capacityWeight + foodWeight > this.capacity) {
+                // This food would exceed capacity, stop collecting
+                this.isCollecting = false;
+                this.collectionTimer = 0;
+                this.collectionTarget.removeCollectingAnt(this);
+                this.collectionTarget = null;
+                this.targetFood = null;
+                this.isAtFullCapacity = true; // Force return to nest
+                return false;
+            }
+            
+            // Food still exists and fits capacity, continue collecting
+            // Calculate ant's current contribution based on elapsed time
+            const contributionAmount = 0.016; // For 60fps, approximately how much time has passed
+            
+            // Record this ant's contribution to the food
+            this.collectionTarget.recordAntContribution(this, contributionAmount);
+            
+            // Get updated collection time based on how many ants are collecting
+            const collectionTime = this.collectionTarget.getCollectionTimeForAnt(this);
+            
+            this.collectionTimer += 0.016; // Approximate for 60 fps
+            
+            // Generate eating animation/particles
+            this.createEatingEffect();
+            
+            // Check if collection is complete for this ant
+            if (this.collectionTimer >= collectionTime) {
+                this.isCollecting = false;
+                this.collectionTimer = 0;
+                
+                // Signal to collect the food
+                return true;
+            }
+            
+            // Still collecting, do not move
             return false;
         }
-
+        
+        // CRITICAL: For base strength ants, never look for more food if already carrying any
+        if (this.capacity === 1 && this.foodCollected > 0) {
+            this.isAtFullCapacity = true;
+            return false; // Don't look for more food
+        }
+        
+        // First, ensure capacity flag is correctly set
+        this.isAtFullCapacity = this.capacityWeight >= this.capacity;
+        
         // If ant has reached its carrying capacity or no foods available, just wander
         if (this.capacityWeight >= this.capacity || foods.length === 0) {
             this.wander();
@@ -273,35 +558,26 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         
         // If ant reaches food, start the collection process
         if (closestFood && closestDistance < 10) {
-            // Get base collection time for this food type
-            let collectionTime = this.targetFood.foodType ? this.targetFood.foodType.collectionTime : 0;
+            // Start collection process
+            this.isCollecting = true;
+            this.collectionTimer = 0;
+            this.collectionTarget = this.targetFood;
             
-            if (collectionTime > 0) {
-                // Apply strength-based reduction to collection time
-                // Higher strength = faster collection (up to 75% reduction at max strength)
-                if (IdleAnts && IdleAnts.app && IdleAnts.app.resourceManager) {
-                    const strengthMultiplier = IdleAnts.app.resourceManager.stats.strengthMultiplier;
-                    // Calculate a reduction factor: each 0.2 strength increment reduces time by 5%
-                    // The formula makes it so that base strength of 1.0 has no reduction (1.0 * 0.25 = 0.25, 1 - 0.25 = 0.75)
-                    // Max reduction is 75% (collectionTime * 0.25)
-                    const reductionFactor = Math.min(0.75, (strengthMultiplier - 1) * 0.25);
-                    collectionTime = collectionTime * (1 - reductionFactor);
-                }
-                
-                // Start collection process
-                this.isCollecting = true;
-                this.collectionTimer = 0;
-                this.collectionTarget = this.targetFood;
-                
-                // Temporarily stop moving while collecting
-                this.vx = 0;
-                this.vy = 0;
-                
-                return false;
-            } else {
-                // If no delay for this food type, collect immediately
-                return true;
+            // Register this ant with the food item
+            if (this.id === undefined) {
+                // Generate a unique ID for this ant if it doesn't have one
+                this.id = 'ant_' + Math.random().toString(36).substr(2, 9);
             }
+            this.collectionTarget.addCollectingAnt(this);
+            
+            // Temporarily stop moving while collecting
+            this.vx = 0;
+            this.vy = 0;
+            
+            // Remember the position where we picked up food for distance tracking
+            this.lastFoodPickupPos = { x: this.x, y: this.y };
+            
+            return false;
         }
         
         // If no food is in range, move towards the closest one
@@ -316,94 +592,186 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
     
     // Template method for handling boundaries - can be customized by subclasses
     handleBoundaries(width, height) {
-        // Default boundary handling: wrap around
+        // Default boundary handling: wrap around but with improved safety
         const padding = 20;
-        if (this.x < -padding) this.x = width + padding;
-        if (this.x > width + padding) this.x = -padding;
-        if (this.y < -padding) this.y = height + padding;
-        if (this.y > height + padding) this.y = -padding;
+        
+        // Only apply boundary handling to ants that have started moving
+        if (!this.hasStartedMoving) {
+            return;
+        }
+        
+        // For regular ants, use wrap-around boundary behavior
+        if (this.x < -padding) {
+            this.x = width + padding;
+        } else if (this.x > width + padding) {
+            this.x = -padding;
+        }
+        
+        if (this.y < -padding) {
+            this.y = height + padding;
+        } else if (this.y > height + padding) {
+            this.y = -padding;
+        }
     }
     
     // Template method for picking up food - can be customized by subclasses
-    pickUpFood(foodType) {
+    pickUpFood(foodType, foodValue) {
+        // Check if this would exceed capacity
+        const foodWeight = foodType.weight || 1;
+        
+        // If this food would exceed capacity, don't pick it up
+        if (this.capacityWeight + foodWeight > this.capacity) {
+            console.log(`WARNING: Tried to pick up food that would exceed capacity. Current=${this.capacityWeight}, Adding=${foodWeight}, Max=${this.capacity}`);
+            return 0; // Indicate no food was collected
+        }
+        
+        // Store the current position where food was picked up
+        this.lastFoodPickupPos = { x: this.x, y: this.y };
+        
+        // Update the collected food amount
+        this.foodCollected += foodValue;
+        
+        // Track total weight for capacity considerations
+        this.capacityWeight += foodWeight;
+        
+        // Show the food indicator
+        this.foodIndicator.visible = true;
+        
+        // Apply type-specific visual
+        this.updateFoodIndicator(foodType);
+        
+        // Apply slowdown when carrying food
+        this.applyCarryingSlowdown();
+        
+        // Force ants to stay in seeking state unless they're at full capacity
+        if (this.capacityWeight >= this.capacity) {
+            // At full capacity, return to the nest
+            this.transitionToState(IdleAnts.Entities.AntBase.States.RETURNING_TO_NEST);
+        } else {
+            // Still under capacity, continue seeking food
+            
+            // Add some movement away from the pickup point to help the ant move to new food
+            this.continueSeekingFood();
+            
+            this.transitionToState(IdleAnts.Entities.AntBase.States.SEEKING_FOOD);
+        }
+        
+        // Return the amount of food collected for notifications
+        return foodValue;
+    }
+    
+    // New method to help ants continue seeking food after a pickup
+    continueSeekingFood() {
+        // After picking up food but not being at capacity, we want the ant to move 
+        // away from the current food to find more
+        
+        // If we have a recorded pickup position, move away from it
+        if (this.lastFoodPickupPos) {
+            // Calculate direction away from pickup
+            const dx = this.x - this.lastFoodPickupPos.x;
+            const dy = this.y - this.lastFoodPickupPos.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (dist > 0.1) {
+                // Push in the direction away from the food pickup point
+                // with a slight random factor to spread ants out
+                const randomAngle = (Math.random() * 0.5 - 0.25) * Math.PI; // Random angle between -45 and 45 degrees
+                const rotatedDx = dx * Math.cos(randomAngle) - dy * Math.sin(randomAngle);
+                const rotatedDy = dx * Math.sin(randomAngle) + dy * Math.cos(randomAngle);
+                
+                const normalizedDist = Math.sqrt(rotatedDx * rotatedDx + rotatedDy * rotatedDy);
+                this.vx = (rotatedDx / normalizedDist) * this.speed;
+                this.vy = (rotatedDy / normalizedDist) * this.speed;
+            } else {
+                // If too close to pickup, move in a random direction
+                const angle = Math.random() * Math.PI * 2;
+                this.vx = Math.cos(angle) * this.speed;
+                this.vy = Math.sin(angle) * this.speed;
+            }
+            
+            // Slightly boost the velocity to ensure ant moves away properly
+            const currentSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+            if (currentSpeed < this.speed * 0.8) {
+                this.vx = (this.vx / currentSpeed) * this.speed * 0.8;
+                this.vy = (this.vy / currentSpeed) * this.speed * 0.8;
+            }
+        }
+    }
+    
+    // Helper method to update the food indicator based on food type
+    updateFoodIndicator(foodType) {
         // Store the collected food type
         if (!this.collectedFoodTypes) {
             this.collectedFoodTypes = [];
         }
         
-        // Get the food weight
-        const weight = foodType ? foodType.weight : 1;
-        
         // Add this food type to the collection
         this.collectedFoodTypes.push(foodType || IdleAnts.Data.FoodTypes.BASIC);
-        
-        // Increment the food collected counter
-        this.foodCollected++;
-        
-        // Add the weight to the capacity weight
-        this.capacityWeight += weight;
-        
-        // Set isAtFullCapacity to true ONLY if we've reached capacity
-        if (this.capacityWeight >= this.capacity) {
-            this.isAtFullCapacity = true;
-        } else {
-            // Explicitly ensure it's false if not at capacity
-            this.isAtFullCapacity = false;
-        }
         
         // Reset collection state
         this.isCollecting = false;
         this.collectionTimer = 0;
-        this.collectionTarget = null;
         
-        // Clear the current target food as it's been collected
-        this.targetFood = null;
+        // Remove this ant from the collecting ants list on the food
+        if (this.collectionTarget) {
+            this.collectionTarget.removeCollectingAnt(this);
+            this.collectionTarget = null;
+        }
         
-        // Show the food indicator
-        this.foodIndicator.visible = true;
+        // Only clear the target food if we're at full capacity
+        // so the ant doesn't immediately turn back to the nest
+        if (this.capacityWeight >= this.capacity) {
+            this.targetFood = null;
+        }
         
         // Clear any existing extra food indicators
         while (this.foodIndicator.children.length > 1) {
             this.foodIndicator.removeChildAt(1);
         }
         
-        // Add food pieces based on how many we've collected
-        for (let i = 0; i < this.collectedFoodTypes.length; i++) {
-            // Skip the first one if it already exists
-            if (i === 0 && this.foodIndicator.children.length > 0) continue;
+        // Add visual indicator for each food type collected (up to the current strength)
+        try {
+            // The number of indicators to show (capped by capacity)
+            const numIndicators = Math.min(this.collectedFoodTypes.length, this.capacity);
             
-            // Get the food type for this piece
-            const currentFoodType = this.collectedFoodTypes[i];
-            
-            const foodPiece = new PIXI.Graphics();
-            foodPiece.beginFill(currentFoodType.color); // Use food type color
-            foodPiece.drawCircle(0, 0, i === 0 ? 3 : 2);
-            foodPiece.endFill();
-            
-            // Add some detail
-            foodPiece.beginFill(currentFoodType.shadowColor); // Use food type shadow color
-            foodPiece.drawCircle(i === 0 ? 0.5 : 0.3, i === 0 ? 0.5 : 0.3, i === 0 ? 1.5 : 1);
-            foodPiece.endFill();
-            
-            // Position the food pieces in a small stack
-            if (i === 0) {
-                foodPiece.x = 0;
-                foodPiece.y = 0;
-            } else {
-                foodPiece.x = (Math.random() - 0.5) * 3;
-                foodPiece.y = -3 - (i * 2);
+            for (let i = 0; i < numIndicators; i++) {
+                const foodTypeIndex = Math.min(i, this.collectedFoodTypes.length - 1);
+                const currentFoodType = this.collectedFoodTypes[foodTypeIndex];
+                let indicatorColor = currentFoodType && currentFoodType.glowColor ? currentFoodType.glowColor : 0xFFFF99;
+                
+                const dotIndicator = new PIXI.Graphics();
+                dotIndicator.beginFill(indicatorColor, 0.9);
+                dotIndicator.drawCircle(0, 0, 2);
+                dotIndicator.endFill();
+                
+                // Position in a circular pattern around the main food indicator
+                // First indicator goes on top, others are arranged in a circle
+                let angle, distance;
+                if (i === 0 && numIndicators === 1) {
+                    // Single item centered
+                    angle = 0;
+                    distance = 0;
+                } else {
+                    // Multiple items in a circle
+                    angle = (i / numIndicators) * Math.PI * 2;
+                    distance = 3;
+                }
+                
+                dotIndicator.position.set(
+                    Math.cos(angle) * distance,
+                    Math.sin(angle) * distance
+                );
+                
+                this.foodIndicator.addChild(dotIndicator);
             }
-            
-            this.foodIndicator.addChild(foodPiece);
+        } catch (error) {
+            console.error("Error creating food indicator:", error);
         }
-        
-        // Apply speed reduction when carrying food
-        this.applyCarryingSpeedModifier();
     }
     
     // Template method for applying speed modifier when carrying food
-    applyCarryingSpeedModifier() {
-        // No speed penalty when carrying food - maintain original speed
+    applyCarryingSlowdown() {
+        // No speed penalty when carrying food by default - maintain original speed
         this.speed = this.originalSpeed;
         
         // Also update the max velocity
@@ -412,10 +780,6 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
     
     // Template method for dropping food - can be customized by subclasses
     dropFood() {
-        this.isAtFullCapacity = false;
-        // Hide the food indicator
-        this.foodIndicator.visible = false;
-        
         // Calculate total value from all collected food types
         let totalValue = 0;
         let lastFoodType = null;
@@ -433,19 +797,28 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
             // Clear the food types array
             this.collectedFoodTypes = [];
         } else {
-            // Backward compatibility: if no food types stored, use base value (1)
+            // Backward compatibility: if no food types stored, use base value
             totalValue = this.foodCollected;
         }
         
         // Reset food counters
         const collectedCount = this.foodCollected;
         this.foodCollected = 0;
-        this.capacityWeight = 0; // Reset the capacity weight
+        this.capacityWeight = 0;
+        
+        // Hide the food indicator
+        this.foodIndicator.visible = false;
         
         // Restore original speed
         this.speed = this.originalSpeed;
-        // Also update the max velocity
         this.maxVelocity = this.speed * 1.5;
+        
+        // Reset velocity to prevent momentum carrying the ant away from the nest
+        this.vx = 0;
+        this.vy = 0;
+        
+        // Transition back to seeking food
+        this.transitionToState(IdleAnts.Entities.AntBase.States.SEEKING_FOOD);
         
         // Return both the total value and the food count/type for effects
         return {
@@ -459,7 +832,7 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
     updateSpeedMultiplier(multiplier) {
         this.originalSpeed = this.baseSpeed * multiplier * this.speedFactor;
         if (this.isAtFullCapacity) {
-            this.applyCarryingSpeedModifier();
+            this.applyCarryingSlowdown();
         } else {
             this.speed = this.originalSpeed;
             this.maxVelocity = this.speed * 1.5;
@@ -471,10 +844,13 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         // Increment capacity by 1
         this.capacity++;
         
+        // Update the configuration based on new capacity
+        this.config.canStackFood = this.capacity > 1;
+        
         // If the ant is already carrying food, update isAtFullCapacity based on new capacity
         if (this.foodCollected > 0) {
-            // If we haven't reached capacity with the new strength, allow collecting more food
-            if (this.foodCollected < this.capacity) {
+            // If we haven't reached capacity with the new capacity, allow collecting more food
+            if (this.capacityWeight < this.capacity) {
                 this.isAtFullCapacity = false;
             }
         }
@@ -520,10 +896,19 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
     
     // Add a method to create eating effects while collecting heavy food
     createEatingEffect() {
+        if (!this.collectionTarget) return;
+        
+        // Get the number of ants collecting this food
+        const antCount = this.collectionTarget.getCollectingAntCount();
+        
+        // Increase effect frequency directly proportional to ant count
+        // More ants = much more frequent effects to show increased collection speed
+        const effectChance = Math.min(0.5, 0.1 * antCount);
+        
         // Only create effects occasionally
-        if (Math.random() < 0.1) {
+        if (Math.random() < effectChance) {
             // Create small particles around the ant to indicate "eating"
-            if (this.collectionTarget && IdleAnts.app.effectManager) {
+            if (IdleAnts.app.effectManager) {
                 const angle = Math.random() * Math.PI * 2;
                 const distance = 5 + Math.random() * 3;
                 const x = this.x + Math.cos(angle) * distance;
@@ -531,8 +916,215 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
                 
                 // Use food type color for the particle effect
                 const color = this.collectionTarget.foodType ? this.collectionTarget.foodType.glowColor : 0xFFFF99;
-                IdleAnts.app.effectManager.createFoodCollectEffect(x, y, color);
+                
+                // Create smaller, faster eating effects
+                const scale = 0.7;
+                IdleAnts.app.effectManager.createFoodCollectEffect(x, y, color, scale);
+                
+                // If multiple ants, create a subtle connecting line to the food
+                if (antCount > 1 && Math.random() < 0.2) {
+                    this.createFoodConnectionLine();
+                }
             }
         }
+    }
+    
+    // Create a subtle line connecting the ant to the food
+    createFoodConnectionLine() {
+        if (!this.collectionTarget || !IdleAnts.app.effectManager) return;
+        
+        // Create a temporary graphics object
+        const graphics = new PIXI.Graphics();
+        
+        // Use the food type color for the line
+        const color = this.collectionTarget.foodType ? this.collectionTarget.foodType.glowColor : 0xFFFF99;
+        
+        // Draw a dashed line from ant to food
+        const startX = this.x;
+        const startY = this.y;
+        const endX = this.collectionTarget.x;
+        const endY = this.collectionTarget.y;
+        
+        // Draw with low alpha
+        graphics.lineStyle(1, color, 0.3);
+        
+        // Create a dashed line effect
+        const segments = 10;
+        for (let i = 0; i < segments; i++) {
+            if (i % 2 === 0) {
+                const x1 = startX + (endX - startX) * (i / segments);
+                const y1 = startY + (endY - startY) * (i / segments);
+                const x2 = startX + (endX - startX) * ((i + 1) / segments);
+                const y2 = startY + (endY - startY) * ((i + 1) / segments);
+                
+                graphics.moveTo(x1, y1);
+                graphics.lineTo(x2, y2);
+            }
+        }
+        
+        // Add to the app stage
+        IdleAnts.app.worldContainer.addChild(graphics);
+        
+        // Fade out and remove
+        let alpha = 0.3;
+        const fadeOut = () => {
+            alpha -= 0.03;
+            graphics.alpha = alpha;
+            
+            if (alpha <= 0) {
+                IdleAnts.app.worldContainer.removeChild(graphics);
+                return;
+            }
+            
+            requestAnimationFrame(fadeOut);
+        };
+        
+        fadeOut();
+    }
+    
+    // Method to detect and resolve stuck ants
+    checkIfStuck() {
+        this.stuckCheckCounter++;
+        
+        // Check every 10 frames
+        if (this.stuckCheckCounter >= 10) {
+            const dx = this.x - this.lastPosition.x;
+            const dy = this.y - this.lastPosition.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            // If the ant hasn't moved much over the past 10 frames, it might be stuck
+            if (distance < this.stuckThreshold) {
+                // Add a small random adjustment to break out of potential stuck situations
+                const angle = Math.random() * Math.PI * 2;
+                const impulse = this.speed * 0.3;
+                this.vx += Math.cos(angle) * impulse;
+                this.vy += Math.sin(angle) * impulse;
+                
+                // Ensure the ant has at least a minimum speed
+                const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                if (speed < this.minMovementSpeed) {
+                    this.vx = (this.vx / speed) * this.minMovementSpeed;
+                    this.vy = (this.vy / speed) * this.minMovementSpeed;
+                }
+            }
+            
+            // Save current position for next check
+            this.lastPosition.x = this.x;
+            this.lastPosition.y = this.y;
+            this.stuckCheckCounter = 0;
+        }
+    }
+    
+    // State transition method
+    transitionToState(newState) {
+        // Debug logging for state transitions only when capacity is changing
+        if (newState === IdleAnts.Entities.AntBase.States.RETURNING_TO_NEST || 
+            (this.state === IdleAnts.Entities.AntBase.States.COLLECTING_FOOD && newState === IdleAnts.Entities.AntBase.States.SEEKING_FOOD)) {
+            // Keep this log but make it less frequent
+        }
+        
+        // Exit actions for current state
+        switch (this.state) {
+            case IdleAnts.Entities.AntBase.States.SPAWNING:
+                // No special exit actions needed
+                break;
+                
+            case IdleAnts.Entities.AntBase.States.COLLECTING_FOOD:
+                // Clean up collection state
+                if (this.collectionTarget) {
+                    this.collectionTarget.removeCollectingAnt(this);
+                }
+                this.collectionTimer = 0;
+                break;
+                
+            // Handle other state exits as needed
+        }
+        
+        // Enter actions for new state
+        switch (newState) {
+            case IdleAnts.Entities.AntBase.States.SEEKING_FOOD:
+                // Only reset targeting variables if we don't have any food OR we're returning from nest
+                if (this.capacityWeight === 0 || this.state === IdleAnts.Entities.AntBase.States.DELIVERING_FOOD) {
+                    this.targetFood = null;
+                    this.collectionTarget = null;
+                    
+                    // When starting a new food search from the nest, add some random movement
+                    if (this.state === IdleAnts.Entities.AntBase.States.DELIVERING_FOOD) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const pushStrength = this.speed * 0.8;
+                        this.vx = Math.cos(angle) * pushStrength;
+                        this.vy = Math.sin(angle) * pushStrength;
+                    }
+                } else {
+                    // After collecting food but still having capacity, 
+                    // preserve momentum to continue searching in the same area
+                    
+                    // If velocity is too low, give a small push away from the last food position
+                    const currentSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                    if (currentSpeed < this.speed * 0.3 && this.lastFoodPickupPos) {
+                        // Push away from the last food pickup position to search nearby
+                        const dx = this.x - this.lastFoodPickupPos.x;
+                        const dy = this.y - this.lastFoodPickupPos.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (dist > 0.1) {
+                            // Push in the direction we were already moving away from the food
+                            this.vx = (dx / dist) * this.speed * 0.5;
+                            this.vy = (dy / dist) * this.speed * 0.5;
+                        } else {
+                            // If we're too close to the food, move in a random direction
+                            const angle = Math.random() * Math.PI * 2;
+                            this.vx = Math.cos(angle) * this.speed * 0.5;
+                            this.vy = Math.sin(angle) * this.speed * 0.5;
+                        }
+                    }
+                }
+                break;
+                
+            case IdleAnts.Entities.AntBase.States.RETURNING_TO_NEST:
+                // Adjust speed when carrying food
+                this.applyCarryingSlowdown();
+                break;
+                
+            case IdleAnts.Entities.AntBase.States.DELIVERING_FOOD:
+                // No need for velocity when delivering
+                this.vx = 0;
+                this.vy = 0;
+                break;
+        }
+        
+        // Set the new state
+        this.state = newState;
+    }
+    
+    // Check if the ant is at full capacity
+    isAtFullCapacity() {
+        return this.capacityWeight >= this.capacity;
+    }
+    
+    // Check if the ant can carry more food
+    canCarryMoreFood() {
+        // Always check capacity vs current weight
+        return this.capacityWeight < this.capacity;
+    }
+    
+    // Check if close enough to nest to deliver food
+    isAtNest(nestPosition) {
+        const dx = nestPosition.x - this.x;
+        const dy = nestPosition.y - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        return distance < this.config.nestRadius;
+    }
+    
+    // Check if the ant has traveled far enough from pickup point
+    hasMovedFarEnoughFromPickup() {
+        if (!this.lastFoodPickupPos) return true;
+        
+        const dx = this.x - this.lastFoodPickupPos.x;
+        const dy = this.y - this.lastFoodPickupPos.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        return distance >= this.config.minDistanceToDepositFood;
     }
 }; 

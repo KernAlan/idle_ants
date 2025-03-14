@@ -79,20 +79,21 @@ IdleAnts.Managers.UIManager = class {
             // Display current food type and strength bonus
             const foodPerClickEl = document.getElementById('food-rate');
             if (foodPerClickEl) {
-                const strengthMultiplier = this.resourceManager.stats.strengthMultiplier;
-                const collectionSpeedBonus = Math.min(75, Math.round((strengthMultiplier - 1) * 25));
+                const strengthValue = this.resourceManager.stats.strengthMultiplier;
+                const collectionSpeedBonus = Math.min(75, Math.round((strengthValue - 1) * 25));
                 
                 foodPerClickEl.innerHTML = `Per Second: <span id="food-per-second">${this.resourceManager.stats.foodPerSecond.toFixed(1)}</span> | ` + 
-                                        `Food Type: ${currentFoodType.name} | ` +
-                                        `Collection Speed: +${collectionSpeedBonus}%`;
+                                         `Food Type: ${currentFoodType.name} | ` +
+                                         `Ant Strength: ${strengthValue} | ` +
+                                         `Collection Speed: +${collectionSpeedBonus}%`;
             }
             
             // Update the strength button tooltip with current bonus
             const strengthButton = document.getElementById('upgrade-strength');
             if (strengthButton) {
-                const strengthMultiplier = this.resourceManager.stats.strengthMultiplier;
-                const collectionSpeedBonus = Math.min(75, Math.round((strengthMultiplier - 1) * 25));
-                strengthButton.title = `Increases carrying capacity and reduces collection time for heavy food. Current bonus: -${collectionSpeedBonus}% collection time`;
+                const strengthValue = this.resourceManager.stats.strengthMultiplier;
+                const collectionSpeedBonus = Math.min(75, Math.round((strengthValue - 1) * 25));
+                strengthButton.title = `Increases ant strength to carry more food items and reduces collection time for heavy food. Current strength: ${strengthValue}, speed bonus: -${collectionSpeedBonus}% collection time`;
             }
             
             // Enable/disable buttons based on resources

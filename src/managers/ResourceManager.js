@@ -26,16 +26,17 @@ IdleAnts.Managers.ResourceManager = class {
             speedMultiplier: 1,
             // New strength-related properties
             strengthUpgradeCost: 100,
-            strengthMultiplier: 1,
+            strengthMultiplier: 1, // Now represents the actual carrying capacity
             // Food tier properties
             foodTier: 1,  // Start with basic food (tier 1)
-            maxFoodTier: 2 // Currently only 2 tiers implemented (basic and cookie)
+            maxFoodTier: 3 // Now includes watermelon (tier 3)
         };
         
         // Map of food tier to food type
         this.foodTierMap = {
             1: IdleAnts.Data.FoodTypes.BASIC,
-            2: IdleAnts.Data.FoodTypes.COOKIE
+            2: IdleAnts.Data.FoodTypes.COOKIE,
+            3: IdleAnts.Data.FoodTypes.WATERMELON
         };
     }
     
@@ -102,7 +103,46 @@ IdleAnts.Managers.ResourceManager = class {
     
     // Get the current food type based on food tier
     getCurrentFoodType() {
-        return this.foodTierMap[this.stats.foodTier] || IdleAnts.Data.FoodTypes.BASIC;
+        try {
+            // Check if the food tier map has the current tier
+            if (this.foodTierMap && this.foodTierMap[this.stats.foodTier]) {
+                return this.foodTierMap[this.stats.foodTier];
+            }
+            
+            // If the specific tier isn't found, try to get the BASIC food type
+            if (IdleAnts.Data && IdleAnts.Data.FoodTypes && IdleAnts.Data.FoodTypes.BASIC) {
+                console.warn("Food tier not found, using BASIC food type");
+                return IdleAnts.Data.FoodTypes.BASIC;
+            }
+            
+            // Last resort: create a minimal valid food type object
+            console.error("No valid food types available, creating fallback");
+            return {
+                id: 'fallback',
+                name: 'Food',
+                value: 1,
+                weight: 1,
+                collectionTime: 0,
+                rarity: 1,
+                scale: {min: 0.7, max: 1.3},
+                color: 0xEAD2AC,
+                glowColor: 0xFFFF99,
+                glowAlpha: 0.3,
+                description: 'Simple food.'
+            };
+        } catch (error) {
+            console.error("Error getting food type:", error);
+            // If all else fails, return a minimal valid object
+            return {
+                id: 'error',
+                name: 'Food',
+                value: 1,
+                scale: {min: 1, max: 1},
+                color: 0xFFFFFF,
+                glowColor: 0xFFFF99,
+                glowAlpha: 0.3
+            };
+        }
     }
     
     // Check if food can be upgraded further
@@ -170,12 +210,12 @@ IdleAnts.Managers.ResourceManager = class {
     }
     
     upgradeStrengthMultiplier(amount) {
-        // Increase strength multiplier
+        // Directly increase strength multiplier by the integer amount
         this.stats.strengthMultiplier += amount;
         
-        // This value has dual effects:
-        // 1. Increases the ants' carrying capacity
-        // 2. Reduces collection time for heavy food types (calculated in AntBase.js)
+        // This value now directly represents:
+        // 1. The ants' carrying capacity (how many foods they can carry)
+        // 2. Also affects collection time for heavy food types (calculated in Food.js)
     }
     
     canUpgradeStrength() {
@@ -185,7 +225,7 @@ IdleAnts.Managers.ResourceManager = class {
     upgradeStrength() {
         if (this.canUpgradeStrength()) {
             this.spendFood(this.stats.strengthUpgradeCost);
-            this.upgradeStrengthMultiplier(0.2); // Increase strength by 0.2 per upgrade
+            this.upgradeStrengthMultiplier(1); // Increase strength by 1 per upgrade
             this.updateStrengthUpgradeCost();
             return true;
         }

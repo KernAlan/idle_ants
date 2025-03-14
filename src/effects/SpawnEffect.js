@@ -5,6 +5,7 @@ IdleAnts.Effects.SpawnEffect = class extends IdleAnts.Effects.Effect {
     constructor(app, x, y, color = 0xFFFFFF) {
         super(app, x, y);
         this.color = color;
+        this.duration = 0.5; // Half-second duration for spawn effect
     }
     
     create() {
@@ -32,7 +33,8 @@ IdleAnts.Effects.SpawnEffect = class extends IdleAnts.Effects.Effect {
     }
     
     update(delta) {
-        this.elapsed += delta;
+        // Call the parent update method to track elapsed time
+        super.update(delta);
         
         // Update each particle
         for (let i = 0; i < this.container.children.length; i++) {
@@ -46,6 +48,7 @@ IdleAnts.Effects.SpawnEffect = class extends IdleAnts.Effects.Effect {
             }
         }
         
-        return this.elapsed < this.duration;
+        // Return whether the effect is still active
+        return this.active;
     }
 } 

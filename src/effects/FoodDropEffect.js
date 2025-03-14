@@ -5,6 +5,7 @@ IdleAnts.Effects.FoodDropEffect = class extends IdleAnts.Effects.Effect {
     constructor(app, x, y, color = 0xFFFF99) {
         super(app, x, y);
         this.color = color;
+        this.duration = 0.8; // Slightly longer duration for food drop effect
     }
     
     create() {
@@ -32,7 +33,8 @@ IdleAnts.Effects.FoodDropEffect = class extends IdleAnts.Effects.Effect {
     }
     
     update(delta) {
-        this.elapsed += delta;
+        // Call the parent update method to track elapsed time
+        super.update(delta);
         
         // Update each particle
         for (let i = 0; i < this.container.children.length; i++) {
@@ -43,6 +45,7 @@ IdleAnts.Effects.FoodDropEffect = class extends IdleAnts.Effects.Effect {
             particle.alpha -= 0.03;
         }
         
-        return this.elapsed < this.duration;
+        // Return whether the effect is still active
+        return this.active;
     }
 } 

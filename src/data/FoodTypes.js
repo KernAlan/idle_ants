@@ -33,6 +33,22 @@ IdleAnts.Data.FoodTypes = {
         glowColor: 0xFFE0A3,   // Warm glow
         glowAlpha: 0.4,        // Slightly stronger glow
         description: 'Delicious cookie crumbs are a special treat for ants!'
+    },
+    
+    // Watermelon piece - premium food source
+    WATERMELON: {
+        id: 'watermelon',
+        name: 'Watermelon Piece',
+        value: 25,             // Worth 5x the cookie (following the progression)
+        weight: 4,             // Takes up 4 capacity slots (heavier than cookie)
+        collectionTime: 3.0,   // Takes 3 seconds to collect (harder to gather)
+        rarity: 5,             // More rare than cookies
+        scale: {min: 1.5, max: 2.2},  // Larger than cookies
+        color: 0xFF3B3F,       // Watermelon red
+        shadowColor: 0x2EA12E, // Green shadow (rind)
+        glowColor: 0xFF9999,   // Pinkish glow
+        glowAlpha: 0.5,        // Stronger glow for premium food
+        description: 'Sweet watermelon pieces are a rare and valuable food source!'
     }
 };
 

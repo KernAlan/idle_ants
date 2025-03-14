@@ -9,6 +9,7 @@ IdleAnts.Effects.Effect = class {
         this.container = null;
         this.elapsed = 0;
         this.duration = 1.0; // Default duration in seconds
+        this.active = true;   // Whether this effect is still active
     }
     
     create() {
@@ -20,7 +21,8 @@ IdleAnts.Effects.Effect = class {
         // To be implemented by subclasses
         // Should update the effect for each animation frame
         this.elapsed += delta;
-        return this.elapsed < this.duration;
+        this.active = this.elapsed < this.duration;
+        return this.active;
     }
     
     destroy() {
@@ -28,23 +30,11 @@ IdleAnts.Effects.Effect = class {
         if (this.container && this.container.parent) {
             this.container.parent.removeChild(this.container);
         }
+        this.active = false;
     }
     
     play() {
+        // Now just sets up the effect but doesn't start its own animation loop
         this.create();
-        
-        const animate = () => {
-            const delta = 0.1; // Fixed delta for consistency
-            
-            // If update returns false, the effect is complete
-            if (!this.update(delta)) {
-                this.destroy();
-                return;
-            }
-            
-            requestAnimationFrame(animate);
-        };
-        
-        animate();
     }
 } 
