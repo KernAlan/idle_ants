@@ -638,7 +638,7 @@ IdleAnts.Game = class {
             this.resourceManager.spendFood(antCost);
             this.resourceManager.stats.ants += 1;
             this.resourceManager.updateFoodPerSecond();
-            this.resourceManager.stats.antCost = Math.floor(this.resourceManager.stats.antCost * 1.5);
+            this.resourceManager.updateAntCost();
             
             // Delegate entity creation to EntityManager
             this.entityManager.createAnt();
@@ -711,7 +711,7 @@ IdleAnts.Game = class {
             // Upgrade the food multiplier and per-click value
             this.resourceManager.stats.foodMultiplier += 0.5;
             this.resourceManager.stats.foodPerClick = Math.ceil(this.resourceManager.stats.foodPerClick * 1.5);
-            this.resourceManager.stats.foodUpgradeCost = Math.floor(this.resourceManager.stats.foodUpgradeCost * 2);
+            this.resourceManager.updateFoodUpgradeCost();
             
             // Try to upgrade the food tier
             const tierUpgraded = this.resourceManager.upgradeFoodTier();
@@ -1089,5 +1089,33 @@ IdleAnts.Game = class {
         if (this.lastMouseX !== undefined && this.lastMouseY !== undefined) {
             this.updateHoverIndicator(this.lastMouseX, this.lastMouseY);
         }
+    }
+    
+    unlockAutofeeder() {
+        if (this.resourceManager.unlockAutofeeder()) {
+            // Show upgrade effect
+            this.uiManager.showUpgradeEffect('unlock-autofeeder', 'Autofeeder Unlocked!');
+            
+            // Update UI
+            this.uiManager.updateUI();
+            this.uiManager.updateButtonStates();
+            
+            return true;
+        }
+        return false;
+    }
+    
+    upgradeAutofeeder() {
+        if (this.resourceManager.upgradeAutofeeder()) {
+            // Show upgrade effect
+            this.uiManager.showUpgradeEffect('upgrade-autofeeder', `Autofeeder Level ${this.resourceManager.stats.autofeederLevel}!`);
+            
+            // Update UI
+            this.uiManager.updateUI();
+            this.uiManager.updateButtonStates();
+            
+            return true;
+        }
+        return false;
     }
 }; 

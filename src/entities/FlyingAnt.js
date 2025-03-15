@@ -12,8 +12,8 @@ IdleAnts.Entities.FlyingAnt = class extends IdleAnts.Entities.AntBase {
         this.minMovementSpeed = this.speed * 0.2; // Higher minimum speed for flying ants
         this.stuckThreshold = 0.5; // Lower threshold - flying ants should move more
         
-        // Flying ants turn more quickly and sharply
-        this.turnSpeed = 0.15 + Math.random() * 0.05; // Faster turns with more randomization
+        // Flying ants have randomized turn rates
+        this.turnSpeed = 0.1 + Math.random() * 0.8; // Randomized between 0.1 and 0.9
         
         // Initialize stuck prevention with shorter delay for flying ants since they move faster
         this.stuckPrevention = { active: false, delay: 5 }; // Shorter delay than regular ants

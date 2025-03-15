@@ -217,6 +217,14 @@ canvas {
     background: linear-gradient(to bottom, #836FFF, #6959CD);
 }
 
+.automation-btn {
+    background: linear-gradient(to bottom, #FF8C00, #D2691E);
+}
+
+.automation-btn:hover {
+    background: linear-gradient(to bottom, #FFA500, #FF8C00);
+}
+
 .hidden {
     display: none !important;
 }

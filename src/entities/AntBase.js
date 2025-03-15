@@ -60,7 +60,7 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         
         // Smooth rotation properties
         this.targetRotation = this.rotation;
-        this.turnSpeed = 0.1; // How quickly the ant turns (0-1, where 1 is instant)
+        this.turnSpeed = 0.1 + Math.random() * 0.8; // Randomized between 0.1 and 0.9
         
         // Create ant-specific visual elements
         this.createVisualElements();
@@ -91,7 +91,7 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
             foodCollectionRadius: 10,     // How close ant needs to be to collect food
             nestRadius: 10,               // How close ant needs to be to nest
             moveSpeedLoaded: this.speed * 0.8,
-            turnSpeed: 0.1,
+            turnSpeed: 0.1 + Math.random() * 0.8, // Randomized between 0.1 and 0.9
             stuckThreshold: 1.0,
             minMovementSpeed: this.speed * 0.1
         };
@@ -804,7 +804,7 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         }
     }
     
-    // New method to update rotation smoothly
+    // New method to update rotation smoothly with occasional sharp turns
     updateRotation() {
         if (this.vx !== 0 || this.vy !== 0) {
             // Calculate desired rotation based on movement direction
@@ -822,8 +822,14 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
             while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
             while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
             
-            // Apply gradual rotation
-            this.rotation += angleDiff * this.turnSpeed;
+            // Occasionally make sharp turns (5% chance)
+            if (Math.random() < 0.05) {
+                // Make a sharp turn by using a much higher turn speed (0.8-1.0)
+                this.rotation += angleDiff * (0.8 + Math.random() * 0.2);
+            } else {
+                // Apply gradual rotation using the ant's normal turn speed
+                this.rotation += angleDiff * this.turnSpeed;
+            }
         }
     }
     

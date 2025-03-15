@@ -3,8 +3,8 @@ IdleAnts.Managers.ResourceManager = class {
     constructor() {
         // Game resources
         this.resources = {
-            food: 0, // Start with 0 food
-            displayFood: 0 // For smooth animation
+            food: 1000000, // Start with 1 million food for debugging
+            displayFood: 1000000 // For smooth animation
         };
         
         // Game stats
@@ -19,17 +19,25 @@ IdleAnts.Managers.ResourceManager = class {
             antCost: 10,
             flyingAntCost: 100,  // Flying ants are more expensive
             flyingAntUnlockCost: 500,  // Initial cost to unlock flying ants
-            foodUpgradeCost: 50,
+            foodUpgradeCost: 1000, // Changed from 50 to 1000 as requested
             expandCost: 100,
             foodMultiplier: 1,
             speedUpgradeCost: 75,
             speedMultiplier: 1,
             // New strength-related properties
-            strengthUpgradeCost: 100,
+            strengthUpgradeCost: 50,
             strengthMultiplier: 1, // Now represents the actual carrying capacity
             // Food tier properties
             foodTier: 1,  // Start with basic food (tier 1)
-            maxFoodTier: 3 // Now includes watermelon (tier 3)
+            maxFoodTier: 3, // Now includes watermelon (tier 3)
+            // Autofeeder properties
+            autofeederUnlocked: false,
+            autofeederLevel: 0,
+            maxAutofeederLevel: 10,
+            autofeederCost: 500, // Reduced from 1000 to 500
+            autofeederUpgradeCost: 500, // Reduced from 1000 to 500
+            autofeederBaseFoodAmount: 10, // Base amount of food to sprinkle
+            autofeederInterval: 600 // Frames between autofeeder activations (10 seconds at 60fps)
         };
         
         // Map of food tier to food type
@@ -73,11 +81,13 @@ IdleAnts.Managers.ResourceManager = class {
     }
     
     updateAntCost() {
-        this.stats.antCost = Math.floor(this.stats.antCost * 1.5);
+        const oldCost = this.stats.antCost;
+        this.stats.antCost = Math.floor(this.stats.antCost * 1.2);
+        console.log(`Ant cost updated: ${oldCost} -> ${this.stats.antCost}`);
     }
     
     updateFoodUpgradeCost() {
-        this.stats.foodUpgradeCost = Math.floor(this.stats.foodUpgradeCost * 2);
+        this.stats.foodUpgradeCost = Math.floor(this.stats.foodUpgradeCost * 10);
     }
     
     updateExpandCost() {
@@ -187,7 +197,9 @@ IdleAnts.Managers.ResourceManager = class {
         if (this.canBuyFlyingAnt()) {
             this.spendFood(this.stats.flyingAntCost);
             this.stats.flyingAnts++;
-            this.stats.flyingAntCost = Math.floor(this.stats.flyingAntCost * 1.8); // Flying ant cost increases faster
+            const oldCost = this.stats.flyingAntCost;
+            this.stats.flyingAntCost = Math.floor(this.stats.flyingAntCost * 1.4); // Flying ant cost increases faster
+            console.log(`Flying ant cost updated: ${oldCost} -> ${this.stats.flyingAntCost}`);
             this.updateFoodPerSecond();
             return true;
         }
@@ -206,7 +218,7 @@ IdleAnts.Managers.ResourceManager = class {
     
     // New strength-related methods
     updateStrengthUpgradeCost() {
-        this.stats.strengthUpgradeCost = Math.floor(this.stats.strengthUpgradeCost * 1.8);
+        this.stats.strengthUpgradeCost = Math.floor(this.stats.strengthUpgradeCost * 1.3);
     }
     
     upgradeStrengthMultiplier(amount) {
@@ -230,5 +242,45 @@ IdleAnts.Managers.ResourceManager = class {
             return true;
         }
         return false;
+    }
+    
+    // Autofeeder methods
+    canUnlockAutofeeder() {
+        return !this.stats.autofeederUnlocked && this.canAfford(this.stats.autofeederCost);
+    }
+    
+    unlockAutofeeder() {
+        if (this.canUnlockAutofeeder()) {
+            this.spendFood(this.stats.autofeederCost);
+            this.stats.autofeederUnlocked = true;
+            this.stats.autofeederLevel = 1;
+            return true;
+        }
+        return false;
+    }
+    
+    canUpgradeAutofeeder() {
+        return this.stats.autofeederUnlocked && 
+               this.stats.autofeederLevel < this.stats.maxAutofeederLevel && 
+               this.canAfford(this.stats.autofeederUpgradeCost);
+    }
+    
+    upgradeAutofeeder() {
+        if (this.canUpgradeAutofeeder()) {
+            this.spendFood(this.stats.autofeederUpgradeCost);
+            this.stats.autofeederLevel++;
+            this.updateAutofeederUpgradeCost();
+            return true;
+        }
+        return false;
+    }
+    
+    updateAutofeederUpgradeCost() {
+        this.stats.autofeederUpgradeCost = Math.floor(this.stats.autofeederUpgradeCost * 1.8);
+    }
+    
+    getAutofeederFoodAmount() {
+        // Each level multiplies the amount by 1.2 (reduced from 1.5 for more balanced progression)
+        return Math.floor(this.stats.autofeederBaseFoodAmount * Math.pow(1.2, this.stats.autofeederLevel - 1));
     }
 } 

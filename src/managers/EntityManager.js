@@ -39,6 +39,9 @@ IdleAnts.Managers.EntityManager = class {
         this.foodSpawnCounter = 0;
         this.foodSpawnInterval = 180; // Spawn food every 180 frames (about 3 seconds at 60fps)
         
+        // Autofeeder timer settings
+        this.autofeederCounter = 0;
+        
         // Map bounds - will be set during setup
         this.mapBounds = {
             width: 0,
@@ -200,8 +203,10 @@ IdleAnts.Managers.EntityManager = class {
         // Check for and resolve any ant clustering at the nest
         this.resolveNestClustering();
         
-        // Update all ant types
+        // Update ants
         this.updateAntEntities(this.entities.ants, shouldCreateTrail);
+        
+        // Update flying ants
         this.updateAntEntities(this.entities.flyingAnts, shouldCreateTrail, true);
         
         // Update food items
@@ -212,11 +217,11 @@ IdleAnts.Managers.EntityManager = class {
         });
         
         // Update nest
-        if (this.entities.nest && typeof this.entities.nest.update === 'function') {
-            this.entities.nest.update();
+        if (this.nest && typeof this.nest.update === 'function') {
+            this.nest.update();
         }
         
-        // Periodically spawn new food
+        // Spawn food periodically
         this.foodSpawnCounter++;
         if (this.foodSpawnCounter >= this.foodSpawnInterval) {
             this.foodSpawnCounter = 0;
@@ -224,6 +229,15 @@ IdleAnts.Managers.EntityManager = class {
             // Spawn 1-3 food items at random
             const foodCount = 1 + Math.floor(Math.random() * 3);
             this.createFood(foodCount);
+        }
+        
+        // Handle autofeeder if unlocked
+        if (this.resourceManager.stats.autofeederUnlocked) {
+            this.autofeederCounter++;
+            if (this.autofeederCounter >= this.resourceManager.stats.autofeederInterval) {
+                this.autofeederCounter = 0;
+                this.activateAutofeeder();
+            }
         }
     }
     
@@ -604,6 +618,39 @@ IdleAnts.Managers.EntityManager = class {
             if (antEntities[i].foodCollected > 0 && antEntities[i].capacityWeight < currentStrength) {
                 antEntities[i].isAtFullCapacity = false;
             }
+        }
+    }
+    
+    activateAutofeeder() {
+        // Get the current food type based on the food tier
+        const foodType = this.resourceManager.getCurrentFoodType();
+        
+        // Get the amount of food to sprinkle based on autofeeder level
+        const foodAmount = this.resourceManager.getAutofeederFoodAmount();
+        
+        // Calculate a random position near the nest
+        const nestRadius = 300; // Distance from nest to sprinkle food
+        const randomAngle = Math.random() * Math.PI * 2; // Random angle around the nest
+        
+        // Calculate the center position for the food cluster
+        const centerX = this.nestPosition.x + Math.cos(randomAngle) * nestRadius;
+        const centerY = this.nestPosition.y + Math.sin(randomAngle) * nestRadius;
+        
+        // Sprinkle food in a cluster around the center position
+        for (let i = 0; i < foodAmount; i++) {
+            // Random offset from the center position (within a small radius)
+            const offsetRadius = Math.random() * 100; // 100px radius for the food cluster
+            const offsetAngle = Math.random() * Math.PI * 2;
+            
+            const foodX = centerX + Math.cos(offsetAngle) * offsetRadius;
+            const foodY = centerY + Math.sin(offsetAngle) * offsetRadius;
+            
+            // Add the food with the current food type
+            this.addFood({
+                x: foodX,
+                y: foodY,
+                clickPlaced: true // Treat as click-placed to show spawn effect
+            }, foodType);
         }
     }
 } 

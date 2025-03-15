@@ -12,8 +12,8 @@ IdleAnts.Entities.Ant = class extends IdleAnts.Entities.AntBase {
         this.legPhase = Math.random() * Math.PI * 2;
         this.legAnimationSpeed = 0.2;
         
-        // Regular ants have more deliberate, slower turns
-        this.turnSpeed = 0.08 + Math.random() * 0.02; // Slight randomization for natural variety
+        // Regular ants have randomized turn rates
+        this.turnSpeed = 0.1 + Math.random() * 0.8; // Randomized between 0.1 and 0.9
     }
     
     // Implement type-specific visual elements
