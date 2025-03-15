@@ -228,7 +228,7 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
             return false;
         }
         
-        // Find closest food that fits in capacity
+        // Find closest food
         let closestFood = null;
         let closestDistance = Infinity;
         
@@ -238,9 +238,8 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
             const dy = food.y - this.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
-            // Check if this food will fit in the remaining capacity
-            const foodWeight = food.foodType ? food.foodType.weight : 1;
-            if (this.capacityWeight + foodWeight <= this.capacity && distance < closestDistance) {
+            // Consider all food regardless of weight
+            if (distance < closestDistance) {
                 closestDistance = distance;
                 closestFood = food;
             }
@@ -292,14 +291,6 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
              !IdleAnts.app.entityManager.entities.foods.includes(this.collectionTarget))) {
             // Food is gone, return to seeking
             this.transitionToState(IdleAnts.Entities.AntBase.States.SEEKING_FOOD);
-            return false;
-        }
-        
-        // Check if this food would exceed capacity
-        const foodWeight = this.collectionTarget.foodType ? this.collectionTarget.foodType.weight : 1;
-        if (this.capacityWeight + foodWeight > this.capacity) {
-            console.log(`Food would exceed capacity: Current=${this.capacityWeight}, Adding=${foodWeight}, Max=${this.capacity}, RETURNING TO NEST`);
-            this.transitionToState(IdleAnts.Entities.AntBase.States.RETURNING_TO_NEST);
             return false;
         }
         
@@ -470,20 +461,7 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
                 return false;
             }
             
-            // Before continuing collection, check if the food would exceed capacity
-            const foodWeight = this.collectionTarget.foodType ? this.collectionTarget.foodType.weight : 1;
-            if (this.capacityWeight + foodWeight > this.capacity) {
-                // This food would exceed capacity, stop collecting
-                this.isCollecting = false;
-                this.collectionTimer = 0;
-                this.collectionTarget.removeCollectingAnt(this);
-                this.collectionTarget = null;
-                this.targetFood = null;
-                this.isAtFullCapacity = true; // Force return to nest
-                return false;
-            }
-            
-            // Food still exists and fits capacity, continue collecting
+            // Food still exists, continue collecting
             // Calculate ant's current contribution based on elapsed time
             const contributionAmount = 0.016; // For 60fps, approximately how much time has passed
             
@@ -511,12 +489,6 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
             return false;
         }
         
-        // CRITICAL: For base strength ants, never look for more food if already carrying any
-        if (this.capacity === 1 && this.foodCollected > 0) {
-            this.isAtFullCapacity = true;
-            return false; // Don't look for more food
-        }
-        
         // First, ensure capacity flag is correctly set
         this.isAtFullCapacity = this.capacityWeight >= this.capacity;
         
@@ -536,9 +508,8 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
             const dy = food.y - this.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
-            // Only consider food if it will fit in remaining capacity
-            const foodWeight = food.foodType ? food.foodType.weight : 1;
-            if (this.capacityWeight + foodWeight <= this.capacity && distance < closestDistance) {
+            // Consider all food regardless of weight
+            if (distance < closestDistance) {
                 closestDistance = distance;
                 closestFood = food;
             }
@@ -602,23 +573,14 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
     
     // Template method for picking up food - can be customized by subclasses
     pickUpFood(foodType, foodValue) {
-        // Check if this would exceed capacity
-        const foodWeight = foodType.weight || 1;
-        
-        // If this food would exceed capacity, don't pick it up
-        if (this.capacityWeight + foodWeight > this.capacity) {
-            console.log(`WARNING: Tried to pick up food that would exceed capacity. Current=${this.capacityWeight}, Adding=${foodWeight}, Max=${this.capacity}`);
-            return 0; // Indicate no food was collected
-        }
-        
         // Store the current position where food was picked up
         this.lastFoodPickupPos = { x: this.x, y: this.y };
         
         // Update the collected food amount
         this.foodCollected += foodValue;
         
-        // Track total weight for capacity considerations
-        this.capacityWeight += foodWeight;
+        // Track total weight for capacity considerations (but don't enforce it)
+        this.capacityWeight += 1; // Always count as 1 regardless of food type
         
         // Show the food indicator
         this.foodIndicator.visible = true;
@@ -869,15 +831,8 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
     canCollectMoreFood(foods) {
         if (foods.length === 0) return false;
         
-        // Check if any available food will fit in the remaining capacity
-        for (let i = 0; i < foods.length; i++) {
-            const foodWeight = foods[i].foodType ? foods[i].foodType.weight : 1;
-            if (this.capacityWeight + foodWeight <= this.capacity) {
-                return true;
-            }
-        }
-        
-        return false;
+        // Simply check if we're at capacity
+        return this.capacityWeight < this.capacity;
     }
     
     // Add a method to create eating effects while collecting heavy food

@@ -396,7 +396,8 @@ IdleAnts.Managers.EntityManager = class {
         // Handle collection based on how many ants are collecting this food
         const collectingAntCount = foodItem.getCollectingAntCount();
         let foodValue = foodItem.foodType ? foodItem.foodType.value : 1;
-        let foodWeight = foodItem.foodType ? foodItem.foodType.weight : 1;
+        // Food weight is tracked but not used for capacity checks
+        let foodWeight = 1; // Always count as 1 regardless of type
         
         console.log(`Food item: Type=${foodItem.foodType ? foodItem.foodType.id : 'unknown'}, Value=${foodValue}, Weight=${foodWeight}`);
         
