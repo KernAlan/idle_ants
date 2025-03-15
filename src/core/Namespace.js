@@ -1,5 +1,8 @@
 // Namespace for our game
 const IdleAnts = {
     Entities: {},
-    Managers: {}
+    Managers: {},
+    Config: {
+        debug: false // Global debug flag, set to false by default
+    }
 }; 

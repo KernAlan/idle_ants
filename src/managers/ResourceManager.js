@@ -1,10 +1,13 @@
 // src/managers/ResourceManager.js
 IdleAnts.Managers.ResourceManager = class {
     constructor() {
+        // Log debug status for verification
+        console.log('ResourceManager initializing with debug mode:', IdleAnts.Config.debug);
+        
         // Game resources
         this.resources = {
-            food: 1000000, // Start with 1 million food for debugging
-            displayFood: 1000000 // For smooth animation
+            food: IdleAnts.Config.debug ? 1000000 : 0, // Use 1 million in debug mode, otherwise 0
+            displayFood: IdleAnts.Config.debug ? 1000000 : 0 // For smooth animation
         };
         
         // Game stats

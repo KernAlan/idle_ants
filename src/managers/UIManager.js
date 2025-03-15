@@ -7,6 +7,12 @@ IdleAnts.Managers.UIManager = class {
         
         // Set up UI button click events
         this.setupEventListeners();
+        
+        // Initialize UI state
+        this.isUICollapsed = false;
+        
+        // Show debug indicator if in debug mode
+        this.updateDebugIndicator();
     }
     
     setupEventListeners() {
@@ -19,6 +25,9 @@ IdleAnts.Managers.UIManager = class {
                 console.warn(`UIManager: Element with id '${id}' not found for event listener`);
             }
         };
+        
+        // UI toggle button
+        addSafeClickListener('ui-toggle', () => this.toggleUI());
         
         // Main buttons
         addSafeClickListener('buy-ant', () => this.game.buyAnt());
@@ -37,7 +46,73 @@ IdleAnts.Managers.UIManager = class {
         addSafeClickListener('upgrade-autofeeder', () => this.game.upgradeAutofeeder());
     }
     
+    // Add UI toggle functionality
+    toggleUI() {
+        const gameContainer = document.getElementById('game-container');
+        const toggleButton = document.getElementById('ui-toggle');
+        
+        if (gameContainer && toggleButton) {
+            this.isUICollapsed = !this.isUICollapsed;
+            
+            if (this.isUICollapsed) {
+                gameContainer.classList.add('ui-collapsed');
+                toggleButton.innerHTML = '<i class="fas fa-chevron-down"></i>';
+                toggleButton.title = "Expand UI";
+            } else {
+                gameContainer.classList.remove('ui-collapsed');
+                toggleButton.innerHTML = '<i class="fas fa-chevron-up"></i>';
+                toggleButton.title = "Collapse UI";
+            }
+        }
+    }
+    
+    updateDebugIndicator() {
+        const debugIndicator = document.getElementById('debug-indicator');
+        const debugConsole = document.getElementById('debug-console');
+        
+        if (debugIndicator) {
+            debugIndicator.style.display = IdleAnts.Config.debug ? 'block' : 'none';
+        }
+        
+        if (debugConsole) {
+            debugConsole.style.display = IdleAnts.Config.debug ? 'block' : 'none';
+        }
+        
+        // Update debug information if debug mode is enabled
+        if (IdleAnts.Config.debug) {
+            this.updateDebugInfo();
+        }
+    }
+    
+    updateDebugInfo() {
+        const debugContent = document.getElementById('debug-content');
+        if (!debugContent) return;
+        
+        // Gather debug information
+        const debugInfo = {
+            'Food': Math.floor(this.resourceManager.resources.food),
+            'Ants': `${this.resourceManager.stats.ants}/${this.resourceManager.stats.maxAnts}`,
+            'Flying Ants': `${this.resourceManager.stats.flyingAnts}/${this.resourceManager.stats.maxFlyingAnts}`,
+            'Food/Sec': this.resourceManager.stats.foodPerSecond.toFixed(2),
+            'Food Multiplier': this.resourceManager.stats.foodMultiplier.toFixed(2),
+            'Speed Multiplier': this.resourceManager.stats.speedMultiplier.toFixed(2),
+            'Strength Multiplier': this.resourceManager.stats.strengthMultiplier.toFixed(2),
+            'Food Tier': this.resourceManager.stats.foodTier
+        };
+        
+        // Format debug information as HTML
+        let html = '';
+        for (const [key, value] of Object.entries(debugInfo)) {
+            html += `<div><span style="color: #aaa;">${key}:</span> ${value}</div>`;
+        }
+        
+        debugContent.innerHTML = html;
+    }
+    
     updateUI() {
+        // Show/hide debug indicator
+        this.updateDebugIndicator();
+        
         // Helper function to safely update element text content
         const updateElementText = (id, value) => {
             const element = document.getElementById(id);
@@ -79,30 +154,21 @@ IdleAnts.Managers.UIManager = class {
             // Update food per second
             updateElementText('food-per-second', this.resourceManager.stats.foodPerSecond.toFixed(1));
             
+            // Update food type
+            const currentFoodType = this.resourceManager.getCurrentFoodType();
+            updateElementText('food-type', currentFoodType.name);
+            
             // Update the upgrade food button text based on current food tier
             const upgradeButton = document.getElementById('upgrade-food');
-            const currentFoodType = this.resourceManager.getCurrentFoodType();
             
             if (upgradeButton) {
                 if (!this.resourceManager.canUpgradeFoodTier()) {
                     // At max tier, update button text to show that it's maxed out
-                    upgradeButton.innerHTML = `<i class="fas fa-arrow-up"></i> Food Upgraded (Max)`;
+                    upgradeButton.innerHTML = `<i class="fas fa-arrow-up"></i> Food (Max)`;
                 } else {
                     // Show the cost to upgrade to the next tier
-                    upgradeButton.innerHTML = `<i class="fas fa-arrow-up"></i> Upgrade Food (<span id="food-upgrade-cost">${this.resourceManager.stats.foodUpgradeCost}</span> food)`;
+                    upgradeButton.innerHTML = `<i class="fas fa-arrow-up"></i> Food (<span id="food-upgrade-cost">${this.resourceManager.stats.foodUpgradeCost}</span>)`;
                 }
-            }
-            
-            // Display current food type and strength bonus
-            const foodPerClickEl = document.getElementById('food-rate');
-            if (foodPerClickEl) {
-                const strengthValue = this.resourceManager.stats.strengthMultiplier;
-                const collectionSpeedBonus = Math.min(75, Math.round((strengthValue - 1) * 25));
-                
-                foodPerClickEl.innerHTML = `Per Second: <span id="food-per-second">${this.resourceManager.stats.foodPerSecond.toFixed(1)}</span> | ` + 
-                                         `Food Type: ${currentFoodType.name} | ` +
-                                         `Ant Strength: ${strengthValue} | ` +
-                                         `Collection Speed: +${collectionSpeedBonus}%`;
             }
             
             // Update the strength button tooltip with current bonus

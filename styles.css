@@ -17,15 +17,18 @@ body {
 #ui-container {
     display: flex;
     align-items: center;
-    padding: 8px 15px;
+    padding: 5px 10px;
     background: linear-gradient(to bottom, #333, #222);
     color: white;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     z-index: 10;
+    flex-wrap: wrap;
+    max-height: 30vh;
+    overflow-y: auto;
 }
 
 #game-title {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -34,15 +37,15 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    min-width: 150px;
+    min-width: 120px;
 }
 
 #resources {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
-    font-size: 14px;
+    font-size: 13px;
     flex: 1;
     justify-content: center;
 }
@@ -50,7 +53,7 @@ body {
 #food, #ants, #food-rate, #flying-ant-stats {
     display: flex;
     align-items: center;
-    padding: 4px 8px;
+    padding: 3px 6px;
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 20px;
     box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.3);
@@ -105,17 +108,25 @@ body {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    align-items: stretch;
-    gap: 6px;
+    align-items: flex-start;
+    gap: 8px;
     justify-content: flex-end;
-    max-width: 50%;
+    max-width: 60%;
+}
+
+.upgrade-section {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 120px;
+    margin-bottom: 5px;
 }
 
 #upgrades h3 {
     width: 100%;
-    margin-top: 6px;
-    margin-bottom: 3px;
-    font-size: 13px;
+    margin-top: 4px;
+    margin-bottom: 2px;
+    font-size: 12px;
     letter-spacing: 1px;
     color: #FFD700;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
@@ -123,9 +134,9 @@ body {
 }
 
 .upgrade-btn {
-    min-width: 140px;
-    padding: 4px 10px;
-    font-size: 12px;
+    min-width: 110px;
+    padding: 3px 6px;
+    font-size: 11px;
     background: linear-gradient(to bottom, #4CAF50, #3e8e41);
     color: white;
     border: none;
@@ -134,6 +145,9 @@ body {
     font-weight: bold;
     transition: all 0.2s ease;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .upgrade-btn i {
@@ -234,22 +248,118 @@ canvas {
     #ui-container {
         flex-wrap: wrap;
         padding: 5px 10px;
+        max-height: 40vh;
     }
     
     #game-title {
-        width: 100%;
-        margin-bottom: 5px;
-        justify-content: center;
+        width: auto;
+        margin-bottom: 3px;
+        justify-content: flex-start;
+        font-size: 14px;
     }
     
     #resources {
-        width: 100%;
-        margin-bottom: 5px;
+        flex: 1;
+        margin-bottom: 3px;
+        justify-content: flex-start;
     }
     
     #upgrades {
         max-width: 100%;
+        justify-content: center;
+        gap: 5px;
+    }
+    
+    .upgrade-section {
+        min-width: 110px;
+    }
+}
+
+/* Add a more compact layout for very small screens */
+@media (max-width: 768px) {
+    #ui-container {
+        max-height: 50vh;
+    }
+    
+    #resources {
         width: 100%;
         justify-content: center;
     }
+    
+    .upgrade-btn {
+        min-width: 100px;
+        font-size: 10px;
+        padding: 3px 6px;
+    }
+    
+    .upgrade-section {
+        min-width: 100px;
+    }
+    
+    #food, #ants, #food-rate, #flying-ant-stats {
+        font-size: 11px;
+        padding: 2px 5px;
+    }
+}
+
+/* For extremely small screens */
+@media (max-width: 480px) {
+    #ui-container {
+        padding: 3px 5px;
+    }
+    
+    #game-title {
+        font-size: 12px;
+        min-width: auto;
+    }
+    
+    .upgrade-section {
+        min-width: 90px;
+    }
+    
+    .upgrade-btn {
+        min-width: 90px;
+        font-size: 9px;
+        padding: 2px 4px;
+    }
+    
+    #upgrades h3 {
+        font-size: 10px;
+        margin-top: 3px;
+        margin-bottom: 1px;
+    }
+}
+
+/* Add a collapsible UI option */
+#ui-toggle {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    z-index: 20;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.ui-collapsed #ui-container {
+    max-height: 40px;
+    overflow: hidden;
+}
+
+.ui-collapsed #resources,
+.ui-collapsed #upgrades h3,
+.ui-collapsed .upgrade-btn {
+    display: none;
+}
+
+.ui-collapsed #game-title {
+    width: auto;
 } 

@@ -11,37 +11,79 @@
         console.clear();
         console.log("Idle Ants - Starting...");
     </script>
+    <!-- Core namespace must be loaded first -->
+    <script src="src/core/Namespace.js"></script>
+    <!-- Debug initialization script -->
+    <script>
+        // Set debug mode based on environment
+        (function() {
+            // Check if we're running from a file system (file: protocol)
+            const isFileProtocol = window.location.protocol === 'file:';
+            
+            // Check if we're running on localhost (as a fallback)
+            const isLocalhost = window.location.hostname === 'localhost' || 
+                                window.location.hostname === '127.0.0.1';
+            
+            // Enable debug mode automatically if running from file system or localhost
+            const isLocal = isFileProtocol || isLocalhost;
+            
+            // For development: still allow URL parameter to override
+            const urlParams = new URLSearchParams(window.location.search);
+            const debugParam = urlParams.get('debug');
+            
+            // Set debug mode based on environment and parameters
+            IdleAnts.Config.debug = isLocal ? true : (debugParam === 'true');
+            
+            // Log debug status
+            console.log('Protocol:', window.location.protocol);
+            console.log('Is local:', isLocal);
+            console.log('Debug mode:', IdleAnts.Config.debug);
+            
+            if (IdleAnts.Config.debug) {
+                console.log('Debug mode enabled - running locally');
+            }
+        })();
+    </script>
 </head>
 <body>
     <div id="game-container">
+        <button id="ui-toggle" title="Toggle UI"><i class="fas fa-chevron-up"></i></button>
         <div id="ui-container">
             <div id="game-title">
                 <i class="fas fa-bug"></i> Aadil Ants
             </div>
             <div id="resources">
                 <div id="food">Food: <span id="food-count">0</span></div>
-                <div id="food-rate">Per Second: <span id="food-per-second">0.0</span></div>
+                <div id="food-rate">Per Second: <span id="food-per-second">0.0</span> | Food Type: <span id="food-type">Basic</span></div>
                 <div id="ants">Ants: <span id="ant-count">1</span>/<span id="ant-max">10</span></div>
                 <div id="flying-ant-stats" class="hidden">Flying Ants: <span id="flying-ant-count">0</span>/<span id="flying-ant-max">0</span></div>
             </div>
             <div id="upgrades">
-                <h3>Upgrades</h3>
-                <button id="buy-ant" class="upgrade-btn"><i class="fas fa-plus"></i> Buy Ant (<span id="ant-cost">10</span> food)</button>
-                <button id="upgrade-food" class="upgrade-btn"><i class="fas fa-arrow-up"></i> Upgrade Food (<span id="food-upgrade-cost">50</span> food)</button>
-                <button id="upgrade-speed" class="upgrade-btn"><i class="fas fa-bolt"></i> Speed Boost (<span id="speed-upgrade-cost">75</span> food)</button>
-                <button id="upgrade-strength" class="upgrade-btn"><i class="fas fa-dumbbell"></i> Increase Strength (<span id="strength-upgrade-cost">100</span> food)</button>
-                <button id="expand-colony" class="upgrade-btn"><i class="fas fa-expand"></i> Expand Colony (<span id="expand-cost">100</span> food)</button>
+                <div class="upgrade-section">
+                    <h3>Ants</h3>
+                    <button id="buy-ant" class="upgrade-btn"><i class="fas fa-plus"></i> Buy Ant (<span id="ant-cost">10</span>)</button>
+                    <button id="expand-colony" class="upgrade-btn"><i class="fas fa-expand"></i> Expand (<span id="expand-cost">100</span>)</button>
+                </div>
                 
-                <!-- Flying ant buttons -->
-                <h3>Special Ants</h3>
-                <button id="unlock-flying-ants" class="upgrade-btn special-btn"><i class="fas fa-feather-alt"></i> Unlock Flying Ants (<span id="flying-ant-unlock-cost">500</span> food)</button>
-                <button id="buy-flying-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i> Buy Flying Ant (<span id="flying-ant-cost">100</span> food)</button>
-                <button id="expand-flying-ants" class="upgrade-btn special-btn hidden"><i class="fas fa-expand"></i> Expand Flying Capacity (<span id="expand-flying-cost">150</span> food)</button>
+                <div class="upgrade-section">
+                    <h3>Upgrades</h3>
+                    <button id="upgrade-food" class="upgrade-btn"><i class="fas fa-arrow-up"></i> Food (<span id="food-upgrade-cost">50</span>)</button>
+                    <button id="upgrade-speed" class="upgrade-btn"><i class="fas fa-bolt"></i> Speed (<span id="speed-upgrade-cost">75</span>)</button>
+                    <button id="upgrade-strength" class="upgrade-btn"><i class="fas fa-dumbbell"></i> Strength (<span id="strength-upgrade-cost">100</span>)</button>
+                </div>
                 
-                <!-- Autofeeder buttons -->
-                <h3>Automation</h3>
-                <button id="unlock-autofeeder" class="upgrade-btn automation-btn"><i class="fas fa-seedling"></i> Unlock Autofeeder (<span id="autofeeder-cost">500</span> food)</button>
-                <button id="upgrade-autofeeder" class="upgrade-btn automation-btn hidden"><i class="fas fa-arrow-up"></i> Upgrade Autofeeder <span id="autofeeder-level">0</span>/10 (<span id="autofeeder-upgrade-cost">500</span> food)</button>
+                <div class="upgrade-section">
+                    <h3>Special</h3>
+                    <button id="unlock-flying-ants" class="upgrade-btn special-btn"><i class="fas fa-feather-alt"></i> Flying Ants (<span id="flying-ant-unlock-cost">500</span>)</button>
+                    <button id="buy-flying-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i> Flying Ant (<span id="flying-ant-cost">100</span>)</button>
+                    <button id="expand-flying-ants" class="upgrade-btn special-btn hidden"><i class="fas fa-expand"></i> Expand Flying (<span id="expand-flying-cost">150</span>)</button>
+                </div>
+                
+                <div class="upgrade-section">
+                    <h3>Auto</h3>
+                    <button id="unlock-autofeeder" class="upgrade-btn automation-btn"><i class="fas fa-seedling"></i> Autofeeder (<span id="autofeeder-cost">500</span>)</button>
+                    <button id="upgrade-autofeeder" class="upgrade-btn automation-btn hidden"><i class="fas fa-arrow-up"></i> Autofeeder <span id="autofeeder-level">0</span>/10 (<span id="autofeeder-upgrade-cost">500</span>)</button>
+                </div>
             </div>
         </div>
         <div id="game-canvas-container"></div>
@@ -51,8 +93,6 @@
     <script src="https://cdn.jsdelivr.net/npm/pixi.js@7.x/dist/pixi.min.js"></script>
     
     <!-- Import our game scripts in correct order -->
-    <script src="src/core/Namespace.js"></script>
-    <!-- Data Classes -->
     <script src="src/data/FoodTypes.js"></script>
     <!-- Effect Classes -->
     <script src="src/effects/Effect.js"></script>
