@@ -11,6 +11,9 @@ IdleAnts.Managers.UIManager = class {
         // Initialize UI state
         this.isUICollapsed = false;
         
+        // Track previous food amount to detect food collection
+        this.previousFoodAmount = 0;
+        
         // Show debug indicator if in debug mode
         this.updateDebugIndicator();
     }
@@ -127,9 +130,6 @@ IdleAnts.Managers.UIManager = class {
     }
     
     updateUI() {
-        // Show/hide debug indicator
-        this.updateDebugIndicator();
-        
         // Helper function to safely update element text content
         const updateElementText = (id, value) => {
             const element = document.getElementById(id);
@@ -175,7 +175,21 @@ IdleAnts.Managers.UIManager = class {
             // Update food type
             const currentFoodType = this.resourceManager.getCurrentFoodType();
             updateElementText('food-type', currentFoodType.name);
-            
+        } catch (error) {
+            console.error('Error updating UI resources:', error);
+        }
+        
+        // Update previous food amount without playing any sound
+        this.previousFoodAmount = this.resourceManager.getFood();
+        
+        // Show/hide debug indicator
+        this.updateDebugIndicator();
+        
+        // Update button states
+        this.updateButtonStates();
+        
+        // Update additional UI elements
+        try {
             // Update the upgrade food button text based on current food tier
             const upgradeButton = document.getElementById('upgrade-food');
             
@@ -215,7 +229,6 @@ IdleAnts.Managers.UIManager = class {
                 updateElementText('queen-larvae-capacity', 3); // Fixed value
                 updateElementText('queen-larvae-rate', '60-120'); // Updated to 1-2 minutes
             }
-            
         } catch (error) {
             console.error('Error updating UI:', error);
         }

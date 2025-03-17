@@ -46,6 +46,26 @@
     </script>
 </head>
 <body>
+    <!-- Preload audio files as HTML elements to avoid CORS issues -->
+    <div style="display:none;">
+        <!-- Background Music -->
+        <audio id="bgm_main_theme" preload="auto" loop>
+            <source src="assets/audio/main_theme.mp3" type="audio/mpeg">
+        </audio>
+        
+        <!-- Sound Effects -->
+        <audio id="sfx_ant_spawn" preload="auto">
+            <source src="assets/audio/ant_spawn.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+    
+    <!-- Audio start overlay -->
+    <div id="start-audio-overlay">
+        <button id="start-audio-button">
+            <i class="fas fa-music"></i> Click to Start Game with Music
+        </button>
+    </div>
+
     <div id="game-container">
         <button id="ui-toggle" title="Toggle UI"><i class="fas fa-chevron-up"></i></button>
         <div id="ui-container">
@@ -96,6 +116,12 @@
                     <button id="unlock-autofeeder" class="upgrade-btn automation-btn"><i class="fas fa-seedling"></i>Autofeeder (<span id="autofeeder-cost">500</span>)</button>
                     <button id="upgrade-autofeeder" class="upgrade-btn automation-btn hidden"><i class="fas fa-arrow-up"></i>Autofeeder <span id="autofeeder-level">0</span>/10 (<span id="autofeeder-upgrade-cost">500</span>)</button>
                 </div>
+                
+                <!-- Sound control button -->
+                <div class="upgrade-section">
+                    <h3>Settings</h3>
+                    <button id="toggle-sound" class="settings-btn"><i class="fas fa-volume-up"></i>Sound: ON</button>
+                </div>
             </div>
         </div>
         <div id="game-canvas-container"></div>
@@ -115,12 +141,19 @@
     <script src="src/effects/Trail.js"></script>
     <script src="src/effects/LarvaeEffect.js"></script>
     <script src="src/effects/index.js"></script>
+    <!-- Asset Definitions -->
+    <script src="assets/AssetDefinition.js"></script>
+    <script src="assets/antAssets.js"></script>
+    <script src="assets/foodAssets.js"></script>
+    <script src="assets/environmentAssets.js"></script>
+    <script src="assets/audioAssets.js"></script>
     <!-- Managers -->
     <script src="src/managers/ResourceManager.js"></script>
     <script src="src/managers/AssetManager.js"></script>
     <script src="src/managers/BackgroundManager.js"></script>
     <script src="src/managers/EffectManager.js"></script>
     <script src="src/managers/EntityManager.js"></script>
+    <script src="src/managers/AudioManager.js"></script>
     <script src="src/managers/UIManager.js"></script>
     <!-- Entities -->
     <script src="src/entities/AntBase.js"></script>
@@ -130,13 +163,33 @@
     <script src="src/entities/Larvae.js"></script>
     <script src="src/entities/Food.js"></script>
     <script src="src/entities/Nest.js"></script>
-    <!-- Asset Definitions -->
-    <script src="assets/AssetDefinition.js"></script>
-    <script src="assets/antAssets.js"></script>
-    <script src="assets/foodAssets.js"></script>
-    <script src="assets/environmentAssets.js"></script>
     <!-- Game Core -->
     <script src="src/Game.js"></script>
     <script src="src/index.js"></script>
+    
+    <!-- Script to handle the audio start button -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const startAudioButton = document.getElementById('start-audio-button');
+            const startAudioOverlay = document.getElementById('start-audio-overlay');
+            
+            if (startAudioButton && startAudioOverlay) {
+                startAudioButton.addEventListener('click', function() {
+                    // Hide the overlay
+                    startAudioOverlay.style.display = 'none';
+                    
+                    // Resume audio context and start playing music
+                    if (IdleAnts.AudioManager) {
+                        IdleAnts.AudioManager.resumeAudioContext();
+                        
+                        // Start playing background music
+                        if (IdleAnts.AudioAssets && IdleAnts.AudioAssets.BGM && IdleAnts.AudioAssets.BGM.MAIN_THEME) {
+                            IdleAnts.AudioManager.playBGM(IdleAnts.AudioAssets.BGM.MAIN_THEME.id);
+                        }
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html> 

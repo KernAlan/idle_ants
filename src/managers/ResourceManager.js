@@ -70,6 +70,11 @@ IdleAnts.Managers.ResourceManager = class {
         };
     }
     
+    // Get the current food amount
+    getFood() {
+        return this.resources.food;
+    }
+    
     // Food resource methods
     addFood(amount) {
         this.resources.food += amount;

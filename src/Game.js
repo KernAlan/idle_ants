@@ -76,6 +76,9 @@ IdleAnts.Game = class {
             this.entityManager = new IdleAnts.Managers.EntityManager(this.app, this.assetManager, this.resourceManager, this.worldContainer);
             this.effectManager = new IdleAnts.Managers.EffectManager(this.app);
             
+            // Initialize audio manager
+            IdleAnts.AudioManager.init();
+            
             // Set up effect manager reference
             this.entityManager.setEffectManager(this.effectManager);
             
@@ -92,9 +95,78 @@ IdleAnts.Game = class {
             // Center camera on nest after everything is set up
             this.centerCameraOnNest();
             
+            // Setup audio resuming on user interaction
+            this.setupAudioResumeOnInteraction();
+            
+            // Start playing background music
+            this.startBackgroundMusic();
+            
             // Transition to PLAYING state
             this.transitionToState(IdleAnts.Game.States.PLAYING);
         });
+    }
+    
+    // Setup audio resume on user interaction
+    setupAudioResumeOnInteraction() {
+        // List of events that count as user interaction
+        const interactionEvents = ['click', 'touchstart', 'keydown', 'mousedown'];
+        
+        // Helper function to attempt resuming audio context
+        const resumeAudio = () => {
+            if (IdleAnts.AudioManager) {
+                IdleAnts.AudioManager.resumeAudioContext();
+                
+                // Re-start BGM if needed
+                if (IdleAnts.AudioAssets && IdleAnts.AudioAssets.BGM && IdleAnts.AudioAssets.BGM.MAIN_THEME) {
+                    IdleAnts.AudioManager.playBGM(IdleAnts.AudioAssets.BGM.MAIN_THEME.id);
+                }
+                
+                // Remove event listeners after first successful interaction
+                interactionEvents.forEach(event => {
+                    document.removeEventListener(event, resumeAudio);
+                });
+                
+                console.log('Audio resumed after user interaction');
+            }
+        };
+        
+        // Add event listeners
+        interactionEvents.forEach(event => {
+            document.addEventListener(event, resumeAudio, { once: false });
+        });
+    }
+    
+    // Start background music
+    startBackgroundMusic() {
+        // Play main theme BGM
+        if (IdleAnts.AudioAssets.BGM.MAIN_THEME) {
+            IdleAnts.AudioManager.playBGM(IdleAnts.AudioAssets.BGM.MAIN_THEME.id);
+        }
+    }
+    
+    // Play sound effects
+    playSoundEffect(soundId) {
+        if (soundId && IdleAnts.AudioManager) {
+            IdleAnts.AudioManager.playSFX(soundId);
+        }
+    }
+    
+    // Toggle sound on/off
+    toggleSound() {
+        const isMuted = IdleAnts.AudioManager.toggleMute();
+        
+        // Update the UI button
+        const soundButton = document.getElementById('toggle-sound');
+        if (soundButton) {
+            const icon = soundButton.querySelector('i');
+            if (icon) {
+                icon.className = isMuted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+            }
+            soundButton.innerHTML = icon ? icon.outerHTML : '';
+            soundButton.innerHTML += isMuted ? 'Sound: OFF' : 'Sound: ON';
+        }
+        
+        return isMuted;
     }
     
     // State transition method
@@ -541,6 +613,16 @@ IdleAnts.Game = class {
                 }, 300); // Small delay to ensure orientation change is complete
             });
         }
+
+        // Add sound toggle button event listener
+        const soundToggleButton = document.getElementById('toggle-sound');
+        if (soundToggleButton) {
+            soundToggleButton.addEventListener('click', () => {
+                this.toggleSound();
+                // Also try to resume AudioContext on this explicit interaction
+                IdleAnts.AudioManager.resumeAudioContext();
+            });
+        }
     }
     
     updateHoverIndicator(x, y) {
@@ -888,6 +970,11 @@ IdleAnts.Game = class {
             // Update UI
             this.uiManager.updateUI();
             this.uiManager.showUpgradeEffect('buy-ant', 'New ant added!');
+
+            // After successfully buying an ant, play the sound effect
+            if (IdleAnts.AudioAssets.SFX.ANT_SPAWN) {
+                this.playSoundEffect(IdleAnts.AudioAssets.SFX.ANT_SPAWN.id);
+            }
         }
     }
     
