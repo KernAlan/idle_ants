@@ -8,8 +8,14 @@ IdleAnts.Managers.EffectManager = class {
             'foodSpawn': IdleAnts.Effects.FoodSpawnEffect,
             'foodDrop': IdleAnts.Effects.FoodDropEffect,
             'foodCollect': IdleAnts.Effects.FoodCollectEffect,
-            'trail': IdleAnts.Effects.Trail
+            'trail': IdleAnts.Effects.Trail,
+            'larvae': IdleAnts.Effects.LarvaeEffect
         };
+        
+        // Call the static registerEffects method if it exists
+        if (IdleAnts.Managers.EffectManager.registerEffects) {
+            IdleAnts.Managers.EffectManager.registerEffects(this);
+        }
     }
     
     // Generic method for creating any type of effect
@@ -101,12 +107,12 @@ IdleAnts.Managers.EffectManager = class {
     }
     
     createLarvaeEffect(x, y, color = 0xFFFF00, scale = 1.5) {
-        // Register the LarvaeEffect class if it's not already registered
-        if (!this.effectClasses['larvae'] && IdleAnts.Effects && IdleAnts.Effects.LarvaeEffect) {
+        // Check if the LarvaeEffect class is registered
+        if (!this.effectClasses['larvae'] && IdleAnts.Effects.LarvaeEffect) {
             this.effectClasses['larvae'] = IdleAnts.Effects.LarvaeEffect;
         }
         
-        // Create and return the larvae effect
+        // Create the larvae effect
         return this.createEffect('larvae', x, y, color, scale);
     }
 } 

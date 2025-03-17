@@ -173,8 +173,9 @@ html {
 }
 
 .upgrade-btn i {
-    margin-right: 5px;
-    display: inline-block;
+    margin-right: 4px;
+    margin-bottom: 0;
+    font-size: 10px;
 }
 
 .upgrade-btn:hover {
@@ -298,58 +299,117 @@ canvas {
     }
 }
 
-/* Add a more compact layout for very small screens */
+/* Mobile-specific UI improvements */
 @media (max-width: 768px) {
     #ui-container {
-        max-height: 50vh;
+        padding: 2px 3px;
+        max-height: 30vh;
     }
     
     #resources {
-        width: 100%;
-        justify-content: center;
+        gap: 3px;
+        margin-bottom: 1px;
+        padding: 0 2px;
     }
     
-    .upgrade-btn {
-        min-width: 100px;
+    #food, #ants, #flying-ant-stats {
+        padding: 1px 3px;
         font-size: 10px;
-        padding: 3px 6px;
+        border-radius: 10px;
+    }
+    
+    #food-rate {
+        padding: 1px 3px;
+        font-size: 9px;
+        line-height: 1.1;
+        border-radius: 8px;
+    }
+    
+    #food-rate div {
+        margin: 0;
+    }
+    
+    #upgrades {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+        gap: 3px;
+        width: 100%;
     }
     
     .upgrade-section {
-        min-width: 100px;
+        min-width: 90px;
+        margin: 0;
     }
     
-    #food, #ants, #food-rate, #flying-ant-stats {
-        font-size: 11px;
-        padding: 2px 5px;
+    .upgrade-section h3 {
+        font-size: 10px;
+        margin: 2px 0;
+        text-align: center;
+    }
+    
+    .upgrade-btn {
+        min-width: 85px;
+        font-size: 9px;
+        padding: 2px;
+        margin: 2px 0;
+        height: 36px; /* Reduced from 44px */
+        display: flex;
+        flex-direction: row; /* Changed from column to row */
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap; /* Prevent text wrapping */
+    }
+    
+    .upgrade-btn i {
+        margin-bottom: 2px;
+    }
+    
+    /* Make UI toggle more visible */
+    #ui-toggle {
+        width: 44px;
+        height: 44px;
+        font-size: 18px;
+        background: rgba(0, 0, 0, 0.7);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Make the collapsed UI even more compact */
+    .ui-collapsed #ui-container {
+        max-height: 22px;
+    }
+    
+    /* Make game canvas take more space when UI is collapsed */
+    .ui-collapsed #game-canvas-container {
+        height: calc(100vh - 22px);
     }
 }
 
 /* For extremely small screens */
 @media (max-width: 480px) {
     #ui-container {
-        padding: 3px 5px;
+        padding: 2px 3px;
+        max-height: 40vh;
     }
     
     #game-title {
-        font-size: 12px;
+        font-size: 10px;
         min-width: auto;
+        margin-right: 5px;
+    }
+    
+    #upgrades {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     }
     
     .upgrade-section {
-        min-width: 90px;
+        min-width: 80px;
     }
     
     .upgrade-btn {
-        min-width: 90px;
-        font-size: 9px;
-        padding: 2px 4px;
-    }
-    
-    #upgrades h3 {
-        font-size: 10px;
-        margin-top: 3px;
-        margin-bottom: 1px;
+        min-width: 75px;
+        font-size: 8px;
+        padding: 2px;
+        height: 32px; /* Reduced height for very small screens */
     }
 }
 
@@ -425,14 +485,14 @@ canvas {
 /* Improve button tap targets on mobile */
 @media (max-width: 768px) {
     .upgrade-btn {
-        min-height: 44px;
-        padding: 10px;
-        margin: 5px;
+        min-height: 36px; /* Match the new height */
+        padding: 2px;
+        margin: 3px;
     }
     
     /* Ensure buttons have enough space between them */
     #upgrades {
-        gap: 8px;
+        gap: 5px;
     }
     
     /* Make UI toggle more tappable */
@@ -499,4 +559,72 @@ input, textarea {
     font-weight: bold;
 }
 
-/* Remove the theoretical rate styling */ 
+/* Remove the theoretical rate styling */
+
+/* Improve UI collapsed state for mobile */
+.ui-collapsed #ui-container {
+    max-height: 30px;
+    overflow: hidden;
+}
+
+/* Add a mobile-specific collapsed state */
+@media (max-width: 768px) {
+    /* Make the collapsed UI even more compact */
+    .ui-collapsed #ui-container {
+        max-height: 22px; /* Reduced from 25px */
+    }
+    
+    /* Make game canvas take more space when UI is collapsed */
+    .ui-collapsed #game-canvas-container {
+        height: calc(100vh - 22px);
+    }
+    
+    /* Adjust UI toggle position for better visibility */
+    #ui-toggle {
+        top: 3px;
+        right: 3px;
+    }
+    
+    /* Make the collapsed UI show just the title and food count */
+    .ui-collapsed #game-title {
+        font-size: 12px;
+        margin-right: 50px; /* Make room for the toggle button */
+    }
+    
+    .ui-collapsed #food {
+        position: absolute;
+        right: 50px;
+        top: 3px;
+        background: none;
+        box-shadow: none;
+    }
+    
+    /* Hide everything else when collapsed on mobile */
+    .ui-collapsed #resources > div:not(#food),
+    .ui-collapsed #upgrades {
+        display: none;
+    }
+}
+
+/* Improve button layout for mobile */
+@media (max-width: 768px) {
+    .upgrade-btn span {
+        display: inline;
+        text-align: center;
+        line-height: 1.1;
+        font-size: 8px;
+    }
+    
+    .upgrade-btn i {
+        font-size: 10px;
+        margin-right: 4px;
+        margin-bottom: 0;
+    }
+    
+    /* Make queen stats more compact */
+    #queen-stats {
+        font-size: 9px !important;
+        margin: 1px 0 !important;
+        text-align: center;
+    }
+} 

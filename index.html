@@ -55,33 +55,34 @@
             <div id="resources">
                 <div id="food">Food: <span id="food-count">0</span></div>
                 <div id="food-rate">
-                    <div>Collection Rate: <span id="food-per-second-actual">0.0</span>/s</div>
+                    <div>Rate: <span id="food-per-second-actual">0.0</span>/s</div>
+                    <div>Type: <span id="food-type">Basic</span></div>
                 </div>
                 <div id="ants">Ants: <span id="ant-count">1</span>/<span id="ant-max">10</span></div>
-                <div id="flying-ant-stats" class="hidden">Flying Ants: <span id="flying-ant-count">0</span>/<span id="flying-ant-max">0</span></div>
+                <div id="flying-ant-stats" class="hidden">Flying: <span id="flying-ant-count">0</span>/<span id="flying-ant-max">0</span></div>
             </div>
             <div id="upgrades">
                 <div class="upgrade-section">
                     <h3>Ants</h3>
-                    <button id="buy-ant" class="upgrade-btn"><i class="fas fa-plus"></i> Buy Ant (<span id="ant-cost">10</span>)</button>
-                    <button id="expand-colony" class="upgrade-btn"><i class="fas fa-expand"></i> Expand (<span id="expand-cost">100</span>)</button>
+                    <button id="buy-ant" class="upgrade-btn"><i class="fas fa-plus"></i>Buy Ant (<span id="ant-cost">10</span>)</button>
+                    <button id="expand-colony" class="upgrade-btn"><i class="fas fa-expand"></i>Expand (<span id="expand-cost">100</span>)</button>
                 </div>
                 
                 <div class="upgrade-section">
                     <h3>Upgrades</h3>
-                    <button id="upgrade-food" class="upgrade-btn"><i class="fas fa-arrow-up"></i> Food (<span id="food-upgrade-cost">50</span>)</button>
-                    <button id="upgrade-speed" class="upgrade-btn"><i class="fas fa-bolt"></i> Speed (<span id="speed-upgrade-cost">75</span>)</button>
-                    <button id="upgrade-strength" class="upgrade-btn"><i class="fas fa-dumbbell"></i> Strength (<span id="strength-upgrade-cost">100</span>)</button>
+                    <button id="upgrade-food" class="upgrade-btn"><i class="fas fa-arrow-up"></i>Food (<span id="food-upgrade-cost">50</span>)</button>
+                    <button id="upgrade-speed" class="upgrade-btn"><i class="fas fa-bolt"></i>Speed (<span id="speed-upgrade-cost">75</span>)</button>
+                    <button id="upgrade-strength" class="upgrade-btn"><i class="fas fa-dumbbell"></i>Strength (<span id="strength-upgrade-cost">100</span>)</button>
                 </div>
                 
                 <div class="upgrade-section">
                     <h3>Special</h3>
-                    <button id="unlock-flying-ants" class="upgrade-btn special-btn"><i class="fas fa-feather-alt"></i> Flying Ants (<span id="flying-ant-unlock-cost">500</span>)</button>
-                    <button id="buy-flying-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i> Flying Ant (<span id="flying-ant-cost">100</span>)</button>
-                    <button id="expand-flying-ants" class="upgrade-btn special-btn hidden"><i class="fas fa-expand"></i> Expand Flying (<span id="expand-flying-cost">150</span>)</button>
-                    <button id="unlock-queen" class="upgrade-btn queen-btn" style="display: none;"><i class="fas fa-crown"></i> Queen Ant (<span id="unlock-queen-cost">1000</span>)</button>
-                    <button id="buy-queen" class="upgrade-btn queen-btn" style="display: none;"><i class="fas fa-plus"></i> Buy Queen</button>
-                    <button id="upgrade-queen" class="upgrade-btn queen-btn"><i class="fas fa-arrow-up"></i> Upgrade Queen (<span id="upgrade-queen-cost">2000</span>)</button>
+                    <button id="unlock-flying-ants" class="upgrade-btn special-btn"><i class="fas fa-feather-alt"></i>Flying Ants (<span id="flying-ant-unlock-cost">500</span>)</button>
+                    <button id="buy-flying-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Flying Ant (<span id="flying-ant-cost">100</span>)</button>
+                    <button id="expand-flying-ants" class="upgrade-btn special-btn hidden"><i class="fas fa-expand"></i>Expand Flying (<span id="expand-flying-cost">150</span>)</button>
+                    <button id="unlock-queen" class="upgrade-btn queen-btn" style="display: none;"><i class="fas fa-crown"></i>Queen Ant (<span id="unlock-queen-cost">1000</span>)</button>
+                    <button id="buy-queen" class="upgrade-btn queen-btn" style="display: none;"><i class="fas fa-plus"></i>Buy Queen</button>
+                    <button id="upgrade-queen" class="upgrade-btn queen-btn"><i class="fas fa-arrow-up"></i>Upgrade Queen (<span id="upgrade-queen-cost">2000</span>)</button>
                     <div id="queen-stats" style="font-size: 0.8em; margin-top: 5px;">
                         Level: <span id="queen-level">0</span>/5 | 
                         Larvae: <span id="queen-larvae-capacity">3</span> | 
@@ -92,8 +93,8 @@
                 
                 <div class="upgrade-section">
                     <h3>Auto</h3>
-                    <button id="unlock-autofeeder" class="upgrade-btn automation-btn"><i class="fas fa-seedling"></i> Autofeeder (<span id="autofeeder-cost">500</span>)</button>
-                    <button id="upgrade-autofeeder" class="upgrade-btn automation-btn hidden"><i class="fas fa-arrow-up"></i> Autofeeder <span id="autofeeder-level">0</span>/10 (<span id="autofeeder-upgrade-cost">500</span>)</button>
+                    <button id="unlock-autofeeder" class="upgrade-btn automation-btn"><i class="fas fa-seedling"></i>Autofeeder (<span id="autofeeder-cost">500</span>)</button>
+                    <button id="upgrade-autofeeder" class="upgrade-btn automation-btn hidden"><i class="fas fa-arrow-up"></i>Autofeeder <span id="autofeeder-level">0</span>/10 (<span id="autofeeder-upgrade-cost">500</span>)</button>
                 </div>
             </div>
         </div>

@@ -785,6 +785,45 @@ IdleAnts.Managers.EntityManager = class {
         this.createLarvae(x, y);
     }
     
+    // Method to handle queen ant producing larvae
+    produceQueenLarvae(capacity) {
+        // Check if we have a queen
+        if (!this.entities.queen) {
+            console.log('No queen ant found to produce larvae');
+            return;
+        }
+        
+        // Get the queen's position
+        const queenX = this.entities.queen.x;
+        const queenY = this.entities.queen.y;
+        
+        // Create larvae effect around the queen
+        if (this.effectManager) {
+            this.effectManager.createLarvaeEffect(queenX, queenY);
+        }
+        
+        // Determine how many larvae to produce (random between 1 and capacity)
+        const larvaeCount = Math.floor(Math.random() * capacity) + 1;
+        console.log(`Queen producing ${larvaeCount} larvae`);
+        
+        // Create larvae entities around the queen
+        for (let i = 0; i < larvaeCount; i++) {
+            // Calculate a random position near the queen
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 20 + Math.random() * 30; // 20-50 pixels from queen
+            const larvaeX = queenX + Math.cos(angle) * distance;
+            const larvaeY = queenY + Math.sin(angle) * distance;
+            
+            // Create the larvae
+            this.produceLarvae(larvaeX, larvaeY);
+        }
+        
+        // Update the queen's larvae count
+        if (this.entities.queen) {
+            this.entities.queen.currentLarvae += larvaeCount;
+        }
+    }
+    
     // Method to update ants
     updateAnts() {
         // Update frame counter for trails

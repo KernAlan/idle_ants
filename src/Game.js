@@ -1404,6 +1404,22 @@ IdleAnts.Game = class {
         return false;
     }
 
+    // Add the missing produceQueenLarvae function
+    produceQueenLarvae() {
+        // Check if we have a queen
+        if (!this.resourceManager.stats.hasQueen) {
+            return;
+        }
+        
+        // Get the queen's larvae capacity
+        const larvaeCapacity = this.resourceManager.stats.queenLarvaeCapacity;
+        
+        // Add larvae through the entity manager
+        if (this.entityManager) {
+            this.entityManager.produceQueenLarvae(larvaeCapacity);
+        }
+    }
+
     detectMobileDevice() {
         // Check if device is mobile based on user agent
         const userAgent = navigator.userAgent || navigator.vendor || window.opera;

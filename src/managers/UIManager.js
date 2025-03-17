@@ -63,10 +63,22 @@ IdleAnts.Managers.UIManager = class {
                 gameContainer.classList.add('ui-collapsed');
                 toggleButton.innerHTML = '<i class="fas fa-chevron-down"></i>';
                 toggleButton.title = "Expand UI";
+                
+                // For mobile: adjust canvas size when UI is collapsed
+                if (this.game && this.game.isMobileDevice) {
+                    // Force a resize event to adjust the canvas size
+                    window.dispatchEvent(new Event('resize'));
+                }
             } else {
                 gameContainer.classList.remove('ui-collapsed');
                 toggleButton.innerHTML = '<i class="fas fa-chevron-up"></i>';
                 toggleButton.title = "Collapse UI";
+                
+                // For mobile: adjust canvas size when UI is expanded
+                if (this.game && this.game.isMobileDevice) {
+                    // Force a resize event to adjust the canvas size
+                    window.dispatchEvent(new Event('resize'));
+                }
             }
         }
     }
