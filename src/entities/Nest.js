@@ -12,6 +12,12 @@ IdleAnts.Entities.Nest = class extends PIXI.Sprite {
         return { x: this.x, y: this.y };
     }
     
+    // Add update method to fix EntityManager error
+    update() {
+        // Currently no per-frame updates needed for the nest
+        // This method exists to prevent errors in EntityManager
+    }
+    
     expand() {
         // Animate the nest scaling
         const originalScale = this.scale.x || 1;

@@ -99,4 +99,14 @@ IdleAnts.Managers.EffectManager = class {
     createFoodCollectEffect(x, y, color = 0xFFFF99, scale = 1.0) {
         return this.createEffect('foodCollect', x, y, color, scale);
     }
+    
+    createLarvaeEffect(x, y, color = 0xFFFF00, scale = 1.5) {
+        // Register the LarvaeEffect class if it's not already registered
+        if (!this.effectClasses['larvae'] && IdleAnts.Effects && IdleAnts.Effects.LarvaeEffect) {
+            this.effectClasses['larvae'] = IdleAnts.Effects.LarvaeEffect;
+        }
+        
+        // Create and return the larvae effect
+        return this.createEffect('larvae', x, y, color, scale);
+    }
 } 

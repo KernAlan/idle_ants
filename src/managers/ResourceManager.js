@@ -40,7 +40,17 @@ IdleAnts.Managers.ResourceManager = class {
             autofeederCost: 500, // Reduced from 1000 to 500
             autofeederUpgradeCost: 500, // Reduced from 1000 to 500
             autofeederBaseFoodAmount: 10, // Base amount of food to sprinkle
-            autofeederInterval: 600 // Frames between autofeeder activations (10 seconds at 60fps)
+            autofeederInterval: 600, // Frames between autofeeder activations (10 seconds at 60fps)
+            // Queen ant properties
+            queenUnlocked: true,
+            hasQueen: true,
+            queenUnlockCost: 1000,
+            queenCost: 2000,
+            queenUpgradeLevel: 0,
+            maxQueenUpgradeLevel: 5,
+            queenUpgradeCost: 2000,
+            queenLarvaeCapacity: 3,
+            queenLarvaeProductionRate: 3600 // 60 seconds at 60fps (1 minute)
         };
         
         // Map of food tier to food type
@@ -72,6 +82,12 @@ IdleAnts.Managers.ResourceManager = class {
     increaseAntCount() {
         this.stats.ants++;
         this.updateFoodPerSecond();
+    }
+    
+    // Method to check if an ant can be purchased
+    canBuyAnt() {
+        return this.canAfford(this.stats.antCost) && 
+               this.stats.ants < this.stats.maxAnts;
     }
     
     updateFoodPerSecond() {
@@ -161,6 +177,11 @@ IdleAnts.Managers.ResourceManager = class {
     // Check if food can be upgraded further
     canUpgradeFoodTier() {
         return this.stats.foodTier < this.stats.maxFoodTier;
+    }
+    
+    // Method to check if food can be upgraded
+    canUpgradeFood() {
+        return this.canAfford(this.stats.foodUpgradeCost);
     }
     
     updateSpeedUpgradeCost() {
@@ -285,5 +306,58 @@ IdleAnts.Managers.ResourceManager = class {
     getAutofeederFoodAmount() {
         // Each level multiplies the amount by 1.2 (reduced from 1.5 for more balanced progression)
         return Math.floor(this.stats.autofeederBaseFoodAmount * Math.pow(1.2, this.stats.autofeederLevel - 1));
+    }
+    
+    updateQueenUpgradeCost() {
+        this.stats.queenUpgradeCost = Math.floor(this.stats.queenUpgradeCost * 2);
+    }
+    
+    // Queen ant methods
+    canUnlockQueen() {
+        return !this.stats.queenUnlocked && this.canAfford(this.stats.queenUnlockCost);
+    }
+    
+    unlockQueen() {
+        if (!this.canUnlockQueen()) return false;
+        
+        this.spendFood(this.stats.queenUnlockCost);
+        this.stats.queenUnlocked = true;
+        return true;
+    }
+    
+    canBuyQueen() {
+        return this.stats.queenUnlocked && 
+               !this.stats.hasQueen && 
+               this.canAfford(this.stats.queenCost);
+    }
+    
+    buyQueen() {
+        if (!this.canBuyQueen()) return false;
+        
+        this.spendFood(this.stats.queenCost);
+        this.stats.hasQueen = true;
+        return true;
+    }
+    
+    canUpgradeQueen() {
+        return this.stats.hasQueen && 
+               this.stats.queenUpgradeLevel < this.stats.maxQueenUpgradeLevel && 
+               this.canAfford(this.stats.queenUpgradeCost);
+    }
+    
+    upgradeQueen() {
+        if (!this.canUpgradeQueen()) return false;
+        
+        this.spendFood(this.stats.queenUpgradeCost);
+        this.stats.queenUpgradeLevel++;
+        
+        // Queen HP will be implemented later
+        // For now, the upgrade just increases the level
+        console.log(`Queen upgraded to level ${this.stats.queenUpgradeLevel}`);
+        
+        // Update upgrade cost
+        this.updateQueenUpgradeCost();
+        
+        return true;
     }
 } 

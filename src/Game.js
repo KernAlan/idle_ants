@@ -1118,4 +1118,47 @@ IdleAnts.Game = class {
         }
         return false;
     }
+    
+    // Queen ant methods
+    unlockQueen() {
+        if (this.resourceManager.unlockQueen()) {
+            // Show unlock effect
+            this.uiManager.showUpgradeEffect('unlock-queen', 'Queen Ant Unlocked!');
+            
+            // Update UI
+            this.uiManager.updateUI();
+            this.uiManager.updateButtonStates();
+            
+            return true;
+        }
+        return false;
+    }
+    
+    buyQueen() {
+        if (this.resourceManager.buyQueen()) {
+            // Show purchase effect
+            this.uiManager.showUpgradeEffect('buy-queen', 'Queen Ant Purchased!');
+            
+            // Update UI
+            this.uiManager.updateUI();
+            this.uiManager.updateButtonStates();
+            
+            return true;
+        }
+        return false;
+    }
+    
+    upgradeQueen() {
+        if (this.resourceManager.upgradeQueen()) {
+            // Show upgrade effect
+            this.uiManager.showUpgradeEffect('upgrade-queen', `Queen Level ${this.resourceManager.stats.queenUpgradeLevel}!`);
+            
+            // Update UI
+            this.uiManager.updateUI();
+            this.uiManager.updateButtonStates();
+            
+            return true;
+        }
+        return false;
+    }
 }; 

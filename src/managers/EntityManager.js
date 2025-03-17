@@ -12,20 +12,26 @@ IdleAnts.Managers.EntityManager = class {
             ants: new PIXI.Container(),
             flyingAnts: new PIXI.Container(),
             food: new PIXI.Container(),
-            nest: new PIXI.Container()
+            nest: new PIXI.Container(),
+            queen: new PIXI.Container(), // Container for queen ant
+            larvae: new PIXI.Container() // New container for larvae
         };
         
         // Add containers to the world container instead of directly to the stage
         this.worldContainer.addChild(this.entitiesContainers.nest);
         this.worldContainer.addChild(this.entitiesContainers.food);
+        this.worldContainer.addChild(this.entitiesContainers.larvae); // Add larvae container
         this.worldContainer.addChild(this.entitiesContainers.ants);
         this.worldContainer.addChild(this.entitiesContainers.flyingAnts);
+        this.worldContainer.addChild(this.entitiesContainers.queen); // Add queen container
         
         // Entity collections
         this.entities = {
             ants: [],
             flyingAnts: [],
-            foods: []
+            foods: [],
+            queen: null, // Reference to the queen ant
+            larvae: [] // Array for larvae entities
         };
         
         this.nest = null;
@@ -66,6 +72,9 @@ IdleAnts.Managers.EntityManager = class {
         
         // Create nest
         this.createNest();
+        
+        // Create queen ant (every player starts with one)
+        this.createQueenAnt();
         
         // Create initial ants
         this.createAnt();
@@ -196,47 +205,51 @@ IdleAnts.Managers.EntityManager = class {
     }
     
     update() {
-        // Update frame counter for trails
+        // Increment frame counter
         this.frameCounter++;
-        const shouldCreateTrail = this.frameCounter % this.trailInterval === 0;
-        
-        // Check for and resolve any ant clustering at the nest
-        this.resolveNestClustering();
-        
-        // Update ants
-        this.updateAntEntities(this.entities.ants, shouldCreateTrail);
-        
-        // Update flying ants
-        this.updateAntEntities(this.entities.flyingAnts, shouldCreateTrail, true);
-        
-        // Update food items
-        this.entities.foods.forEach(food => {
-            if (typeof food.update === 'function') {
-                food.update();
-            }
-        });
         
         // Update nest
-        if (this.nest && typeof this.nest.update === 'function') {
+        if (this.nest) {
             this.nest.update();
         }
         
-        // Spawn food periodically
-        this.foodSpawnCounter++;
-        if (this.foodSpawnCounter >= this.foodSpawnInterval) {
-            this.foodSpawnCounter = 0;
-            
-            // Spawn 1-3 food items at random
-            const foodCount = 1 + Math.floor(Math.random() * 3);
-            this.createFood(foodCount);
+        // Update queen ant
+        if (this.entities.queen) {
+            this.entities.queen.update(this.nestPosition, this.entities.foods);
         }
         
-        // Handle autofeeder if unlocked
-        if (this.resourceManager.stats.autofeederUnlocked) {
-            this.autofeederCounter++;
-            if (this.autofeederCounter >= this.resourceManager.stats.autofeederInterval) {
-                this.autofeederCounter = 0;
-                this.activateAutofeeder();
+        // Update larvae
+        this.updateLarvae();
+        
+        // Update ants
+        this.updateAnts();
+        
+        // Update flying ants
+        this.updateFlyingAnts();
+        
+        // Update food
+        this.updateFood();
+        
+        // Handle food spawning
+        this.handleFoodSpawning();
+        
+        // Handle autofeeder
+        this.handleAutofeeder();
+    }
+    
+    // New method to update larvae
+    updateLarvae() {
+        // Update each larvae and remove hatched ones
+        for (let i = this.entities.larvae.length - 1; i >= 0; i--) {
+            const larvae = this.entities.larvae[i];
+            
+            // Update the larvae and check if it's still active
+            const isActive = larvae.update(this.app.ticker.deltaTime);
+            
+            // If the larvae is no longer active (hatched), remove it
+            if (!isActive) {
+                console.log(`EntityManager: Removing larvae at (${larvae.x}, ${larvae.y})`);
+                this.entities.larvae.splice(i, 1);
             }
         }
     }
@@ -651,6 +664,181 @@ IdleAnts.Managers.EntityManager = class {
                 y: foodY,
                 clickPlaced: true // Treat as click-placed to show spawn effect
             }, foodType);
+        }
+    }
+    
+    // New method to update the queen ant
+    updateQueenAnt() {
+        const queen = this.entities.queen;
+        if (!queen) return;
+        
+        // Update queen with nest position and foods
+        queen.update(this.nestPosition, this.entities.foods);
+        
+        // Handle boundaries
+        queen.handleBoundaries(this.mapBounds.width, this.mapBounds.height);
+    }
+    
+    // New method to create a queen ant
+    createQueenAnt() {
+        // Check if queen already exists
+        if (this.entities.queen) {
+            console.warn('Queen ant already exists');
+            return;
+        }
+        
+        // Create the queen ant with the queen ant texture
+        const queen = new IdleAnts.Entities.QueenAnt(
+            this.assetManager.getTexture('queenAnt'), // Use queen ant texture
+            this.nestPosition,
+            this.resourceManager.stats.speedMultiplier
+        );
+        
+        // CRITICAL: Force position to be exactly at the nest
+        queen.x = this.nestPosition.x;
+        queen.y = this.nestPosition.y;
+        
+        // Add to container and store reference
+        this.entitiesContainers.queen.addChild(queen);
+        this.entities.queen = queen;
+        
+        // Create spawn effect
+        if (this.effectManager) {
+            this.effectManager.createSpawnEffect(queen.x, queen.y);
+        }
+        
+        // Update resource manager stats
+        this.resourceManager.stats.hasQueen = true;
+        
+        return queen;
+    }
+    
+    // New method to create an ant from larvae (without cost)
+    createAntFromLarvae(x, y) {
+        // Check if we can add more ants
+        if (this.entities.ants.length >= this.resourceManager.stats.maxAnts) {
+            console.log(`Cannot create more ants, colony at capacity (${this.entities.ants.length}/${this.resourceManager.stats.maxAnts})`);
+            return;
+        }
+        
+        console.log(`Creating ant from larvae. Colony size: ${this.entities.ants.length}/${this.resourceManager.stats.maxAnts}`);
+        
+        // Create the ant
+        const ant = new IdleAnts.Entities.Ant(
+            this.assetManager.getTexture('ant'),
+            this.nestPosition,
+            this.resourceManager.stats.speedMultiplier
+        );
+        
+        // Use the larvae position if provided, otherwise use nest position
+        if (x !== undefined && y !== undefined) {
+            ant.x = x;
+            ant.y = y;
+            console.log(`Creating ant from larvae at position (${x}, ${y})`);
+        } else {
+            ant.x = this.nestPosition.x;
+            ant.y = this.nestPosition.y;
+            console.log('Creating ant from larvae at nest position');
+        }
+        
+        // Add to container and array
+        this.entitiesContainers.ants.addChild(ant);
+        this.entities.ants.push(ant);
+        
+        // Create spawn effect
+        if (this.effectManager) {
+            this.effectManager.createSpawnEffect(ant.x, ant.y);
+        }
+        
+        // Update resource manager stats
+        this.resourceManager.increaseAntCount();
+        
+        // Decrement larvae count on queen
+        if (this.entities.queen) {
+            this.entities.queen.currentLarvae--;
+            console.log(`Queen now has ${this.entities.queen.currentLarvae} larvae after ant creation`);
+        }
+        
+        return ant;
+    }
+    
+    // New method to create larvae
+    createLarvae(x, y) {
+        // Create a new larvae entity
+        const larvae = new IdleAnts.Entities.Larvae(x, y);
+        
+        // Add to the larvae array
+        this.entities.larvae.push(larvae);
+        
+        return larvae;
+    }
+    
+    // Modified method to handle larvae production from queen
+    produceLarvae(x, y) {
+        // Create a larvae production effect for visual feedback
+        if (this.effectManager) {
+            this.effectManager.createSpawnEffect(x, y);
+        }
+        
+        // Create the actual larvae entity that will hatch after ~30 seconds
+        this.createLarvae(x, y);
+    }
+    
+    // Method to update ants
+    updateAnts() {
+        // Update frame counter for trails
+        const shouldCreateTrail = this.frameCounter % this.trailInterval === 0;
+        
+        // Check for and resolve any ant clustering at the nest
+        this.resolveNestClustering();
+        
+        // Update each ant
+        this.updateAntEntities(this.entities.ants, shouldCreateTrail);
+    }
+    
+    // Method to update flying ants
+    updateFlyingAnts() {
+        // Update frame counter for trails
+        const shouldCreateTrail = this.frameCounter % this.trailInterval === 0;
+        
+        // Update each flying ant
+        this.updateAntEntities(this.entities.flyingAnts, shouldCreateTrail, true);
+    }
+    
+    // Method to update food
+    updateFood() {
+        // Update food items
+        this.entities.foods.forEach(food => {
+            if (typeof food.update === 'function') {
+                food.update();
+            }
+        });
+    }
+    
+    // Method to handle food spawning
+    handleFoodSpawning() {
+        // Spawn food periodically
+        this.foodSpawnCounter++;
+        if (this.foodSpawnCounter >= this.foodSpawnInterval) {
+            this.foodSpawnCounter = 0;
+            
+            // Spawn 1-3 food items at random
+            const foodCount = 1 + Math.floor(Math.random() * 3);
+            this.createFood(foodCount);
+        }
+    }
+    
+    // Method to handle autofeeder
+    handleAutofeeder() {
+        // Handle autofeeder if unlocked
+        if (this.resourceManager.stats.autofeederUnlocked && this.resourceManager.stats.autofeederLevel > 0) {
+            this.autofeederCounter++;
+            
+            // Activate autofeeder when counter reaches interval
+            if (this.autofeederCounter >= this.resourceManager.stats.autofeederInterval) {
+                this.activateAutofeeder();
+                this.autofeederCounter = 0;
+            }
         }
     }
 } 

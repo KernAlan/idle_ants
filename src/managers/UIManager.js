@@ -41,6 +41,11 @@ IdleAnts.Managers.UIManager = class {
         addSafeClickListener('buy-flying-ant', () => this.game.buyFlyingAnt());
         addSafeClickListener('expand-flying-ants', () => this.game.expandFlyingAntCapacity());
         
+        // Queen ant buttons
+        addSafeClickListener('unlock-queen', () => this.game.unlockQueen());
+        addSafeClickListener('buy-queen', () => this.game.buyQueen());
+        addSafeClickListener('upgrade-queen', () => this.game.upgradeQueen());
+        
         // Autofeeder buttons
         addSafeClickListener('unlock-autofeeder', () => this.game.unlockAutofeeder());
         addSafeClickListener('upgrade-autofeeder', () => this.game.upgradeAutofeeder());
@@ -179,6 +184,25 @@ IdleAnts.Managers.UIManager = class {
                 strengthButton.title = `Increases ant strength to carry more food items and reduces collection time for heavy food. Current strength: ${strengthValue}, speed bonus: -${collectionSpeedBonus}% collection time`;
             }
             
+            // Update queen ant UI
+            const queenStats = document.getElementById('queen-stats');
+            const upgradeQueenButton = document.getElementById('upgrade-queen');
+            
+            if (queenStats && upgradeQueenButton) {
+                // Always show queen stats and upgrade button
+                queenStats.style.display = 'block';
+                upgradeQueenButton.style.display = 'block';
+                
+                // Update queen stats
+                updateElementText('upgrade-queen-cost', this.resourceManager.stats.queenUpgradeCost);
+                updateElementText('queen-level', this.resourceManager.stats.queenUpgradeLevel);
+                
+                // Keep the UI elements but don't update them based on upgrades
+                // These will be replaced with HP in a future update
+                updateElementText('queen-larvae-capacity', 3); // Fixed value
+                updateElementText('queen-larvae-rate', '60-120'); // Updated to 1-2 minutes
+            }
+            
             // Enable/disable buttons based on resources
             this.updateButtonStates();
             
@@ -189,12 +213,12 @@ IdleAnts.Managers.UIManager = class {
     
     // New method to handle button states separately
     updateButtonStates() {
-        // Helper function to safely update button states
-        const updateButtonState = (id, shouldBeDisabled) => {
+        // Helper function to update button state
+        const updateButtonState = (id, disabled) => {
             const button = document.getElementById(id);
             if (button) {
-                button.disabled = shouldBeDisabled;
-                if (shouldBeDisabled) {
+                button.disabled = disabled;
+                if (disabled) {
                     button.classList.add('disabled');
                 } else {
                     button.classList.remove('disabled');
@@ -202,102 +226,112 @@ IdleAnts.Managers.UIManager = class {
             }
         };
         
-        try {
-            // Update main button states
-            updateButtonState('buy-ant', 
-                !this.resourceManager.canAfford(this.resourceManager.stats.antCost) || 
-                this.resourceManager.stats.ants >= this.resourceManager.stats.maxAnts
-            );
+        // Update main button states
+        updateButtonState('buy-ant', 
+            !this.resourceManager.canBuyAnt()
+        );
+        
+        updateButtonState('upgrade-food', 
+            !this.resourceManager.canUpgradeFood()
+        );
+        
+        updateButtonState('upgrade-speed', 
+            !this.resourceManager.canAfford(this.resourceManager.stats.speedUpgradeCost)
+        );
+        
+        updateButtonState('upgrade-strength', 
+            !this.resourceManager.canAfford(this.resourceManager.stats.strengthUpgradeCost)
+        );
+        
+        updateButtonState('expand-colony', 
+            !this.resourceManager.canAfford(this.resourceManager.stats.expandCost)
+        );
+        
+        // Update flying ant button states
+        updateButtonState('unlock-flying-ants', 
+            this.resourceManager.stats.flyingAntsUnlocked || 
+            !this.resourceManager.canAfford(this.resourceManager.stats.flyingAntUnlockCost)
+        );
+        
+        // Update queen ant button states
+        // Hide unlock and buy buttons
+        const unlockQueenButton = document.getElementById('unlock-queen');
+        if (unlockQueenButton) {
+            unlockQueenButton.style.display = 'none';
+        }
+        
+        const buyQueenButton = document.getElementById('buy-queen');
+        if (buyQueenButton) {
+            buyQueenButton.style.display = 'none';
+        }
+        
+        // Only enable upgrade button if player can afford it
+        updateButtonState('upgrade-queen',
+            !this.resourceManager.canUpgradeQueen()
+        );
+        
+        // Show/hide flying ant buttons based on unlock status
+        const flyingAntButtons = document.querySelectorAll('.special-btn');
+        const flyingAntStats = document.getElementById('flying-ant-stats');
+        
+        if (this.resourceManager.stats.flyingAntsUnlocked) {
+            flyingAntButtons.forEach(button => {
+                if (button.id !== 'unlock-flying-ants') {
+                    button.classList.remove('hidden');
+                } else {
+                    button.classList.add('hidden');
+                }
+            });
             
-            updateButtonState('upgrade-food', 
-                !this.resourceManager.canAfford(this.resourceManager.stats.foodUpgradeCost) ||
-                !this.resourceManager.canUpgradeFoodTier()
-            );
-            
-            updateButtonState('upgrade-speed', 
-                !this.resourceManager.canAfford(this.resourceManager.stats.speedUpgradeCost)
-            );
-            
-            updateButtonState('upgrade-strength', 
-                !this.resourceManager.canAfford(this.resourceManager.stats.strengthUpgradeCost)
-            );
-            
-            updateButtonState('expand-colony', 
-                !this.resourceManager.canAfford(this.resourceManager.stats.expandCost)
-            );
+            if (flyingAntStats) {
+                flyingAntStats.classList.remove('hidden');
+            }
             
             // Update flying ant button states
-            updateButtonState('unlock-flying-ants', 
-                this.resourceManager.stats.flyingAntsUnlocked || 
-                !this.resourceManager.canAfford(this.resourceManager.stats.flyingAntUnlockCost)
+            updateButtonState('buy-flying-ant', 
+                !this.resourceManager.canBuyFlyingAnt()
             );
             
-            // Show/hide flying ant buttons based on unlock status
-            const flyingAntButtons = document.querySelectorAll('.special-btn');
-            const flyingAntStats = document.getElementById('flying-ant-stats');
-            
-            if (this.resourceManager.stats.flyingAntsUnlocked) {
-                flyingAntButtons.forEach(button => {
-                    if (button.id !== 'unlock-flying-ants') {
-                        button.classList.remove('hidden');
-                    } else {
-                        button.classList.add('hidden');
-                    }
-                });
-                
-                if (flyingAntStats) {
-                    flyingAntStats.classList.remove('hidden');
-                }
-                
-                // Update flying ant button states
-                updateButtonState('buy-flying-ant', 
-                    !this.resourceManager.canBuyFlyingAnt()
-                );
-                
-                updateButtonState('expand-flying-ants', 
-                    !this.resourceManager.canAfford(Math.floor(this.resourceManager.stats.expandCost * 1.5))
-                );
-            }
-            
-            // Update autofeeder button states
-            updateButtonState('unlock-autofeeder',
-                this.resourceManager.stats.autofeederUnlocked ||
-                !this.resourceManager.canAfford(this.resourceManager.stats.autofeederCost)
+            updateButtonState('expand-flying-ants', 
+                !this.resourceManager.canAfford(Math.floor(this.resourceManager.stats.expandCost * 1.5))
             );
-            
-            // Show/hide autofeeder upgrade button based on unlock status
-            const upgradeAutofeederBtn = document.getElementById('upgrade-autofeeder');
-            if (upgradeAutofeederBtn) {
-                if (this.resourceManager.stats.autofeederUnlocked) {
-                    upgradeAutofeederBtn.classList.remove('hidden');
-                    // Hide the unlock button once unlocked
-                    const unlockAutofeederBtn = document.getElementById('unlock-autofeeder');
-                    if (unlockAutofeederBtn) {
-                        unlockAutofeederBtn.classList.add('hidden');
-                    }
-                    
-                    // Update upgrade button state
-                    updateButtonState('upgrade-autofeeder',
-                        !this.resourceManager.canUpgradeAutofeeder()
-                    );
-                    
-                    // Update button text to show current food amount
-                    const foodAmount = this.resourceManager.getAutofeederFoodAmount();
-                    
-                    // Update button text if max level reached
-                    if (this.resourceManager.stats.autofeederLevel >= this.resourceManager.stats.maxAutofeederLevel) {
-                        upgradeAutofeederBtn.innerHTML = `<i class="fas fa-arrow-up"></i> Autofeeder Maxed (${foodAmount} food/cycle)`;
-                        upgradeAutofeederBtn.disabled = true;
-                        upgradeAutofeederBtn.classList.add('disabled');
-                    } else {
-                        // Show current food amount in the button
-                        upgradeAutofeederBtn.innerHTML = `<i class="fas fa-arrow-up"></i> Upgrade Autofeeder <span id="autofeeder-level">${this.resourceManager.stats.autofeederLevel}</span>/10 (${foodAmount} food/cycle) (<span id="autofeeder-upgrade-cost">${this.resourceManager.stats.autofeederUpgradeCost}</span> food)`;
-                    }
+        }
+        
+        // Update autofeeder button states
+        updateButtonState('unlock-autofeeder',
+            this.resourceManager.stats.autofeederUnlocked ||
+            !this.resourceManager.canAfford(this.resourceManager.stats.autofeederCost)
+        );
+        
+        // Show/hide autofeeder upgrade button based on unlock status
+        const upgradeAutofeederBtn = document.getElementById('upgrade-autofeeder');
+        if (upgradeAutofeederBtn) {
+            if (this.resourceManager.stats.autofeederUnlocked) {
+                upgradeAutofeederBtn.classList.remove('hidden');
+                // Hide the unlock button once unlocked
+                const unlockAutofeederBtn = document.getElementById('unlock-autofeeder');
+                if (unlockAutofeederBtn) {
+                    unlockAutofeederBtn.classList.add('hidden');
+                }
+                
+                // Update upgrade button state
+                updateButtonState('upgrade-autofeeder',
+                    !this.resourceManager.canUpgradeAutofeeder()
+                );
+                
+                // Update button text to show current food amount
+                const foodAmount = this.resourceManager.getAutofeederFoodAmount();
+                
+                // Update button text if max level reached
+                if (this.resourceManager.stats.autofeederLevel >= this.resourceManager.stats.maxAutofeederLevel) {
+                    upgradeAutofeederBtn.innerHTML = `<i class="fas fa-arrow-up"></i> Autofeeder Maxed (${foodAmount} food/cycle)`;
+                    upgradeAutofeederBtn.disabled = true;
+                    upgradeAutofeederBtn.classList.add('disabled');
+                } else {
+                    // Show current food amount in the button
+                    upgradeAutofeederBtn.innerHTML = `<i class="fas fa-arrow-up"></i> Upgrade Autofeeder <span id="autofeeder-level">${this.resourceManager.stats.autofeederLevel}</span>/10 (${foodAmount} food/cycle) (<span id="autofeeder-upgrade-cost">${this.resourceManager.stats.autofeederUpgradeCost}</span> food)`;
                 }
             }
-            
-        } catch (error) {
-            console.error("Error updating button states:", error);
         }
     }
     

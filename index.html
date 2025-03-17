@@ -77,6 +77,15 @@
                     <button id="unlock-flying-ants" class="upgrade-btn special-btn"><i class="fas fa-feather-alt"></i> Flying Ants (<span id="flying-ant-unlock-cost">500</span>)</button>
                     <button id="buy-flying-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i> Flying Ant (<span id="flying-ant-cost">100</span>)</button>
                     <button id="expand-flying-ants" class="upgrade-btn special-btn hidden"><i class="fas fa-expand"></i> Expand Flying (<span id="expand-flying-cost">150</span>)</button>
+                    <button id="unlock-queen" class="upgrade-btn queen-btn" style="display: none;"><i class="fas fa-crown"></i> Queen Ant (<span id="unlock-queen-cost">1000</span>)</button>
+                    <button id="buy-queen" class="upgrade-btn queen-btn" style="display: none;"><i class="fas fa-plus"></i> Buy Queen</button>
+                    <button id="upgrade-queen" class="upgrade-btn queen-btn"><i class="fas fa-arrow-up"></i> Upgrade Queen (<span id="upgrade-queen-cost">2000</span>)</button>
+                    <div id="queen-stats" style="font-size: 0.8em; margin-top: 5px;">
+                        Level: <span id="queen-level">0</span>/5 | 
+                        Larvae: <span id="queen-larvae-capacity">3</span> | 
+                        Rate: <span id="queen-larvae-rate">60-120</span>s
+                        <!-- HP will be implemented in a future update -->
+                    </div>
                 </div>
                 
                 <div class="upgrade-section">
@@ -101,6 +110,7 @@
     <script src="src/effects/FoodDropEffect.js"></script>
     <script src="src/effects/FoodCollectEffect.js"></script>
     <script src="src/effects/Trail.js"></script>
+    <script src="src/effects/LarvaeEffect.js"></script>
     <script src="src/effects/index.js"></script>
     <!-- Managers -->
     <script src="src/managers/ResourceManager.js"></script>
@@ -113,6 +123,8 @@
     <script src="src/entities/AntBase.js"></script>
     <script src="src/entities/Ant.js"></script>
     <script src="src/entities/FlyingAnt.js"></script>
+    <script src="src/entities/QueenAnt.js"></script>
+    <script src="src/entities/Larvae.js"></script>
     <script src="src/entities/Food.js"></script>
     <script src="src/entities/Nest.js"></script>
     <!-- Asset Definitions -->
