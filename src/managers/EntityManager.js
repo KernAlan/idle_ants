@@ -502,6 +502,7 @@ IdleAnts.Managers.EntityManager = class {
         const foodResult = ant.dropFood();
         const foodAmount = foodResult.totalValue * this.resourceManager.stats.foodMultiplier;
         
+        // Add food to resources and track it for food rate calculation
         this.resourceManager.addFood(foodAmount);
         
         // For more responsive UI updates, also update the displayFood value directly

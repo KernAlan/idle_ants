@@ -156,8 +156,9 @@ IdleAnts.Managers.UIManager = class {
             updateElementText('autofeeder-upgrade-cost', this.resourceManager.stats.autofeederUpgradeCost);
             updateElementText('autofeeder-level', this.resourceManager.stats.autofeederLevel);
             
-            // Update food per second
-            updateElementText('food-per-second', this.resourceManager.stats.foodPerSecond.toFixed(1));
+            // Update actual food collection rate
+            const actualRate = this.resourceManager.getActualFoodRate();
+            updateElementText('food-per-second-actual', actualRate.toFixed(1));
             
             // Update food type
             const currentFoodType = this.resourceManager.getCurrentFoodType();
@@ -203,12 +204,12 @@ IdleAnts.Managers.UIManager = class {
                 updateElementText('queen-larvae-rate', '60-120'); // Updated to 1-2 minutes
             }
             
-            // Enable/disable buttons based on resources
-            this.updateButtonStates();
-            
         } catch (error) {
-            console.error("Error in UIManager.updateUI:", error);
+            console.error('Error updating UI:', error);
         }
+        
+        // Update button states
+        this.updateButtonStates();
     }
     
     // New method to handle button states separately

@@ -462,4 +462,41 @@ input, textarea {
     -moz-user-select: text;
     -ms-user-select: text;
     user-select: text;
-} 
+}
+
+#food-rate {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 3px 6px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.3);
+    margin: 2px;
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+#food-rate div {
+    display: flex;
+    align-items: center;
+    margin: 1px 0;
+}
+
+#food-rate div:last-child::before {
+    content: '';
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: #EAD2AC;
+    border-radius: 50%;
+    margin-right: 6px;
+    box-shadow: 0 0 5px rgba(255, 255, 150, 0.5);
+}
+
+#food-per-second-actual {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+/* Remove the theoretical rate styling */ 

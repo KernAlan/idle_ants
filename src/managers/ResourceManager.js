@@ -59,11 +59,91 @@ IdleAnts.Managers.ResourceManager = class {
             2: IdleAnts.Data.FoodTypes.COOKIE,
             3: IdleAnts.Data.FoodTypes.WATERMELON
         };
+        
+        // Food collection rate tracking
+        this.foodRateTracking = {
+            recentCollections: [], // Array to store recent food collections
+            trackingPeriod: 10, // Number of seconds to track for moving average
+            actualFoodRate: 0, // Current calculated food collection rate
+            lastFoodAmount: this.resources.food, // Last recorded food amount
+            lastUpdateTime: Date.now() // Last time the rate was updated
+        };
     }
     
     // Food resource methods
     addFood(amount) {
         this.resources.food += amount;
+        
+        // Track this food addition for rate calculation
+        this.trackFoodCollection(amount);
+    }
+    
+    // Track food collection for rate calculation
+    trackFoodCollection(amount) {
+        const now = Date.now();
+        
+        // Add this collection to the recent collections array
+        this.foodRateTracking.recentCollections.push({
+            amount: amount,
+            timestamp: now
+        });
+        
+        // Remove collections older than the tracking period
+        const cutoffTime = now - (this.foodRateTracking.trackingPeriod * 1000);
+        this.foodRateTracking.recentCollections = this.foodRateTracking.recentCollections.filter(
+            collection => collection.timestamp >= cutoffTime
+        );
+        
+        // Calculate the actual food rate based on recent collections
+        this.updateActualFoodRate();
+    }
+    
+    // Calculate the actual food collection rate based on recent collections
+    updateActualFoodRate() {
+        const now = Date.now();
+        
+        // If we have no recent collections, use the theoretical rate
+        if (this.foodRateTracking.recentCollections.length === 0) {
+            this.foodRateTracking.actualFoodRate = this.stats.foodPerSecond;
+            return;
+        }
+        
+        // Calculate total food collected in the tracking period
+        const totalFood = this.foodRateTracking.recentCollections.reduce(
+            (sum, collection) => sum + collection.amount, 0
+        );
+        
+        // Get the oldest timestamp in our tracking window
+        const oldestTimestamp = Math.min(
+            ...this.foodRateTracking.recentCollections.map(c => c.timestamp)
+        );
+        
+        // Calculate the time period in seconds
+        const periodSeconds = (now - oldestTimestamp) / 1000;
+        
+        // Calculate the rate (food per second)
+        if (periodSeconds > 0) {
+            // Calculate the rate and apply some smoothing
+            const newRate = totalFood / periodSeconds;
+            
+            // Apply smoothing to avoid jumpy values (80% new, 20% old)
+            this.foodRateTracking.actualFoodRate = 
+                (newRate * 0.8) + (this.foodRateTracking.actualFoodRate * 0.2);
+        }
+        
+        // Update last update time
+        this.foodRateTracking.lastUpdateTime = now;
+    }
+    
+    // Get the actual food collection rate
+    getActualFoodRate() {
+        // Update the rate if it's been more than 1 second since last update
+        const now = Date.now();
+        if (now - this.foodRateTracking.lastUpdateTime > 1000) {
+            this.updateActualFoodRate();
+        }
+        
+        return this.foodRateTracking.actualFoodRate;
     }
     
     spendFood(amount) {

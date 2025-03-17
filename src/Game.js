@@ -792,49 +792,53 @@ IdleAnts.Game = class {
     }
     
     gameLoop() {
-        // Handle state-specific updates
-        switch(this.state) {
-            case IdleAnts.Game.States.INITIALIZING:
-                // No updates during initialization
-                break;
-                
-            case IdleAnts.Game.States.PLAYING:
-                // Update camera
-                const cameraMoved = this.updateCamera();
-                
-                // Update game entities
-                this.entityManager.update();
-                
-                // Update effects
-                this.effectManager.update();
-                
-                // Always animate food counters in every frame for real-time updates
-                this.uiManager.animateCounters();
-                
-                // Increment frame counter
-                this.frameCounter++;
-                
-                // Update minimap if camera moved or every 60 frames (approximately once per second)
-                if (cameraMoved || this.frameCounter % 60 === 0) {
-                    this.updateMinimap();
-                }
-                break;
-                
-            case IdleAnts.Game.States.PAUSED:
-                // Only update visual effects when paused
-                this.effectManager.update();
-                
-                // Continue animating counters even when paused
-                this.uiManager.animateCounters();
-                break;
-                
-            case IdleAnts.Game.States.UPGRADING:
-                // Continue updating some visuals but not game logic
-                this.effectManager.update();
-                
-                // Continue animating counters in upgrade menu
-                this.uiManager.animateCounters();
-                break;
+        // Only update game logic when in PLAYING state
+        if (this.state !== IdleAnts.Game.States.PLAYING) {
+            return;
+        }
+        
+        // Update frame counter
+        this.frameCounter++;
+        
+        // Update camera position based on keyboard input
+        this.updateCamera();
+        
+        // Update entities
+        this.entityManager.update();
+        
+        // Update effects
+        this.effectManager.update();
+        
+        // Update UI every 30 frames (approximately twice per second at 60fps)
+        // This is frequent enough for smooth updates but not too frequent to cause performance issues
+        if (this.frameCounter % 30 === 0) {
+            this.uiManager.updateUI();
+        }
+        
+        // Update food collection rate more frequently for accuracy
+        if (this.frameCounter % 10 === 0) {
+            // Force an update of the actual food rate
+            this.resourceManager.updateActualFoodRate();
+            
+            // Update just the food rate display without updating the entire UI
+            const actualRate = this.resourceManager.getActualFoodRate();
+            const actualRateElement = document.getElementById('food-per-second-actual');
+            if (actualRateElement) {
+                actualRateElement.textContent = actualRate.toFixed(1);
+            }
+        }
+        
+        // Check for autofeeder activation
+        if (this.resourceManager.stats.autofeederUnlocked && 
+            this.resourceManager.stats.autofeederLevel > 0 &&
+            this.frameCounter % this.resourceManager.stats.autofeederInterval === 0) {
+            this.activateAutofeeder();
+        }
+        
+        // Check for queen ant larvae production
+        if (this.resourceManager.stats.hasQueen && 
+            this.frameCounter % this.resourceManager.stats.queenLarvaeProductionRate === 0) {
+            this.produceQueenLarvae();
         }
         
         // Always update hover indicator regardless of state
