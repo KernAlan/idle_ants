@@ -15,6 +15,9 @@ IdleAnts.Game = class {
         // Initialize game state
         this.state = IdleAnts.Game.States.INITIALIZING;
         
+        // Detect if running on mobile device
+        this.isMobileDevice = this.detectMobileDevice();
+        
         // Map configuration
         this.mapConfig = {
             width: 3000,  // Larger world width
@@ -302,7 +305,242 @@ IdleAnts.Game = class {
             
             // Update zoom with mouse position as focal point
             this.updateZoom(zoomDelta, mouseX, mouseY);
-        });
+        }, {passive: false});
+        
+        // Touch event handling for mobile devices
+        
+        // Variables to track touch state
+        this.touchStartX = 0;
+        this.touchStartY = 0;
+        this.lastTouchX = 0;
+        this.lastTouchY = 0;
+        this.isPanning = false;
+        this.lastPinchDistance = 0;
+        this.isTouching = false;
+        this.touchStartTime = 0;
+        this.touchMoved = false;
+        
+        // Handle touch start
+        this.app.view.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Prevent default browser behavior
+            
+            // Only handle touch events in PLAYING state
+            if (this.state !== IdleAnts.Game.States.PLAYING) {
+                return;
+            }
+            
+            this.isTouching = true;
+            this.touchStartTime = Date.now();
+            this.touchMoved = false;
+            
+            if (e.touches.length === 1) {
+                // Single touch - prepare for panning
+                const touch = e.touches[0];
+                const rect = this.app.view.getBoundingClientRect();
+                this.touchStartX = touch.clientX - rect.left;
+                this.touchStartY = touch.clientY - rect.top;
+                this.lastTouchX = this.touchStartX;
+                this.lastTouchY = this.touchStartY;
+                
+                // Update hover indicator for touch position
+                this.lastMouseX = this.touchStartX;
+                this.lastMouseY = this.touchStartY;
+                this.updateHoverIndicator(this.touchStartX, this.touchStartY);
+                
+            } else if (e.touches.length === 2) {
+                // Two touches - prepare for pinch zoom
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const rect = this.app.view.getBoundingClientRect();
+                
+                // Calculate distance between touches
+                const dx = touch1.clientX - touch2.clientX;
+                const dy = touch1.clientY - touch2.clientY;
+                this.lastPinchDistance = Math.sqrt(dx * dx + dy * dy);
+                
+                // Clear hover indicator during pinch
+                this.hoverIndicator.clear();
+            }
+        }, {passive: false});
+        
+        // Handle touch move
+        this.app.view.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // Prevent default browser behavior
+            
+            // Only handle touch events in PLAYING state
+            if (this.state !== IdleAnts.Game.States.PLAYING) {
+                return;
+            }
+            
+            this.touchMoved = true;
+            
+            if (e.touches.length === 1) {
+                // Single touch - handle panning
+                const touch = e.touches[0];
+                const rect = this.app.view.getBoundingClientRect();
+                const currentX = touch.clientX - rect.left;
+                const currentY = touch.clientY - rect.top;
+                
+                // Calculate the distance moved
+                const deltaX = currentX - this.lastTouchX;
+                const deltaY = currentY - this.lastTouchY;
+                
+                // Only start panning after a small threshold to distinguish from taps
+                if (!this.isPanning && (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5)) {
+                    this.isPanning = true;
+                    // Clear hover indicator during panning
+                    this.hoverIndicator.clear();
+                }
+                
+                if (this.isPanning) {
+                    // Move the camera based on touch movement
+                    // Invert the delta because we want to move the world in the opposite direction
+                    this.mapConfig.viewport.x = Math.max(0, Math.min(
+                        this.mapConfig.viewport.x - (deltaX / this.mapConfig.zoom.level),
+                        this.mapConfig.width - (this.app.view.width / this.mapConfig.zoom.level)
+                    ));
+                    
+                    this.mapConfig.viewport.y = Math.max(0, Math.min(
+                        this.mapConfig.viewport.y - (deltaY / this.mapConfig.zoom.level),
+                        this.mapConfig.height - (this.app.view.height / this.mapConfig.zoom.level)
+                    ));
+                    
+                    // Update world container position
+                    this.worldContainer.position.set(
+                        -this.mapConfig.viewport.x * this.mapConfig.zoom.level,
+                        -this.mapConfig.viewport.y * this.mapConfig.zoom.level
+                    );
+                    
+                    // Update minimap
+                    this.updateMinimap();
+                } else {
+                    // Update hover indicator for touch position
+                    this.lastMouseX = currentX;
+                    this.lastMouseY = currentY;
+                    this.updateHoverIndicator(currentX, currentY);
+                }
+                
+                // Update last touch position
+                this.lastTouchX = currentX;
+                this.lastTouchY = currentY;
+                
+            } else if (e.touches.length === 2) {
+                // Two touches - handle pinch zoom
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                
+                // Calculate current distance between touches
+                const dx = touch1.clientX - touch2.clientX;
+                const dy = touch1.clientY - touch2.clientY;
+                const currentPinchDistance = Math.sqrt(dx * dx + dy * dy);
+                
+                // Calculate zoom delta based on pinch distance change
+                const pinchDelta = currentPinchDistance - this.lastPinchDistance;
+                
+                if (Math.abs(pinchDelta) > 5) { // Small threshold to avoid jitter
+                    // Calculate zoom change - scale factor to make it feel natural
+                    const zoomDelta = (pinchDelta / 100) * this.mapConfig.zoom.speed;
+                    
+                    // Calculate center point between the two touches
+                    const rect = this.app.view.getBoundingClientRect();
+                    const centerX = ((touch1.clientX + touch2.clientX) / 2) - rect.left;
+                    const centerY = ((touch1.clientY + touch2.clientY) / 2) - rect.top;
+                    
+                    // Update zoom with center point as focal point
+                    this.updateZoom(zoomDelta, centerX, centerY);
+                    
+                    // Update last pinch distance
+                    this.lastPinchDistance = currentPinchDistance;
+                }
+            }
+        }, {passive: false});
+        
+        // Handle touch end
+        this.app.view.addEventListener('touchend', (e) => {
+            e.preventDefault(); // Prevent default browser behavior
+            
+            // Only handle touch events in PLAYING state
+            if (this.state !== IdleAnts.Game.States.PLAYING) {
+                return;
+            }
+            
+            // Check if this was a tap (short touch without much movement)
+            const touchDuration = Date.now() - this.touchStartTime;
+            
+            if (e.touches.length === 0) {
+                // All touches ended
+                if (!this.touchMoved && touchDuration < 300) {
+                    // This was a tap - place food after a small delay to avoid accidental taps
+                    const tapDelay = this.isMobileDevice && this.mobileSettings ? this.mobileSettings.tapDelay : 0;
+                    
+                    setTimeout(() => {
+                        const rect = this.app.view.getBoundingClientRect();
+                        const worldX = (this.touchStartX / this.mapConfig.zoom.level) + this.mapConfig.viewport.x;
+                        const worldY = (this.touchStartY / this.mapConfig.zoom.level) + this.mapConfig.viewport.y;
+                        
+                        // Get the current food type based on food tier
+                        const currentFoodType = this.resourceManager.getCurrentFoodType();
+                        
+                        // Place food at the tapped location
+                        this.entityManager.addFood({ x: worldX, y: worldY, clickPlaced: true }, currentFoodType);
+                        this.uiManager.updateUI();
+                    }, tapDelay);
+                }
+                
+                // Reset touch state
+                this.isPanning = false;
+                this.isTouching = false;
+                
+                // Clear hover indicator
+                this.hoverIndicator.clear();
+            }
+        }, {passive: false});
+        
+        // Handle touch cancel
+        this.app.view.addEventListener('touchcancel', (e) => {
+            // Reset touch state
+            this.isPanning = false;
+            this.isTouching = false;
+            
+            // Clear hover indicator
+            this.hoverIndicator.clear();
+        }, {passive: false});
+
+        // Handle orientation change on mobile devices
+        if (this.isMobileDevice) {
+            window.addEventListener('orientationchange', () => {
+                // Wait for the orientation change to complete
+                setTimeout(() => {
+                    // Recalculate minimum zoom level
+                    const minZoomX = this.app.view.width / this.mapConfig.width;
+                    const minZoomY = this.app.view.height / this.mapConfig.height;
+                    const dynamicMinZoom = Math.max(minZoomX, minZoomY);
+                    
+                    // Update the minimum zoom level
+                    this.mapConfig.zoom.min = Math.max(this.mapConfig.zoom.min, dynamicMinZoom);
+                    
+                    // Adjust current zoom level if needed
+                    if (this.mapConfig.zoom.level < dynamicMinZoom) {
+                        this.mapConfig.zoom.level = dynamicMinZoom;
+                        this.worldContainer.scale.set(this.mapConfig.zoom.level, this.mapConfig.zoom.level);
+                    }
+                    
+                    // Update world container position
+                    this.worldContainer.position.set(
+                        -this.mapConfig.viewport.x * this.mapConfig.zoom.level,
+                        -this.mapConfig.viewport.y * this.mapConfig.zoom.level
+                    );
+                    
+                    // Update minimap position and size
+                    this.updateMinimap();
+                    
+                    // Update UI layout
+                    if (this.uiManager) {
+                        this.uiManager.updateUI();
+                    }
+                }, 300); // Small delay to ensure orientation change is complete
+            });
+        }
     }
     
     updateHoverIndicator(x, y) {
@@ -1160,5 +1398,115 @@ IdleAnts.Game = class {
             return true;
         }
         return false;
+    }
+
+    detectMobileDevice() {
+        // Check if device is mobile based on user agent
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        
+        // Regular expressions for mobile devices
+        const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+        
+        // Check if touch events are supported
+        const hasTouchEvents = 'ontouchstart' in window || 
+                              navigator.maxTouchPoints > 0 || 
+                              navigator.msMaxTouchPoints > 0;
+        
+        // Return true if user agent matches mobile pattern or has touch events
+        const isMobile = mobileRegex.test(userAgent) || hasTouchEvents;
+        
+        console.log('Mobile device detected:', isMobile);
+        
+        // Apply mobile-specific settings if on mobile
+        if (isMobile) {
+            // Adjust game settings for mobile
+            this.adjustSettingsForMobile();
+        }
+        
+        return isMobile;
+    }
+
+    adjustSettingsForMobile() {
+        // Adjust game settings for better mobile experience
+        
+        // Increase UI button sizes for touch
+        const buttons = document.querySelectorAll('.upgrade-btn');
+        buttons.forEach(button => {
+            button.style.minHeight = '44px'; // Minimum touch target size
+        });
+        
+        // Adjust zoom speed for pinch gestures
+        if (!this.mapConfig) {
+            // Create mapConfig if it doesn't exist yet
+            this.mapConfig = {
+                zoom: { speed: 0.1 }
+            };
+        } else if (!this.mapConfig.zoom) {
+            this.mapConfig.zoom = { speed: 0.1 };
+        } else {
+            // Adjust zoom speed to be more responsive on mobile
+            this.mapConfig.zoom.speed = 0.1;
+        }
+        
+        // Add a small delay to food placement to avoid accidental taps
+        this.mobileSettings = {
+            tapDelay: 100, // ms
+            minSwipeDistance: 10, // px
+        };
+        
+        // Add viewport meta tag programmatically if not already present
+        let viewportMeta = document.querySelector('meta[name="viewport"]');
+        if (!viewportMeta) {
+            viewportMeta = document.createElement('meta');
+            viewportMeta.name = 'viewport';
+            document.head.appendChild(viewportMeta);
+        }
+        viewportMeta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
+        
+        // iOS-specific fixes
+        
+        // Fix for iOS Safari 100vh issue (viewport height calculation)
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        if (isIOS) {
+            // Apply fix for iOS Safari viewport height
+            document.documentElement.style.height = '100%';
+            document.body.style.height = '100%';
+            
+            // Fix for iOS Safari bounce effect
+            document.body.style.position = 'fixed';
+            document.body.style.width = '100%';
+            
+            // Adjust UI container for iOS notch if present
+            const gameContainer = document.getElementById('game-container');
+            if (gameContainer) {
+                gameContainer.style.paddingTop = 'env(safe-area-inset-top)';
+                gameContainer.style.paddingBottom = 'env(safe-area-inset-bottom)';
+            }
+            
+            // Make UI toggle button easier to tap on iOS
+            const uiToggle = document.getElementById('ui-toggle');
+            if (uiToggle) {
+                uiToggle.style.width = '44px';
+                uiToggle.style.height = '44px';
+                uiToggle.style.fontSize = '18px';
+            }
+        }
+        
+        // Disable long-press context menu on mobile
+        window.addEventListener('contextmenu', (e) => {
+            if (this.isMobileDevice) {
+                e.preventDefault();
+            }
+        }, false);
+        
+        // Disable double-tap to zoom
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = Date.now();
+            if (now - lastTouchEnd < 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, {passive: false});
     }
 }; 
