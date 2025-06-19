@@ -145,21 +145,23 @@ IdleAnts.Entities.Larvae = class {
             const currentAnts = IdleAnts.app.entityManager.entities.ants.length;
             const maxAnts = IdleAnts.app.resourceManager.stats.maxAnts;
             
-            // If colony is at max capacity, don't create a new ant
+            // If colony is at max capacity, postpone hatching and retry later
             if (currentAnts >= maxAnts) {
-                console.log("Cannot hatch larvae: colony at maximum capacity");
-                
-                // Still show the hatching effect
+                console.log("Cannot hatch larvae now: colony at maximum capacity. Will retry in 10 seconds.");
+
+                // Visual cue: small shake or pulse to indicate pending hatch
                 if (IdleAnts.app.effectManager) {
-                    IdleAnts.app.effectManager.createSpawnEffect(this.x, this.y);
+                    IdleAnts.app.effectManager.createLarvaeEffect(this.x, this.y);
                 }
-                
-                // Remove the larvae container
-                if (this.container && this.container.parent) {
-                    this.container.parent.removeChild(this.container);
-                    console.log(`Larvae container removed due to colony at max capacity`);
-                }
-                
+
+                // Retry after 10 seconds (10000 ms)
+                setTimeout(() => {
+                    // Only retry if an ant still hasn't been created
+                    if (!this.antCreated) {
+                        this.isHatched = false; // allow hatch logic to run again
+                        this.age = this.hatchingTime - 1; // re-attempt in roughly 1 second of game time
+                    }
+                }, 10000);
                 return;
             }
         }

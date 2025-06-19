@@ -52,6 +52,16 @@ IdleAnts.Managers.UIManager = class {
         // Autofeeder buttons
         addSafeClickListener('unlock-autofeeder', () => this.game.unlockAutofeeder());
         addSafeClickListener('upgrade-autofeeder', () => this.game.upgradeAutofeeder());
+
+        // Car Ant buttons
+        addSafeClickListener('unlock-car-ants', () => this.game.unlockCarAnts());
+        addSafeClickListener('buy-car-ant', () => this.game.buyCarAnt());
+        addSafeClickListener('expand-car-ants', () => this.game.expandCarAntCapacity());
+        
+        // Fire Ant buttons
+        addSafeClickListener('unlock-fire-ants', () => this.game.unlockFireAnts());
+        addSafeClickListener('buy-fire-ant', () => this.game.buyFireAnt());
+        addSafeClickListener('expand-fire-ants', () => this.game.expandFireAntCapacity());
     }
     
     // Add UI toggle functionality
@@ -153,6 +163,12 @@ IdleAnts.Managers.UIManager = class {
             updateElementText('flying-ant-count', this.resourceManager.stats.flyingAnts);
             updateElementText('flying-ant-max', this.resourceManager.stats.maxFlyingAnts);
             
+            // Update Car Ant counts
+            updateElementText('car-ant-count', this.resourceManager.stats.carAnts);
+            updateElementText('car-ant-max', this.resourceManager.stats.maxCarAnts);
+            updateElementText('car-ant-resource-count', this.resourceManager.stats.carAnts);
+            updateElementText('car-ant-resource-max', this.resourceManager.stats.maxCarAnts);
+            
             // Update costs
             updateElementText('ant-cost', this.resourceManager.stats.antCost);
             updateElementText('food-upgrade-cost', this.resourceManager.stats.foodUpgradeCost);
@@ -162,6 +178,14 @@ IdleAnts.Managers.UIManager = class {
             updateElementText('flying-ant-unlock-cost', this.resourceManager.stats.flyingAntUnlockCost);
             updateElementText('flying-ant-cost', this.resourceManager.stats.flyingAntCost);
             updateElementText('expand-flying-cost', Math.floor(this.resourceManager.stats.expandCost * 1.5));
+
+            // Update Car Ant costs
+            updateElementText('car-ant-unlock-cost', this.resourceManager.stats.carAntUnlockCost);
+            updateElementText('car-ant-cost', this.resourceManager.stats.carAntCost);
+            // Assuming expand car ant cost is dynamic or needs a specific stat in ResourceManager
+            // For now, let's use a placeholder or make it dependent on carAntCost like flying ants if similar logic applies
+            const expandCarAntCapacityCost = this.resourceManager.stats.maxCarAnts > 0 ? this.resourceManager.stats.carAntCost * (this.resourceManager.stats.maxCarAnts + 1) * 0.5 : 5000;
+            updateElementText('expand-car-ant-cost', Math.floor(expandCarAntCapacityCost));
             
             // Update autofeeder UI elements
             updateElementText('autofeeder-cost', this.resourceManager.stats.autofeederCost);
@@ -175,6 +199,18 @@ IdleAnts.Managers.UIManager = class {
             // Update food type
             const currentFoodType = this.resourceManager.getCurrentFoodType();
             updateElementText('food-type', currentFoodType.name);
+
+            // Update Fire Ant counts
+            updateElementText('fire-ant-count', this.resourceManager.stats.fireAnts);
+            updateElementText('fire-ant-max', this.resourceManager.stats.maxFireAnts);
+            updateElementText('fire-ant-resource-count', this.resourceManager.stats.fireAnts);
+            updateElementText('fire-ant-resource-max', this.resourceManager.stats.maxFireAnts);
+            
+            // Update Fire Ant costs
+            updateElementText('fire-ant-unlock-cost', this.resourceManager.stats.fireAntUnlockCost);
+            updateElementText('fire-ant-cost', this.resourceManager.stats.fireAntCost);
+            const expandFireAntCapacityCost = this.resourceManager.stats.maxFireAnts > 0 ? this.resourceManager.stats.fireAntCost * (this.resourceManager.stats.maxFireAnts + 1) * 0.5 : 10000;
+            updateElementText('expand-fire-ant-cost', Math.floor(expandFireAntCapacityCost));
         } catch (error) {
             console.error('Error updating UI resources:', error);
         }
@@ -252,32 +288,30 @@ IdleAnts.Managers.UIManager = class {
             }
         };
         
-        // Update main button states
-        updateButtonState('buy-ant', 
-            !this.resourceManager.canBuyAnt()
-        );
+        // Helper function to show/hide element
+        const toggleElementVisibility = (id, show) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.display = show ? 'block' : 'none';
+                // If it's a button and we are showing it, also remove hidden class if present
+                if (show && element.tagName === 'BUTTON') element.classList.remove('hidden');
+                else if (!show && element.tagName === 'BUTTON') element.classList.add('hidden');
+            }
+        };
         
-        updateButtonState('upgrade-food', 
-            !this.resourceManager.canUpgradeFood()
-        );
+        // Regular ant buttons
+        updateButtonState('buy-ant', !this.resourceManager.canBuyAnt());
         
-        updateButtonState('upgrade-speed', 
-            !this.resourceManager.canAfford(this.resourceManager.stats.speedUpgradeCost)
-        );
+        updateButtonState('upgrade-food', !this.resourceManager.canUpgradeFood());
         
-        updateButtonState('upgrade-strength', 
-            !this.resourceManager.canAfford(this.resourceManager.stats.strengthUpgradeCost)
-        );
+        updateButtonState('upgrade-speed', !this.resourceManager.canAfford(this.resourceManager.stats.speedUpgradeCost));
         
-        updateButtonState('expand-colony', 
-            !this.resourceManager.canAfford(this.resourceManager.stats.expandCost)
-        );
+        updateButtonState('upgrade-strength', !this.resourceManager.canAfford(this.resourceManager.stats.strengthUpgradeCost));
+        
+        updateButtonState('expand-colony', !this.resourceManager.canAfford(this.resourceManager.stats.expandCost));
         
         // Update flying ant button states
-        updateButtonState('unlock-flying-ants', 
-            this.resourceManager.stats.flyingAntsUnlocked || 
-            !this.resourceManager.canAfford(this.resourceManager.stats.flyingAntUnlockCost)
-        );
+        updateButtonState('unlock-flying-ants', !this.resourceManager.stats.flyingAntsUnlocked && !this.resourceManager.canAfford(this.resourceManager.stats.flyingAntUnlockCost));
         
         // Update queen ant button states
         // Hide unlock and buy buttons
@@ -292,13 +326,18 @@ IdleAnts.Managers.UIManager = class {
         }
         
         // Only enable upgrade button if player can afford it
-        updateButtonState('upgrade-queen',
-            !this.resourceManager.canUpgradeQueen()
-        );
+        updateButtonState('upgrade-queen', !this.resourceManager.canUpgradeQueen());
         
         // Show/hide flying ant buttons based on unlock status
         const flyingAntButtons = document.querySelectorAll('.special-btn');
         const flyingAntStats = document.getElementById('flying-ant-stats');
+        
+        toggleElementVisibility('buy-flying-ant', this.resourceManager.stats.flyingAntsUnlocked);
+        toggleElementVisibility('expand-flying-ants', this.resourceManager.stats.flyingAntsUnlocked);
+        toggleElementVisibility('flying-ant-stats', this.resourceManager.stats.flyingAntsUnlocked);
+        // Also for the main resource display
+        const flyingAntResourceStats = document.getElementById('flying-ant-resource-stats');
+        if(flyingAntResourceStats) flyingAntResourceStats.classList.toggle('hidden', !this.resourceManager.stats.flyingAntsUnlocked && this.resourceManager.stats.maxFlyingAnts === 0);
         
         if (this.resourceManager.stats.flyingAntsUnlocked) {
             flyingAntButtons.forEach(button => {
@@ -314,20 +353,13 @@ IdleAnts.Managers.UIManager = class {
             }
             
             // Update flying ant button states
-            updateButtonState('buy-flying-ant', 
-                !this.resourceManager.canBuyFlyingAnt()
-            );
+            updateButtonState('buy-flying-ant', !this.resourceManager.canBuyFlyingAnt());
             
-            updateButtonState('expand-flying-ants', 
-                !this.resourceManager.canAfford(Math.floor(this.resourceManager.stats.expandCost * 1.5))
-            );
+            updateButtonState('expand-flying-ants', !this.resourceManager.canAfford(Math.floor(this.resourceManager.stats.expandCost * 1.5)));
         }
         
         // Update autofeeder button states
-        updateButtonState('unlock-autofeeder',
-            this.resourceManager.stats.autofeederUnlocked ||
-            !this.resourceManager.canAfford(this.resourceManager.stats.autofeederCost)
-        );
+        updateButtonState('unlock-autofeeder', !this.resourceManager.stats.autofeederUnlocked && !this.resourceManager.canAfford(this.resourceManager.stats.autofeederCost));
         
         // Show/hide autofeeder upgrade button based on unlock status
         const upgradeAutofeederBtn = document.getElementById('upgrade-autofeeder');
@@ -341,9 +373,7 @@ IdleAnts.Managers.UIManager = class {
                 }
                 
                 // Update upgrade button state
-                updateButtonState('upgrade-autofeeder',
-                    !this.resourceManager.canUpgradeAutofeeder()
-                );
+                updateButtonState('upgrade-autofeeder', !this.resourceManager.canUpgradeAutofeeder());
                 
                 // Update button text to show current food amount
                 const foodAmount = this.resourceManager.getAutofeederFoodAmount();
@@ -358,6 +388,39 @@ IdleAnts.Managers.UIManager = class {
                     upgradeAutofeederBtn.innerHTML = `<i class="fas fa-arrow-up"></i> Upgrade Autofeeder <span id="autofeeder-level">${this.resourceManager.stats.autofeederLevel}</span>/10 (${foodAmount} food/cycle) (<span id="autofeeder-upgrade-cost">${this.resourceManager.stats.autofeederUpgradeCost}</span> food)`;
                 }
             }
+        }
+
+        // Car Ant Buttons & Stats
+        const carAntsUnlocked = this.resourceManager.stats.carAntsUnlocked;
+        toggleElementVisibility('unlock-car-ants', !carAntsUnlocked);
+        toggleElementVisibility('buy-car-ant', carAntsUnlocked);
+        toggleElementVisibility('expand-car-ants', carAntsUnlocked);
+        toggleElementVisibility('car-ant-stats', carAntsUnlocked);
+        // Main resource display for car ants
+        const carAntResourceStats = document.getElementById('car-ant-resource-stats');
+        if(carAntResourceStats) carAntResourceStats.classList.toggle('hidden', !carAntsUnlocked && this.resourceManager.stats.maxCarAnts === 0);
+
+        if (carAntsUnlocked) {
+            updateButtonState('buy-car-ant', !this.resourceManager.canBuyCarAnt());
+            updateButtonState('expand-car-ants', !this.resourceManager.canExpandCarAntCapacity());
+        } else {
+            updateButtonState('unlock-car-ants', !this.resourceManager.canUnlockCarAnts());
+        }
+
+        // Fire Ant Buttons & Stats
+        const fireAntsUnlocked = this.resourceManager.stats.fireAntsUnlocked;
+        toggleElementVisibility('unlock-fire-ants', !fireAntsUnlocked);
+        toggleElementVisibility('buy-fire-ant', fireAntsUnlocked);
+        toggleElementVisibility('expand-fire-ants', fireAntsUnlocked);
+        toggleElementVisibility('fire-ant-stats', fireAntsUnlocked);
+        const fireAntResourceStats = document.getElementById('fire-ant-resource-stats');
+        if (fireAntResourceStats) fireAntResourceStats.classList.toggle('hidden', !fireAntsUnlocked && this.resourceManager.stats.maxFireAnts === 0);
+
+        if (fireAntsUnlocked) {
+            updateButtonState('buy-fire-ant', !this.resourceManager.canBuyFireAnt());
+            updateButtonState('expand-fire-ants', !this.resourceManager.canExpandFireAntCapacity());
+        } else {
+            updateButtonState('unlock-fire-ants', !this.resourceManager.canUnlockFireAnts());
         }
     }
     

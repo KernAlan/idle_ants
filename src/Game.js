@@ -37,6 +37,9 @@ IdleAnts.Game = class {
 
         // Frame counter for periodic updates
         this.frameCounter = 0;
+        // lastMouseX and lastMouseY are still needed here for the hoverIndicator logic
+        this.lastMouseX = undefined;
+        this.lastMouseY = undefined;
         
         // Create the PIXI application
         this.app = new PIXI.Application({
@@ -57,15 +60,7 @@ IdleAnts.Game = class {
         this.minimapContainer = new PIXI.Container();
         this.app.stage.addChild(this.minimapContainer);
         
-        // Calculate the minimum zoom level based on map and viewport dimensions
-        // We need to wait until the app is created to do this
-        const minZoomX = this.app.view.width / this.mapConfig.width;
-        const minZoomY = this.app.view.height / this.mapConfig.height;
-        const dynamicMinZoom = Math.max(minZoomX, minZoomY);
-        
-        // Update the minimum zoom level and initial zoom level
-        this.mapConfig.zoom.min = Math.max(this.mapConfig.zoom.min, dynamicMinZoom);
-        this.mapConfig.zoom.level = Math.max(1.0, dynamicMinZoom);
+        this.cameraManager = new IdleAnts.Managers.CameraManager(this.app, this.mapConfig, this.worldContainer, this);
         
         // Run any registered initialization functions
         this.runInitHooks();
@@ -84,24 +79,20 @@ IdleAnts.Game = class {
             
             // UI Manager needs access to the game for buttons
             this.uiManager = new IdleAnts.Managers.UIManager(this.resourceManager, this, this.effectManager);
+
+            // Initialize InputManager after other core managers it might depend on (like camera, entity, resource)
+            this.inputManager = new IdleAnts.Managers.InputManager(this.app, this, this.cameraManager, this.resourceManager, this.entityManager, this.mapConfig);
             
             this.setupGame();
-            this.setupEventListeners();
+            this.setupEventListeners(); // This will be simplified
             this.startGameLoop();
             this.setupMinimap();
-            // Update minimap initially to render it on game start
             this.updateMinimap();
             
-            // Center camera on nest after everything is set up
-            this.centerCameraOnNest();
+            this.cameraManager.centerCameraOnNest();
             
-            // Setup audio resuming on user interaction
             this.setupAudioResumeOnInteraction();
-            
-            // Start playing background music
             this.startBackgroundMusic();
-            
-            // Transition to PLAYING state
             this.transitionToState(IdleAnts.Game.States.PLAYING);
         });
     }
@@ -235,8 +226,10 @@ IdleAnts.Game = class {
         // Create background with map dimensions
         this.backgroundManager.createBackground(this.mapConfig.width, this.mapConfig.height);
         
-        // Initialize world container scale based on zoom level
-        this.worldContainer.scale.set(this.mapConfig.zoom.level, this.mapConfig.zoom.level);
+        // Initialize world container scale based on zoom level (CameraManager handles this now mostly)
+        // this.worldContainer.scale.set(this.mapConfig.zoom.level, this.mapConfig.zoom.level);
+        if (this.cameraManager) this.cameraManager.initializeZoomLevels(); // Ensure zoom is set up
+        this.worldContainer.scale.set(this.mapConfig.zoom.level, this.mapConfig.zoom.level); // Apply initial scale
         
         // Set up game entities
         this.entityManager.setupEntities();
@@ -250,376 +243,47 @@ IdleAnts.Game = class {
     }
     
     setupEventListeners() {
-        // Set up canvas click for manual food placement
-        this.app.view.addEventListener('click', (e) => {
-            // Only handle clicks when in PLAYING state
-            if (this.state !== IdleAnts.Game.States.PLAYING) {
-                return;
-            }
-            
-            const rect = this.app.view.getBoundingClientRect();
-            const screenX = e.clientX - rect.left;
-            const screenY = e.clientY - rect.top;
-            
-            // Convert screen coordinates to world coordinates with zoom
-            const worldX = (screenX / this.mapConfig.zoom.level) + this.mapConfig.viewport.x;
-            const worldY = (screenY / this.mapConfig.zoom.level) + this.mapConfig.viewport.y;
-            
-            // Get the current food type based on food tier
-            const currentFoodType = this.resourceManager.getCurrentFoodType();
-            
-            // Place food at the clicked location with the appropriate food type
-            this.entityManager.addFood({ x: worldX, y: worldY, clickPlaced: true }, currentFoodType);
-            this.uiManager.updateUI();
-        });
-        
-        // Create and track hover effect
-        this.hoverIndicator = new PIXI.Graphics();
-        this.app.stage.addChild(this.hoverIndicator);
-        
-        // Track mouse movement for hover effect
-        this.app.view.addEventListener('mousemove', (e) => {
-            const rect = this.app.view.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            // Store last mouse position for hover updates in game loop
-            this.lastMouseX = x;
-            this.lastMouseY = y;
-            
-            // Only show hover indicator in PLAYING state
-            if (this.state === IdleAnts.Game.States.PLAYING) {
-                this.updateHoverIndicator(x, y);
-            } else {
-                this.hoverIndicator.clear();
-            }
-        });
-        
-        // Remove hover effect when mouse leaves the canvas
-        this.app.view.addEventListener('mouseleave', () => {
-            this.hoverIndicator.clear();
-            this.lastMouseX = undefined;
-            this.lastMouseY = undefined;
-        });
+        // Most event listeners are now in InputManager.js
+        // Keep window resize and orientation change here as they affect more than just input/camera directly.
+        // Or, InputManager could call back to Game for these if preferred for full centralization.
 
-        // Setup keyboard controls for map navigation
-        this.keysPressed = {
-            ArrowUp: false,
-            ArrowDown: false,
-            ArrowLeft: false,
-            ArrowRight: false,
-            w: false,
-            a: false,
-            s: false,
-            d: false
-        };
-        
-        // Event listeners for keyboard controls
-        const handleKeyDown = (e) => {
-            // Handle Escape key for pause toggle
-            if (e.key === 'Escape') {
-                e.preventDefault();
-                this.togglePause();
-                return;
-            }
-            
-            // Handle other keys only if game is in PLAYING state
-            if (this.state !== IdleAnts.Game.States.PLAYING) {
-                return;
-            }
-            
-            if (this.keysPressed.hasOwnProperty(e.key)) {
-                e.preventDefault(); // Prevent scrolling with arrow keys
-                this.keysPressed[e.key] = true;
-            }
-        };
-        
-        const handleKeyUp = (e) => {
-            if (this.keysPressed.hasOwnProperty(e.key)) {
-                e.preventDefault();
-                this.keysPressed[e.key] = false;
-            }
-        };
-        
-        // Add event listeners to document (more reliable than window)
-        document.addEventListener('keydown', handleKeyDown);
-        document.addEventListener('keyup', handleKeyUp);
-        
-        // Make canvas focusable to help with key events
-        this.app.view.tabIndex = 1;
-        
-        // Focus the canvas when clicked
-        this.app.view.addEventListener('mousedown', () => {
-            this.app.view.focus();
-        });
-        
         // Add event listener for window resize
         window.addEventListener('resize', () => {
-            this.updateMinimap();
+            this.updateMinimap(); 
+            if (this.cameraManager) {
+                this.cameraManager.handleResizeOrOrientationChange();
+            }
+            if (this.uiManager) { // Also update UI on resize
+                this.uiManager.updateUI();
+            }
         });
-        
-        // Add event listener for wheel events (zoom)
-        this.app.view.addEventListener('wheel', (e) => {
-            // Only handle wheel events in PLAYING state
-            if (this.state !== IdleAnts.Game.States.PLAYING) {
-                return;
-            }
-            
-            e.preventDefault(); // Prevent page scrolling
-            
-            // Get mouse position relative to canvas
-            const rect = this.app.view.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
-            
-            // Calculate zoom delta (negative for zoom in, positive for zoom out)
-            const zoomDelta = e.deltaY > 0 ? -this.mapConfig.zoom.speed : this.mapConfig.zoom.speed;
-            
-            // Update zoom with mouse position as focal point
-            this.updateZoom(zoomDelta, mouseX, mouseY);
-        }, {passive: false});
-        
-        // Touch event handling for mobile devices
-        
-        // Variables to track touch state
-        this.touchStartX = 0;
-        this.touchStartY = 0;
-        this.lastTouchX = 0;
-        this.lastTouchY = 0;
-        this.isPanning = false;
-        this.lastPinchDistance = 0;
-        this.isTouching = false;
-        this.touchStartTime = 0;
-        this.touchMoved = false;
-        
-        // Handle touch start
-        this.app.view.addEventListener('touchstart', (e) => {
-            e.preventDefault(); // Prevent default browser behavior
-            
-            // Only handle touch events in PLAYING state
-            if (this.state !== IdleAnts.Game.States.PLAYING) {
-                return;
-            }
-            
-            this.isTouching = true;
-            this.touchStartTime = Date.now();
-            this.touchMoved = false;
-            
-            if (e.touches.length === 1) {
-                // Single touch - prepare for panning
-                const touch = e.touches[0];
-                const rect = this.app.view.getBoundingClientRect();
-                this.touchStartX = touch.clientX - rect.left;
-                this.touchStartY = touch.clientY - rect.top;
-                this.lastTouchX = this.touchStartX;
-                this.lastTouchY = this.touchStartY;
-                
-                // Update hover indicator for touch position
-                this.lastMouseX = this.touchStartX;
-                this.lastMouseY = this.touchStartY;
-                this.updateHoverIndicator(this.touchStartX, this.touchStartY);
-                
-            } else if (e.touches.length === 2) {
-                // Two touches - prepare for pinch zoom
-                const touch1 = e.touches[0];
-                const touch2 = e.touches[1];
-                const rect = this.app.view.getBoundingClientRect();
-                
-                // Calculate distance between touches
-                const dx = touch1.clientX - touch2.clientX;
-                const dy = touch1.clientY - touch2.clientY;
-                this.lastPinchDistance = Math.sqrt(dx * dx + dy * dy);
-                
-                // Clear hover indicator during pinch
-                this.hoverIndicator.clear();
-            }
-        }, {passive: false});
-        
-        // Handle touch move
-        this.app.view.addEventListener('touchmove', (e) => {
-            e.preventDefault(); // Prevent default browser behavior
-            
-            // Only handle touch events in PLAYING state
-            if (this.state !== IdleAnts.Game.States.PLAYING) {
-                return;
-            }
-            
-            this.touchMoved = true;
-            
-            if (e.touches.length === 1) {
-                // Single touch - handle panning
-                const touch = e.touches[0];
-                const rect = this.app.view.getBoundingClientRect();
-                const currentX = touch.clientX - rect.left;
-                const currentY = touch.clientY - rect.top;
-                
-                // Calculate the distance moved
-                const deltaX = currentX - this.lastTouchX;
-                const deltaY = currentY - this.lastTouchY;
-                
-                // Only start panning after a small threshold to distinguish from taps
-                if (!this.isPanning && (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5)) {
-                    this.isPanning = true;
-                    // Clear hover indicator during panning
-                    this.hoverIndicator.clear();
-                }
-                
-                if (this.isPanning) {
-                    // Move the camera based on touch movement
-                    // Invert the delta because we want to move the world in the opposite direction
-                    this.mapConfig.viewport.x = Math.max(0, Math.min(
-                        this.mapConfig.viewport.x - (deltaX / this.mapConfig.zoom.level),
-                        this.mapConfig.width - (this.app.view.width / this.mapConfig.zoom.level)
-                    ));
-                    
-                    this.mapConfig.viewport.y = Math.max(0, Math.min(
-                        this.mapConfig.viewport.y - (deltaY / this.mapConfig.zoom.level),
-                        this.mapConfig.height - (this.app.view.height / this.mapConfig.zoom.level)
-                    ));
-                    
-                    // Update world container position
-                    this.worldContainer.position.set(
-                        -this.mapConfig.viewport.x * this.mapConfig.zoom.level,
-                        -this.mapConfig.viewport.y * this.mapConfig.zoom.level
-                    );
-                    
-                    // Update minimap
-                    this.updateMinimap();
-                } else {
-                    // Update hover indicator for touch position
-                    this.lastMouseX = currentX;
-                    this.lastMouseY = currentY;
-                    this.updateHoverIndicator(currentX, currentY);
-                }
-                
-                // Update last touch position
-                this.lastTouchX = currentX;
-                this.lastTouchY = currentY;
-                
-            } else if (e.touches.length === 2) {
-                // Two touches - handle pinch zoom
-                const touch1 = e.touches[0];
-                const touch2 = e.touches[1];
-                
-                // Calculate current distance between touches
-                const dx = touch1.clientX - touch2.clientX;
-                const dy = touch1.clientY - touch2.clientY;
-                const currentPinchDistance = Math.sqrt(dx * dx + dy * dy);
-                
-                // Calculate zoom delta based on pinch distance change
-                const pinchDelta = currentPinchDistance - this.lastPinchDistance;
-                
-                if (Math.abs(pinchDelta) > 5) { // Small threshold to avoid jitter
-                    // Calculate zoom change - scale factor to make it feel natural
-                    const zoomDelta = (pinchDelta / 100) * this.mapConfig.zoom.speed;
-                    
-                    // Calculate center point between the two touches
-                    const rect = this.app.view.getBoundingClientRect();
-                    const centerX = ((touch1.clientX + touch2.clientX) / 2) - rect.left;
-                    const centerY = ((touch1.clientY + touch2.clientY) / 2) - rect.top;
-                    
-                    // Update zoom with center point as focal point
-                    this.updateZoom(zoomDelta, centerX, centerY);
-                    
-                    // Update last pinch distance
-                    this.lastPinchDistance = currentPinchDistance;
-                }
-            }
-        }, {passive: false});
-        
-        // Handle touch end
-        this.app.view.addEventListener('touchend', (e) => {
-            e.preventDefault(); // Prevent default browser behavior
-            
-            // Only handle touch events in PLAYING state
-            if (this.state !== IdleAnts.Game.States.PLAYING) {
-                return;
-            }
-            
-            // Check if this was a tap (short touch without much movement)
-            const touchDuration = Date.now() - this.touchStartTime;
-            
-            if (e.touches.length === 0) {
-                // All touches ended
-                if (!this.touchMoved && touchDuration < 300) {
-                    // This was a tap - place food after a small delay to avoid accidental taps
-                    const tapDelay = this.isMobileDevice && this.mobileSettings ? this.mobileSettings.tapDelay : 0;
-                    
-                    setTimeout(() => {
-                        const rect = this.app.view.getBoundingClientRect();
-                        const worldX = (this.touchStartX / this.mapConfig.zoom.level) + this.mapConfig.viewport.x;
-                        const worldY = (this.touchStartY / this.mapConfig.zoom.level) + this.mapConfig.viewport.y;
-                        
-                        // Get the current food type based on food tier
-                        const currentFoodType = this.resourceManager.getCurrentFoodType();
-                        
-                        // Place food at the tapped location
-                        this.entityManager.addFood({ x: worldX, y: worldY, clickPlaced: true }, currentFoodType);
-                        this.uiManager.updateUI();
-                    }, tapDelay);
-                }
-                
-                // Reset touch state
-                this.isPanning = false;
-                this.isTouching = false;
-                
-                // Clear hover indicator
-                this.hoverIndicator.clear();
-            }
-        }, {passive: false});
-        
-        // Handle touch cancel
-        this.app.view.addEventListener('touchcancel', (e) => {
-            // Reset touch state
-            this.isPanning = false;
-            this.isTouching = false;
-            
-            // Clear hover indicator
-            this.hoverIndicator.clear();
-        }, {passive: false});
 
-        // Handle orientation change on mobile devices
+        // Handle orientation change on mobile devices (moved from original setupEventListeners)
         if (this.isMobileDevice) {
             window.addEventListener('orientationchange', () => {
-                // Wait for the orientation change to complete
                 setTimeout(() => {
-                    // Recalculate minimum zoom level
-                    const minZoomX = this.app.view.width / this.mapConfig.width;
-                    const minZoomY = this.app.view.height / this.mapConfig.height;
-                    const dynamicMinZoom = Math.max(minZoomX, minZoomY);
-                    
-                    // Update the minimum zoom level
-                    this.mapConfig.zoom.min = Math.max(this.mapConfig.zoom.min, dynamicMinZoom);
-                    
-                    // Adjust current zoom level if needed
-                    if (this.mapConfig.zoom.level < dynamicMinZoom) {
-                        this.mapConfig.zoom.level = dynamicMinZoom;
-                        this.worldContainer.scale.set(this.mapConfig.zoom.level, this.mapConfig.zoom.level);
+                    if (this.cameraManager) {
+                        this.cameraManager.handleResizeOrOrientationChange();
                     }
-                    
-                    // Update world container position
-                    this.worldContainer.position.set(
-                        -this.mapConfig.viewport.x * this.mapConfig.zoom.level,
-                        -this.mapConfig.viewport.y * this.mapConfig.zoom.level
-                    );
-                    
-                    // Update minimap position and size
                     this.updateMinimap();
-                    
-                    // Update UI layout
                     if (this.uiManager) {
                         this.uiManager.updateUI();
                     }
-                }, 300); // Small delay to ensure orientation change is complete
+                }, 300); 
             });
         }
 
-        // Add sound toggle button event listener
+        // Create and track hover effect (Graphics object setup)
+        this.hoverIndicator = new PIXI.Graphics();
+        this.app.stage.addChild(this.hoverIndicator);
+        // Actual update of hoverIndicator position is handled by InputManager updating lastMouseX/Y,
+        // and gameLoop calling updateHoverIndicator().
+
+        // Add sound toggle button event listener (remains, as it's UI specific not general input)
         const soundToggleButton = document.getElementById('toggle-sound');
         if (soundToggleButton) {
             soundToggleButton.addEventListener('click', () => {
                 this.toggleSound();
-                // Also try to resume AudioContext on this explicit interaction
                 IdleAnts.AudioManager.resumeAudioContext();
             });
         }
@@ -695,44 +359,6 @@ IdleAnts.Game = class {
         ensureDOMLoaded();
     }
     
-    updateCamera() {
-        const speed = this.mapConfig.viewport.speed;
-        let cameraMoved = false;
-        
-        // Adjust speed based on zoom level - faster movement when zoomed out
-        const adjustedSpeed = speed / this.mapConfig.zoom.level;
-        
-        // Check for key presses and move camera accordingly
-        if (this.keysPressed.ArrowLeft || this.keysPressed.a) {
-            this.mapConfig.viewport.x = Math.max(0, this.mapConfig.viewport.x - adjustedSpeed);
-            cameraMoved = true;
-        }
-        if (this.keysPressed.ArrowRight || this.keysPressed.d) {
-            const maxX = Math.max(0, this.mapConfig.width - (this.app.view.width / this.mapConfig.zoom.level));
-            this.mapConfig.viewport.x = Math.min(maxX, this.mapConfig.viewport.x + adjustedSpeed);
-            cameraMoved = true;
-        }
-        if (this.keysPressed.ArrowUp || this.keysPressed.w) {
-            this.mapConfig.viewport.y = Math.max(0, this.mapConfig.viewport.y - adjustedSpeed);
-            cameraMoved = true;
-        }
-        if (this.keysPressed.ArrowDown || this.keysPressed.s) {
-            const maxY = Math.max(0, this.mapConfig.height - (this.app.view.height / this.mapConfig.zoom.level));
-            this.mapConfig.viewport.y = Math.min(maxY, this.mapConfig.viewport.y + adjustedSpeed);
-            cameraMoved = true;
-        }
-        
-        // Update world container position if camera moved
-        if (cameraMoved) {
-            this.worldContainer.position.set(
-                -this.mapConfig.viewport.x * this.mapConfig.zoom.level,
-                -this.mapConfig.viewport.y * this.mapConfig.zoom.level
-            );
-        }
-        
-        return cameraMoved;
-    }
-    
     setupMinimap() {
         // Settings for the minimap
         const padding = 10;
@@ -775,7 +401,9 @@ IdleAnts.Game = class {
             const worldY = (clickY / size) * this.mapConfig.height;
             
             // Center the view on this location
-            this.centerViewOnPosition(worldX, worldY);
+            if (this.cameraManager) {
+                this.cameraManager.centerViewOnPosition(worldX, worldY);
+            }
         });
         
         // Remove navigation helper - will be added by user later
@@ -791,29 +419,6 @@ IdleAnts.Game = class {
             // Update navigation helper position - not needed now
             // this.updateNavigationHelperPosition();
         });
-    }
-    
-    centerViewOnPosition(x, y) {
-        // Calculate the center position for the view
-        const halfWidth = this.app.screen.width / 2;
-        const halfHeight = this.app.screen.height / 2;
-        
-        // Set the new camera position, centered on the given coordinates
-        // Adjust for zoom level
-        const viewWidth = this.app.screen.width / this.mapConfig.zoom.level;
-        const viewHeight = this.app.screen.height / this.mapConfig.zoom.level;
-        
-        this.mapConfig.viewport.x = Math.max(0, Math.min(x - (viewWidth / 2), this.mapConfig.width - viewWidth));
-        this.mapConfig.viewport.y = Math.max(0, Math.min(y - (viewHeight / 2), this.mapConfig.height - viewHeight));
-        
-        // Update world container position
-        this.worldContainer.position.set(
-            -this.mapConfig.viewport.x * this.mapConfig.zoom.level,
-            -this.mapConfig.viewport.y * this.mapConfig.zoom.level
-        );
-        
-        // Update minimap after changing the view position
-        this.updateMinimap();
     }
     
     updateMinimap() {
@@ -851,6 +456,15 @@ IdleAnts.Game = class {
         });
         this.minimapVisuals.endFill();
         
+        // Draw Car Ants as red dots (or another distinct color)
+        if (this.entityManager.entities.carAnts && this.entityManager.entities.carAnts.length > 0) {
+            this.minimapVisuals.beginFill(0xFF0000); // Red for Car Ants
+            this.entityManager.entities.carAnts.forEach(carAnt => {
+                this.minimapVisuals.drawCircle(carAnt.x * scaleX, carAnt.y * scaleY, 1.5); // Slightly larger dot for Car Ants
+            });
+            this.minimapVisuals.endFill();
+        }
+        
         // Draw food as green dots
         this.minimapVisuals.beginFill(0x00FF00);
         this.entityManager.entities.foods.forEach(food => {
@@ -876,14 +490,20 @@ IdleAnts.Game = class {
     gameLoop() {
         // Only update game logic when in PLAYING state
         if (this.state !== IdleAnts.Game.States.PLAYING) {
+            // Still update hover indicator if paused or upgrading, but not if initializing
+            if (this.state !== IdleAnts.Game.States.INITIALIZING && this.lastMouseX !== undefined && this.lastMouseY !== undefined) {
+                this.updateHoverIndicator(this.lastMouseX, this.lastMouseY);
+            }
             return;
         }
         
         // Update frame counter
         this.frameCounter++;
         
-        // Update camera position based on keyboard input
-        this.updateCamera();
+        // Update input manager (which internally updates camera based on keys)
+        if (this.inputManager) {
+            this.inputManager.update(); 
+        }
         
         // Update entities
         this.entityManager.update();
@@ -917,14 +537,8 @@ IdleAnts.Game = class {
             this.activateAutofeeder();
         }
         
-        // Check for queen ant larvae production
-        if (this.resourceManager.stats.hasQueen && 
-            this.frameCounter % this.resourceManager.stats.queenLarvaeProductionRate === 0) {
-            this.produceQueenLarvae();
-        }
-        
-        // Always update hover indicator regardless of state
-        if (this.lastMouseX !== undefined && this.lastMouseY !== undefined) {
+        // Always update hover indicator if mouse/touch is over canvas and game is not initializing
+        if (this.state !== IdleAnts.Game.States.INITIALIZING && this.lastMouseX !== undefined && this.lastMouseY !== undefined) {
             this.updateHoverIndicator(this.lastMouseX, this.lastMouseY);
         }
     }
@@ -1117,395 +731,7 @@ IdleAnts.Game = class {
         }
     }
     
-    centerCameraOnNest() {
-        // Center the viewport on the nest (which is at the center of the map)
-        const nestX = this.mapConfig.width / 2;
-        const nestY = this.mapConfig.height / 2;
-        
-        // Calculate the minimum zoom level based on map and viewport dimensions
-        const minZoomX = this.app.view.width / this.mapConfig.width;
-        const minZoomY = this.app.view.height / this.mapConfig.height;
-        const dynamicMinZoom = Math.max(minZoomX, minZoomY);
-        
-        // Reset zoom to default or minimum required level
-        this.mapConfig.zoom.level = Math.max(dynamicMinZoom, 1.0);
-        this.worldContainer.scale.set(this.mapConfig.zoom.level, this.mapConfig.zoom.level);
-        
-        this.centerViewOnPosition(nestX, nestY);
-        
-        // Update minimap after centering on nest
-        this.updateMinimap();
-    }
-    
-    // Navigation helper methods kept for future use
-    /*
-    addNavigationHelper() {
-        // Create a container for the navigation helper
-        this.navHelper = new PIXI.Container();
-        this.minimapContainer.addChild(this.navHelper);
-        
-        // Background panel
-        const bg = new PIXI.Graphics();
-        bg.beginFill(0x000000, 0.7);
-        bg.drawRoundedRect(0, 0, 160, 80, 5);
-        bg.endFill();
-        this.navHelper.addChild(bg);
-        
-        // Create text instructions
-        const title = new PIXI.Text('Map Navigation:', { 
-            fontFamily: 'Arial', 
-            fontSize: 14, 
-            fill: 0xFFFFFF,
-            fontWeight: 'bold'
-        });
-        title.position.set(10, 10);
-        this.navHelper.addChild(title);
-        
-        const arrowKeys = new PIXI.Text('Arrow Keys / WASD: Move', { 
-            fontFamily: 'Arial', 
-            fontSize: 12, 
-            fill: 0xFFFFFF 
-        });
-        arrowKeys.position.set(10, 30);
-        this.navHelper.addChild(arrowKeys);
-        
-        const minimapText = new PIXI.Text('Click Minimap: Jump to location', { 
-            fontFamily: 'Arial', 
-            fontSize: 12, 
-            fill: 0xFFFFFF 
-        });
-        minimapText.position.set(10, 50);
-        this.navHelper.addChild(minimapText);
-        
-        // Position in top-left corner
-        this.navHelper.position.set(10, 10);
-        
-        // Make it disappear after 10 seconds
-        setTimeout(() => {
-            // Create a fade out animation
-            const fadeOut = () => {
-                this.navHelper.alpha -= 0.02;
-                if (this.navHelper.alpha > 0) {
-                    requestAnimationFrame(fadeOut);
-                }
-            };
-            fadeOut();
-        }, 10000);
-    }
-    
-    updateNavigationHelperPosition() {
-        if (this.navHelper) {
-            this.navHelper.position.set(10, 10);
-        }
-    }
-    
-    showNavigationNotification() {
-        // Create a container for the notification
-        const notification = new PIXI.Container();
-        this.app.stage.addChild(notification);
-        
-        // Background with arrow key graphic
-        const bg = new PIXI.Graphics();
-        bg.beginFill(0x000000, 0.8);
-        bg.drawRoundedRect(0, 0, 300, 140, 10);
-        bg.endFill();
-        notification.addChild(bg);
-        
-        // Title
-        const title = new PIXI.Text('Map Navigation Controls', { 
-            fontFamily: 'Arial', 
-            fontSize: 16, 
-            fill: 0xFFFFFF,
-            fontWeight: 'bold'
-        });
-        title.position.set(20, 15);
-        notification.addChild(title);
-        
-        // Instructions
-        const instr1 = new PIXI.Text('Use Arrow Keys or WASD to move around', { 
-            fontFamily: 'Arial', 
-            fontSize: 14, 
-            fill: 0xFFFFFF 
-        });
-        instr1.position.set(20, 45);
-        notification.addChild(instr1);
-        
-        const instr2 = new PIXI.Text('Click on the minimap to jump to a location', { 
-            fontFamily: 'Arial', 
-            fontSize: 14, 
-            fill: 0xFFFFFF 
-        });
-        instr2.position.set(20, 70);
-        notification.addChild(instr2);
-        
-        // Draw arrow keys graphic
-        const arrowKeys = new PIXI.Graphics();
-        
-        // Up arrow
-        arrowKeys.beginFill(0x444444);
-        arrowKeys.drawRoundedRect(50, 95, 30, 30, 5);
-        arrowKeys.endFill();
-        arrowKeys.beginFill(0xFFFFFF);
-        arrowKeys.moveTo(65, 100);
-        arrowKeys.lineTo(60, 110);
-        arrowKeys.lineTo(70, 110);
-        arrowKeys.lineTo(65, 100);
-        arrowKeys.endFill();
-        
-        // Left arrow
-        arrowKeys.beginFill(0x444444);
-        arrowKeys.drawRoundedRect(15, 130, 30, 30, 5);
-        arrowKeys.endFill();
-        arrowKeys.beginFill(0xFFFFFF);
-        arrowKeys.moveTo(20, 145);
-        arrowKeys.lineTo(30, 140);
-        arrowKeys.lineTo(30, 150);
-        arrowKeys.lineTo(20, 145);
-        arrowKeys.endFill();
-        
-        // Down arrow
-        arrowKeys.beginFill(0x444444);
-        arrowKeys.drawRoundedRect(50, 130, 30, 30, 5);
-        arrowKeys.endFill();
-        arrowKeys.beginFill(0xFFFFFF);
-        arrowKeys.moveTo(65, 155);
-        arrowKeys.lineTo(60, 145);
-        arrowKeys.lineTo(70, 145);
-        arrowKeys.lineTo(65, 155);
-        arrowKeys.endFill();
-        
-        // Right arrow
-        arrowKeys.beginFill(0x444444);
-        arrowKeys.drawRoundedRect(85, 130, 30, 30, 5);
-        arrowKeys.endFill();
-        arrowKeys.beginFill(0xFFFFFF);
-        arrowKeys.moveTo(110, 145);
-        arrowKeys.lineTo(100, 140);
-        arrowKeys.lineTo(100, 150);
-        arrowKeys.lineTo(110, 145);
-        arrowKeys.endFill();
-        
-        // WASD keys
-        const wasdText = new PIXI.Text('WASD', { 
-            fontFamily: 'Arial', 
-            fontSize: 14, 
-            fill: 0xFFFFFF,
-            fontWeight: 'bold'
-        });
-        wasdText.position.set(140, 130);
-        
-        notification.addChild(arrowKeys);
-        notification.addChild(wasdText);
-        
-        // Position in center of screen
-        notification.position.set(
-            (this.app.screen.width - notification.width) / 2,
-            (this.app.screen.height - notification.height) / 2 - 50
-        );
-        
-        // Add close button
-        const closeBtn = new PIXI.Graphics();
-        closeBtn.beginFill(0x880000);
-        closeBtn.drawRoundedRect(0, 0, 20, 20, 3);
-        closeBtn.endFill();
-        closeBtn.lineStyle(2, 0xFFFFFF);
-        closeBtn.moveTo(5, 5);
-        closeBtn.lineTo(15, 15);
-        closeBtn.moveTo(15, 5);
-        closeBtn.lineTo(5, 15);
-        closeBtn.position.set(notification.width - 25, 5);
-        closeBtn.interactive = true;
-        closeBtn.buttonMode = true;
-        
-        closeBtn.on('pointerdown', () => {
-            this.app.stage.removeChild(notification);
-        });
-        
-        notification.addChild(closeBtn);
-        
-        // Auto-hide after 12 seconds
-        setTimeout(() => {
-            if (notification.parent) {
-                // Create a fade out animation
-                const fadeOut = () => {
-                    notification.alpha -= 0.02;
-                    if (notification.alpha > 0) {
-                        requestAnimationFrame(fadeOut);
-                    } else {
-                        this.app.stage.removeChild(notification);
-                    }
-                };
-                fadeOut();
-            }
-        }, 12000);
-    }
-    */
-
-    /**
-     * Run any registered initialization hooks
-     */
-    runInitHooks() {
-        // Check if there are any registered initialization functions
-        if (Array.isArray(IdleAnts.onInit)) {
-            console.log(`Running ${IdleAnts.onInit.length} initialization hooks`);
-            // Run each initialization function with this game instance as the argument
-            IdleAnts.onInit.forEach(initFn => {
-                try {
-                    initFn(this);
-                } catch (error) {
-                    console.error('Error in initialization hook:', error);
-                }
-            });
-        }
-    }
-
-    updateZoom(zoomDelta, mouseX, mouseY) {
-        // Store old zoom level
-        const oldZoom = this.mapConfig.zoom.level;
-        
-        // Calculate the minimum zoom level based on map and viewport dimensions
-        // This ensures we can't zoom out beyond the map boundaries
-        const minZoomX = this.app.view.width / this.mapConfig.width;
-        const minZoomY = this.app.view.height / this.mapConfig.height;
-        const dynamicMinZoom = Math.max(minZoomX, minZoomY);
-        
-        // Use the calculated minimum zoom or the configured minimum, whichever is larger
-        const effectiveMinZoom = Math.max(this.mapConfig.zoom.min, dynamicMinZoom);
-        
-        // Apply zoom with constraints
-        this.mapConfig.zoom.level = Math.max(
-            effectiveMinZoom,
-            Math.min(this.mapConfig.zoom.level + zoomDelta, this.mapConfig.zoom.max)
-        );
-        
-        // If zoom didn't change, exit early
-        if (oldZoom === this.mapConfig.zoom.level) return;
-        
-        // Get world position under mouse before zoom
-        const worldX = (mouseX / oldZoom) + this.mapConfig.viewport.x;
-        const worldY = (mouseY / oldZoom) + this.mapConfig.viewport.y;
-        
-        // Apply scale to world container
-        this.worldContainer.scale.set(this.mapConfig.zoom.level, this.mapConfig.zoom.level);
-        
-        // Adjust viewport to keep mouse position fixed during zoom
-        this.mapConfig.viewport.x = worldX - (mouseX / this.mapConfig.zoom.level);
-        this.mapConfig.viewport.y = worldY - (mouseY / this.mapConfig.zoom.level);
-        
-        // Constrain viewport to map boundaries
-        const newWorldWidth = this.app.view.width / this.mapConfig.zoom.level;
-        const newWorldHeight = this.app.view.height / this.mapConfig.zoom.level;
-        
-        this.mapConfig.viewport.x = Math.max(0, Math.min(
-            this.mapConfig.viewport.x,
-            this.mapConfig.width - newWorldWidth
-        ));
-        this.mapConfig.viewport.y = Math.max(0, Math.min(
-            this.mapConfig.viewport.y,
-            this.mapConfig.height - newWorldHeight
-        ));
-        
-        // Update world container position
-        this.worldContainer.position.set(
-            -this.mapConfig.viewport.x * this.mapConfig.zoom.level,
-            -this.mapConfig.viewport.y * this.mapConfig.zoom.level
-        );
-        
-        // Update minimap to reflect new zoom level
-        this.updateMinimap();
-        
-        // Update hover indicator if mouse is over canvas
-        if (this.lastMouseX !== undefined && this.lastMouseY !== undefined) {
-            this.updateHoverIndicator(this.lastMouseX, this.lastMouseY);
-        }
-    }
-    
-    unlockAutofeeder() {
-        if (this.resourceManager.unlockAutofeeder()) {
-            // Show upgrade effect
-            this.uiManager.showUpgradeEffect('unlock-autofeeder', 'Autofeeder Unlocked!');
-            
-            // Update UI
-            this.uiManager.updateUI();
-            this.uiManager.updateButtonStates();
-            
-            return true;
-        }
-        return false;
-    }
-    
-    upgradeAutofeeder() {
-        if (this.resourceManager.upgradeAutofeeder()) {
-            // Show upgrade effect
-            this.uiManager.showUpgradeEffect('upgrade-autofeeder', `Autofeeder Level ${this.resourceManager.stats.autofeederLevel}!`);
-            
-            // Update UI
-            this.uiManager.updateUI();
-            this.uiManager.updateButtonStates();
-            
-            return true;
-        }
-        return false;
-    }
-    
-    // Queen ant methods
-    unlockQueen() {
-        if (this.resourceManager.unlockQueen()) {
-            // Show unlock effect
-            this.uiManager.showUpgradeEffect('unlock-queen', 'Queen Ant Unlocked!');
-            
-            // Update UI
-            this.uiManager.updateUI();
-            this.uiManager.updateButtonStates();
-            
-            return true;
-        }
-        return false;
-    }
-    
-    buyQueen() {
-        if (this.resourceManager.buyQueen()) {
-            // Show purchase effect
-            this.uiManager.showUpgradeEffect('buy-queen', 'Queen Ant Purchased!');
-            
-            // Update UI
-            this.uiManager.updateUI();
-            this.uiManager.updateButtonStates();
-            
-            return true;
-        }
-        return false;
-    }
-    
-    upgradeQueen() {
-        if (this.resourceManager.upgradeQueen()) {
-            // Show upgrade effect
-            this.uiManager.showUpgradeEffect('upgrade-queen', `Queen Level ${this.resourceManager.stats.queenUpgradeLevel}!`);
-            
-            // Update UI
-            this.uiManager.updateUI();
-            this.uiManager.updateButtonStates();
-            
-            return true;
-        }
-        return false;
-    }
-
-    // Add the missing produceQueenLarvae function
-    produceQueenLarvae() {
-        // Check if we have a queen
-        if (!this.resourceManager.stats.hasQueen) {
-            return;
-        }
-        
-        // Get the queen's larvae capacity
-        const larvaeCapacity = this.resourceManager.stats.queenLarvaeCapacity;
-        
-        // Add larvae through the entity manager
-        if (this.entityManager) {
-            this.entityManager.produceQueenLarvae(larvaeCapacity);
-        }
-    }
+    // Queen now handles her own larvae production internally; no external call needed
 
     detectMobileDevice() {
         // Check if device is mobile based on user agent
@@ -1615,5 +841,163 @@ IdleAnts.Game = class {
             }
             lastTouchEnd = now;
         }, {passive: false});
+    }
+
+    /**
+     * Run any registered initialization hooks
+     */
+    runInitHooks() {
+        // Check if there are any registered initialization functions
+        if (Array.isArray(IdleAnts.onInit)) {
+            console.log(`Running ${IdleAnts.onInit.length} initialization hooks`);
+            // Run each initialization function with this game instance as the argument
+            IdleAnts.onInit.forEach(initFn => {
+                try {
+                    initFn(this);
+                } catch (error) {
+                    console.error('Error in initialization hook:', error);
+                }
+            });
+        }
+    }
+
+    unlockAutofeeder() {
+        if (this.resourceManager.unlockAutofeeder()) {
+            // Show upgrade effect
+            this.uiManager.showUpgradeEffect('unlock-autofeeder', 'Autofeeder Unlocked!');
+            
+            // Update UI
+            this.uiManager.updateUI();
+            this.uiManager.updateButtonStates();
+            
+            return true;
+        }
+        return false;
+    }
+    
+    upgradeAutofeeder() {
+        if (this.resourceManager.upgradeAutofeeder()) {
+            // Show upgrade effect
+            this.uiManager.showUpgradeEffect('upgrade-autofeeder', `Autofeeder Level ${this.resourceManager.stats.autofeederLevel}!`);
+            
+            // Update UI
+            this.uiManager.updateUI();
+            this.uiManager.updateButtonStates();
+            
+            return true;
+        }
+        return false;
+    }
+    
+    // Delegates autofeeder activation to EntityManager
+    activateAutofeeder() {
+        if (this.entityManager && typeof this.entityManager.activateAutofeeder === 'function') {
+            this.entityManager.activateAutofeeder();
+        }
+    }
+    
+    // Queen ant methods
+    unlockQueen() {
+        if (this.resourceManager.unlockQueen()) {
+            // Show unlock effect
+            this.uiManager.showUpgradeEffect('unlock-queen', 'Queen Ant Unlocked!');
+            
+            // Update UI
+            this.uiManager.updateUI();
+            this.uiManager.updateButtonStates();
+            
+            return true;
+        }
+        return false;
+    }
+    
+    buyQueen() {
+        if (this.resourceManager.buyQueen()) {
+            // Show purchase effect
+            this.uiManager.showUpgradeEffect('buy-queen', 'Queen Ant Purchased!');
+            
+            // Update UI
+            this.uiManager.updateUI();
+            this.uiManager.updateButtonStates();
+            
+            return true;
+        }
+        return false;
+    }
+    
+    upgradeQueen() {
+        if (this.resourceManager.upgradeQueen()) {
+            // Show upgrade effect
+            this.uiManager.showUpgradeEffect('upgrade-queen', `Queen Level ${this.resourceManager.stats.queenUpgradeLevel}!`);
+            
+            // Update UI
+            this.uiManager.updateUI();
+            this.uiManager.updateButtonStates();
+            
+            return true;
+        }
+        return false;
+    }
+
+    // Car Ant Game Logic Methods
+    unlockCarAnts() {
+        if (this.resourceManager.unlockCarAnts()) {
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('unlock-car-ants', 'Car Ants Unlocked! Bay available.');
+            return true;
+        }
+        return false;
+    }
+
+    buyCarAnt() {
+        if (this.resourceManager.buyCarAnt()) {
+            this.entityManager.createCarAnt();
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('buy-car-ant', 'Car Ant built!');
+            // Potentially play a car sound effect
+            // if (IdleAnts.AudioAssets.SFX.CAR_ANT_SPAWN) {
+            //     this.playSoundEffect(IdleAnts.AudioAssets.SFX.CAR_ANT_SPAWN.id);
+            // }
+            return true;
+        }
+        return false;
+    }
+
+    expandCarAntCapacity() {
+        if (this.resourceManager.expandCarAntCapacity()) {
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('expand-car-ants', 'Car Ant Bay Expanded!');
+            return true;
+        }
+        return false;
+    }
+
+    // Fire Ant Game Logic Methods
+    unlockFireAnts() {
+        if (this.resourceManager.unlockFireAnts()) {
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('unlock-fire-ants', 'Fire Ants Unlocked!');
+            return true;
+        }
+        return false;
+    }
+
+    buyFireAnt() {
+        if (this.resourceManager.buyFireAnt()) {
+            this.entityManager.createFireAnt();
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('buy-fire-ant', 'Fire Ant added!');
+            return true;
+        }
+        return false;
+    }
+
+    expandFireAntCapacity() {
+        if (this.resourceManager.expandFireAntCapacity()) {
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('expand-fire-ants', 'Fire Ant capacity expanded!');
+            return true;
+        }
+        return false;
     }
 }; 

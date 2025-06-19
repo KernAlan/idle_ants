@@ -6,7 +6,8 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         SEEKING_FOOD: 'seekingFood', 
         COLLECTING_FOOD: 'collectingFood',
         RETURNING_TO_NEST: 'returningToNest',
-        DELIVERING_FOOD: 'deliveringFood'
+        DELIVERING_FOOD: 'deliveringFood',
+        FIGHTING: 'fighting'
     };
     
     constructor(texture, nestPosition, speedMultiplier = 1, speedFactor = 1) {
@@ -98,6 +99,18 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         
         // State initialization
         this.state = IdleAnts.Entities.AntBase.States.SPAWNING;
+        
+        // Health properties
+        this.maxHp = 50;
+        this.hp = this.maxHp;
+        this.createHealthBar();
+        this.healthBarTimer = 0; // frames remaining to show health bar
+        
+        // Combat properties
+        this.attackDamage = 5;
+        this.attackCooldown = 30;
+        this._attackTimer = 0;
+        this.targetEnemy = null;
     }
     
     // Template method - subclasses can override to provide different scales
@@ -160,7 +173,74 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         this.addChild(this.foodIndicator);
     }
     
+    createHealthBar() {
+        // Create a separate container so the health bar is NOT affected by ant rotation
+        this.healthBarContainer = new PIXI.Container();
+        if (IdleAnts.app && IdleAnts.app.worldContainer) {
+            IdleAnts.app.worldContainer.addChild(this.healthBarContainer);
+        } else {
+            // Fallback: attach to ant, but this should rarely happen
+            this.addChild(this.healthBarContainer);
+        }
+        this.healthBarContainer.visible = false;
+
+        this.healthBarBg = new PIXI.Graphics();
+        this.healthBarBg.beginFill(0x000000, 0.6);
+        this.healthBarBg.drawRect(-10, 0, 20, 3);
+        this.healthBarBg.endFill();
+        this.healthBarContainer.addChild(this.healthBarBg);
+
+        this.healthBarFg = new PIXI.Graphics();
+        this.healthBarContainer.addChild(this.healthBarFg);
+        this.updateHealthBar();
+    }
+
+    updateHealthBar() {
+        const ratio = Math.max(this.hp,0) / this.maxHp;
+        this.healthBarFg.clear();
+        this.healthBarFg.beginFill(0x00FF00);
+        this.healthBarFg.drawRect(-10, 0, 20 * ratio, 3);
+        this.healthBarFg.endFill();
+        this.healthBarContainer.visible = true;
+        this.healthBarTimer = 1800; // 30 seconds at 60fps
+
+        // Ensure bar is positioned just above the ant and always horizontal
+        this.healthBarContainer.x = this.x;
+        this.healthBarContainer.y = this.y - 20;
+        this.healthBarContainer.rotation = 0;
+    }
+
+    takeDamage(dmg) {
+        this.hp -= dmg;
+        this.updateHealthBar();
+        if (this.hp <= 0) {
+            this.die();
+        }
+    }
+
+    die() {
+        if (this.parent) this.parent.removeChild(this);
+        this.isDead = true;
+        // Remove detached health bar
+        if (this.healthBarContainer && this.healthBarContainer.parent) {
+            this.healthBarContainer.parent.removeChild(this.healthBarContainer);
+        }
+    }
+    
     update(nestPosition, foods) {
+        // Keep health bar fixed above the sprite regardless of rotation
+        if (this.healthBarContainer) {
+            this.healthBarContainer.x = this.x;
+            this.healthBarContainer.y = this.y - 20;
+            this.healthBarContainer.rotation = 0;
+        }
+        // Handle health bar timer
+        if(this.healthBarTimer>0){
+            this.healthBarTimer--;
+            if(this.healthBarTimer===0 && this.healthBarContainer){
+                this.healthBarContainer.visible=false;
+            }
+        }
         // Check if the ant is stuck
         this.checkIfStuck();
         
@@ -183,6 +263,9 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
                 
             case IdleAnts.Entities.AntBase.States.DELIVERING_FOOD:
                 return this.updateDeliveringFood();
+                
+            case IdleAnts.Entities.AntBase.States.FIGHTING:
+                return this.updateFighting();
         }
         
         return false; // Default no action
@@ -202,6 +285,25 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
     
     // Handle seeking food state - ant looks for closest food source
     updateSeekingFood(foods) {
+        // PRIORITIZE ENEMY COMBAT OVER FOOD
+        if (this.targetEnemy && !this.targetEnemy.isDead) {
+            const dx = this.targetEnemy.x - this.x;
+            const dy = this.targetEnemy.y - this.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const engageDist = 20;
+
+            // If within engage range, switch to fighting state
+            if (distance <= engageDist) {
+                this.transitionToState(IdleAnts.Entities.AntBase.States.FIGHTING);
+                return false;
+            }
+
+            // Otherwise move toward the enemy like we would toward food
+            this.moveTowardsTarget(this.targetEnemy);
+            this.applyMovement();
+            return false;
+        }
+        
         // If ant can't carry more food, transition to returning to nest
         if (!this.canCarryMoreFood()) {
             this.transitionToState(IdleAnts.Entities.AntBase.States.RETURNING_TO_NEST);
@@ -1044,6 +1146,9 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
                 this.vx = 0;
                 this.vy = 0;
                 break;
+                
+            case IdleAnts.Entities.AntBase.States.FIGHTING:
+                return this.updateFighting();
         }
         
         // Set the new state
@@ -1085,5 +1190,24 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         
         // Normal case - check against configured minimum distance
         return distance >= this.config.minDistanceToDepositFood;
+    }
+    
+    updateFighting() {
+        if(!this.targetEnemy || this.targetEnemy.isDead){
+            this.targetEnemy = null;
+            this.transitionToState(IdleAnts.Entities.AntBase.States.SEEKING_FOOD);
+            return false;
+        }
+        // Freeze in place during combat
+        this.vx = 0;
+        this.vy = 0;
+        // attack
+        if(this._attackTimer>0){this._attackTimer--;}
+        else{
+            if(typeof this.targetEnemy.takeDamage==='function')
+                this.targetEnemy.takeDamage(this.attackDamage);
+            this._attackTimer=this.attackCooldown;
+        }
+        return false;
     }
 }; 

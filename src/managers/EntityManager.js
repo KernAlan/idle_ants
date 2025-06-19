@@ -14,7 +14,10 @@ IdleAnts.Managers.EntityManager = class {
             food: new PIXI.Container(),
             nest: new PIXI.Container(),
             queen: new PIXI.Container(), // Container for queen ant
-            larvae: new PIXI.Container() // New container for larvae
+            larvae: new PIXI.Container(), // New container for larvae
+            carAnts: new PIXI.Container(), // New container for Car Ants
+            fireAnts: new PIXI.Container(), // Container for Fire Ants
+            enemies: new PIXI.Container() // Container for Enemies
         };
         
         // Add containers to the world container instead of directly to the stage
@@ -24,6 +27,9 @@ IdleAnts.Managers.EntityManager = class {
         this.worldContainer.addChild(this.entitiesContainers.ants);
         this.worldContainer.addChild(this.entitiesContainers.flyingAnts);
         this.worldContainer.addChild(this.entitiesContainers.queen); // Add queen container
+        this.worldContainer.addChild(this.entitiesContainers.carAnts); // Add Car Ants container
+        this.worldContainer.addChild(this.entitiesContainers.fireAnts); // Add Fire Ants container
+        this.worldContainer.addChild(this.entitiesContainers.enemies); // Enemies container
         
         // Entity collections
         this.entities = {
@@ -31,7 +37,10 @@ IdleAnts.Managers.EntityManager = class {
             flyingAnts: [],
             foods: [],
             queen: null, // Reference to the queen ant
-            larvae: [] // Array for larvae entities
+            larvae: [], // Array for larvae entities
+            carAnts: [], // Array for Car Ant entities
+            fireAnts: [], // Array for Fire Ant entities
+            enemies: [] // Array for enemies
         };
         
         this.nest = null;
@@ -53,6 +62,9 @@ IdleAnts.Managers.EntityManager = class {
             width: 0,
             height: 0
         };
+        
+        this.enemySpawnCounter = 0;
+        this.enemySpawnInterval = 900; // spawn every 15s
     }
     
     setEffectManager(effectManager) {
@@ -81,6 +93,9 @@ IdleAnts.Managers.EntityManager = class {
         
         // Create food sources
         this.createFood(20); // More food for a larger map
+        
+        // Create initial enemies
+        this.createEnemy(5);
     }
     
     createNest() {
@@ -144,6 +159,63 @@ IdleAnts.Managers.EntityManager = class {
         if (this.effectManager) {
             // Pass true as the isFlying parameter to create a special effect for flying ants
             this.effectManager.createSpawnEffect(flyingAnt.x, flyingAnt.y, true);
+        }
+    }
+    
+    createCarAnt() {
+        if (!this.nestPosition) {
+            console.error("EntityManager: Nest position not available to create Car Ant. Nest may not have been initialized yet.");
+            return null; // Return null or handle appropriately
+        }
+        const carAntTexture = this.assetManager.getTexture(IdleAnts.Assets.Ants.CAR_ANT.id);
+        if (!carAntTexture) {
+            console.error("EntityManager: Car Ant texture not found!");
+            // Potentially use a fallback or skip creation
+            return;
+        }
+
+        const carAnt = new IdleAnts.Entities.CarAnt(
+            carAntTexture,
+            this.nestPosition,
+            this.resourceManager.stats.speedMultiplier // Assuming car ants also benefit from global speed upgrades
+        );
+
+        carAnt.x = this.nestPosition.x;
+        carAnt.y = this.nestPosition.y;
+        
+        // Car Ants could have a fixed high capacity or scale with strength.
+        // For now, let them scale with strength like other ants.
+        carAnt.capacity = this.resourceManager.stats.strengthMultiplier; 
+
+        this.entitiesContainers.carAnts.addChild(carAnt);
+        this.entities.carAnts.push(carAnt);
+
+        if (this.effectManager) {
+            // Using a generic spawn effect for now, could be customized for cars (e.g., tire screech, engine rev)
+            this.effectManager.createSpawnEffect(carAnt.x, carAnt.y, false, { R: 255, G: 0, B: 0 }); // Red spawn effect
+        }
+        console.log("Car Ant created at:", carAnt.x, carAnt.y);
+    }
+    
+    createFireAnt() {
+        if (!this.nestPosition) {
+            console.error("EntityManager: Nest position not available to create Fire Ant.");
+            return;
+        }
+        const fireAntTexture = this.assetManager.getTexture('ant'); // reuse regular ant texture
+        const fireAnt = new IdleAnts.Entities.FireAnt(
+            fireAntTexture,
+            this.nestPosition,
+            this.resourceManager.stats.speedMultiplier
+        );
+        fireAnt.x = this.nestPosition.x;
+        fireAnt.y = this.nestPosition.y;
+
+        this.entitiesContainers.fireAnts.addChild(fireAnt);
+        this.entities.fireAnts.push(fireAnt);
+
+        if (this.effectManager) {
+            this.effectManager.createSpawnEffect(fireAnt.x, fireAnt.y, false, { R: 255, G: 69, B: 0 });
         }
     }
     
@@ -227,6 +299,12 @@ IdleAnts.Managers.EntityManager = class {
         // Update flying ants
         this.updateFlyingAnts();
         
+        // Update Car Ants
+        this.updateCarAnts();
+        
+        // Update Fire Ants
+        this.updateFireAnts();
+        
         // Update food
         this.updateFood();
         
@@ -235,6 +313,9 @@ IdleAnts.Managers.EntityManager = class {
         
         // Handle autofeeder
         this.handleAutofeeder();
+        
+        // Update Enemies
+        this.updateEnemies();
     }
     
     // New method to update larvae
@@ -352,6 +433,48 @@ IdleAnts.Managers.EntityManager = class {
         for (let i = 0; i < antEntities.length; i++) {
             const ant = antEntities[i];
             
+            const perceptionSq = 250 * 250; // 250-px perception radius
+            const engageDist = 20;
+
+            // Locate closest living enemy
+            let closestE = null,
+                closestESq = Infinity;
+            for (const enemy of this.entities.enemies) {
+                if (enemy.isDead) continue;
+                const dx = enemy.x - ant.x,
+                      dy = enemy.y - ant.y,
+                      d = dx * dx + dy * dy;
+                if (d < closestESq) { closestESq = d; closestE = enemy; }
+            }
+
+            if (closestE && closestESq <= perceptionSq) {
+                const dist = Math.sqrt(closestESq);
+                ant.targetEnemy = closestE;
+
+                // Force ant into aggressive pursuit unless already in combat
+                if (ant.state !== IdleAnts.Entities.AntBase.States.FIGHTING) {
+                    // Ensure we're in a movable state while chasing
+                    if (ant.state !== IdleAnts.Entities.AntBase.States.SEEKING_FOOD) {
+                        ant.transitionToState(IdleAnts.Entities.AntBase.States.SEEKING_FOOD);
+                    }
+                }
+
+                if (dist > engageDist) {
+                    // Move toward the enemy
+                    ant.vx = (closestE.x - ant.x) / dist * ant.speed;
+                    ant.vy = (closestE.y - ant.y) / dist * ant.speed;
+                } else {
+                    // Engage – freeze and switch to fighting if not already
+                    ant.vx = ant.vy = 0;
+                    if (ant.state !== IdleAnts.Entities.AntBase.States.FIGHTING) {
+                        ant.transitionToState(IdleAnts.Entities.AntBase.States.FIGHTING);
+                    }
+                }
+            } else {
+                // No enemy in perception – clear any previous lock
+                ant.targetEnemy = null;
+            }
+            
             // Update the ant with nest position and available foods
             const actionResult = ant.update(this.nestPosition, this.entities.foods);
             
@@ -401,6 +524,12 @@ IdleAnts.Managers.EntityManager = class {
                     // Ant has returned to nest with food
                     this.deliverFood(ant);
                 }
+            }
+            
+            // Remove dead ants
+            if(ant.isDead){
+                antEntities.splice(i,1);
+                i--; continue;
             }
         }
     }
@@ -600,19 +729,23 @@ IdleAnts.Managers.EntityManager = class {
         const multiplier = this.resourceManager.stats.speedMultiplier;
         this.updateAntEntitiesSpeed(this.entities.ants, multiplier);
         this.updateAntEntitiesSpeed(this.entities.flyingAnts, multiplier);
+        this.updateAntEntitiesSpeed(this.entities.carAnts, multiplier);
+        this.updateAntEntitiesSpeed(this.entities.fireAnts, multiplier);
     }
     
     // Generic method to update speed for any ant type
     updateAntEntitiesSpeed(antEntities, multiplier) {
-        for (let i = 0; i < antEntities.length; i++) {
-            antEntities[i].updateSpeedMultiplier(multiplier);
-        }
+        antEntities.forEach(ant => {
+            ant.updateSpeedMultiplier(multiplier);
+        });
     }
     
     // Method to increase all ants' strength
     updateAntsCapacity() {
         this.updateAntEntitiesStrength(this.entities.ants);
         this.updateAntEntitiesStrength(this.entities.flyingAnts);
+        this.updateAntEntitiesStrength(this.entities.carAnts);
+        this.updateAntEntitiesStrength(this.entities.fireAnts);
     }
     
     updateAntEntitiesStrength(antEntities) {
@@ -802,11 +935,12 @@ IdleAnts.Managers.EntityManager = class {
             this.effectManager.createLarvaeEffect(queenX, queenY);
         }
         
-        // Determine how many larvae to produce (random between 1 and capacity)
-        const larvaeCount = Math.floor(Math.random() * capacity) + 1;
-        console.log(`Queen producing ${larvaeCount} larvae`);
+        // Determine larvae to produce – one per allowed capacity that is free
+        const availableSlots = capacity - this.entities.queen.currentLarvae;
+        if (availableSlots <= 0) return;
+        const larvaeCount = 1; // always produce a single egg per cycle
         
-        // Create larvae entities around the queen
+        // Create larvae entity around the queen
         for (let i = 0; i < larvaeCount; i++) {
             // Calculate a random position near the queen
             const angle = Math.random() * Math.PI * 2;
@@ -845,6 +979,19 @@ IdleAnts.Managers.EntityManager = class {
         this.updateAntEntities(this.entities.flyingAnts, shouldCreateTrail, true);
     }
     
+    // New method to update Car Ants
+    updateCarAnts() {
+        // For CarAnts, trail might be different (e.g. tire tracks) or disabled.
+        // Let's disable default ant trail for now.
+        this.updateAntEntities(this.entities.carAnts, false, false); // No trail, not strictly flying for pathing
+    }
+    
+    // Update Fire Ants
+    updateFireAnts() {
+        const shouldCreateTrail = this.frameCounter % this.trailInterval === 0;
+        this.updateAntEntities(this.entities.fireAnts, shouldCreateTrail, false);
+    }
+    
     // Method to update food
     updateFood() {
         // Update food items
@@ -879,6 +1026,39 @@ IdleAnts.Managers.EntityManager = class {
                 this.activateAutofeeder();
                 this.autofeederCounter = 0;
             }
+        }
+    }
+    
+    createEnemy(count=1){
+        for(let i=0;i<count;i++){
+            const tex=this.assetManager.getTexture('ant'); // placeholder
+            let enemy;
+            if(Math.random()<0.2){
+                enemy=new IdleAnts.Entities.GrasshopperEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
+            } else {
+                enemy=new IdleAnts.Entities.WoollyBearEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
+            }
+            this.entitiesContainers.enemies.addChild(enemy);
+            this.entities.enemies.push(enemy);
+        }
+    }
+    
+    updateEnemies(){
+        const ants=[...this.entities.ants,...this.entities.flyingAnts,...this.entities.carAnts,...this.entities.fireAnts];
+        for(let i=this.entities.enemies.length-1;i>=0;i--){
+            const e=this.entities.enemies[i];
+            if(e.isDead){this.entities.enemies.splice(i,1);continue;}
+            if(e instanceof IdleAnts.Entities.WoollyBearEnemy){
+                e.update(this.nestPosition,[],ants);
+            }else{
+                e.update(ants);
+            }
+        }
+        // Spawn new enemy periodically
+        this.enemySpawnCounter++;
+        if(this.enemySpawnCounter>=this.enemySpawnInterval){
+            this.createEnemy(1);
+            this.enemySpawnCounter=0;
         }
     }
 } 

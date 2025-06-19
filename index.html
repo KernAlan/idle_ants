@@ -80,6 +80,8 @@
                 </div>
                 <div id="ants">Ants: <span id="ant-count">1</span>/<span id="ant-max">10</span></div>
                 <div id="flying-ant-stats" class="hidden">Flying: <span id="flying-ant-count">0</span>/<span id="flying-ant-max">0</span></div>
+                <div id="car-ant-resource-stats" class="hidden">Car Ants: <span id="car-ant-resource-count">0</span>/<span id="car-ant-resource-max">0</span></div>
+                <div id="fire-ant-resource-stats" class="hidden">Fire Ants: <span id="fire-ant-resource-count">0</span>/<span id="fire-ant-resource-max">0</span></div>
             </div>
             <div id="upgrades">
                 <div class="upgrade-section">
@@ -108,6 +110,24 @@
                         Larvae: <span id="queen-larvae-capacity">3</span> | 
                         Rate: <span id="queen-larvae-rate">60-120</span>s
                         <!-- HP will be implemented in a future update -->
+                    </div>
+                </div>
+                
+                <div class="upgrade-section">
+                    <h3>Super Ants</h3>
+                    <button id="unlock-car-ants" class="upgrade-btn special-btn"><i class="fas fa-car"></i>Unlock Car Ant (<span id="car-ant-unlock-cost">10000</span>)</button>
+                    <button id="buy-car-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Buy Car Ant (<span id="car-ant-cost">2500</span>)</button>
+                    <button id="expand-car-ants" class="upgrade-btn special-btn hidden"><i class="fas fa-expand"></i>Expand Car Ant Bay (<span id="expand-car-ant-cost">5000</span>)</button>
+                    <div id="car-ant-stats" class="hidden" style="font-size: 0.8em; margin-top: 5px;">
+                        Car Ants: <span id="car-ant-count">0</span>/<span id="car-ant-max">0</span>
+                    </div>
+
+                    <!-- Fire Ants -->
+                    <button id="unlock-fire-ants" class="upgrade-btn special-btn"><i class="fas fa-fire"></i>Unlock Fire Ant (<span id="fire-ant-unlock-cost">20000</span>)</button>
+                    <button id="buy-fire-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Buy Fire Ant (<span id="fire-ant-cost">5000</span>)</button>
+                    <button id="expand-fire-ants" class="upgrade-btn special-btn hidden"><i class="fas fa-expand"></i>Expand Fire Ant Bay (<span id="expand-fire-ant-cost">10000</span>)</button>
+                    <div id="fire-ant-stats" class="hidden" style="font-size: 0.8em; margin-top: 5px;">
+                        Fire Ants: <span id="fire-ant-count">0</span>/<span id="fire-ant-max">0</span>
                     </div>
                 </div>
                 
@@ -155,14 +175,22 @@
     <script src="src/managers/EntityManager.js"></script>
     <script src="src/managers/AudioManager.js"></script>
     <script src="src/managers/UIManager.js"></script>
+    <script src="src/managers/camera/CameraManager.js"></script>
+    <script src="src/managers/input/InputManager.js"></script>
+    <script src="src/managers/CombatManager.js"></script>
     <!-- Entities -->
     <script src="src/entities/AntBase.js"></script>
     <script src="src/entities/Ant.js"></script>
     <script src="src/entities/FlyingAnt.js"></script>
+    <script src="src/entities/CarAnt.js"></script>
     <script src="src/entities/QueenAnt.js"></script>
     <script src="src/entities/Larvae.js"></script>
     <script src="src/entities/Food.js"></script>
     <script src="src/entities/Nest.js"></script>
+    <script src="src/entities/FireAnt.js"></script>
+    <script src="src/entities/Enemy.js"></script>
+    <script src="src/entities/GrasshopperEnemy.js"></script>
+    <script src="src/entities/WoollyBearEnemy.js"></script>
     <!-- Game Core -->
     <script src="src/Game.js"></script>
     <script src="src/index.js"></script>

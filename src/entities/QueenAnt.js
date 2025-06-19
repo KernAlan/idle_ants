@@ -106,6 +106,13 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
         // Store the nest position
         this.nestPosition = nestPosition;
         
+        // Ensure health bar follows queen
+        if (this.healthBarContainer) {
+            this.healthBarContainer.x = this.x;
+            this.healthBarContainer.y = this.y - 25;
+            this.healthBarContainer.rotation = 0;
+        }
+        
         // Update movement
         this.updateMovement();
         
@@ -163,6 +170,11 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
     }
     
     updateLarvaeProduction() {
+        // Sync capacity with global stats
+        if (IdleAnts.app && IdleAnts.app.resourceManager) {
+            this.larvaeCapacity = IdleAnts.app.resourceManager.stats.queenLarvaeCapacity;
+        }
+        
         // Check if the colony is at max capacity
         if (IdleAnts.app && IdleAnts.app.entityManager && 
             IdleAnts.app.resourceManager) {

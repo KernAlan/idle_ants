@@ -49,8 +49,23 @@ IdleAnts.Managers.ResourceManager = class {
             queenUpgradeLevel: 0,
             maxQueenUpgradeLevel: 5,
             queenUpgradeCost: 2000,
-            queenLarvaeCapacity: 3,
-            queenLarvaeProductionRate: 3600 // 60 seconds at 60fps (1 minute)
+            queenLarvaeCapacity: 1,
+            queenLarvaeProductionRate: 3600, // 60 seconds at 60fps (1 minute)
+
+            // Car Ant properties
+            carAnts: 0,
+            maxCarAnts: 0, // Starts locked
+            carAntsUnlocked: false,
+            carAntUnlockCost: 10000, // Example: High cost to unlock
+            carAntCost: 2500,       // Example: High cost per Car Ant
+            carAntFoodPerSecond: 5, // Example: Car ants are very efficient
+            // Fire Ant properties
+            fireAnts: 0,
+            maxFireAnts: 0,
+            fireAntsUnlocked: false,
+            fireAntUnlockCost: 20000,
+            fireAntCost: 5000,
+            fireAntFoodPerSecond: 8
         };
         
         // Map of food tier to food type
@@ -177,7 +192,11 @@ IdleAnts.Managers.ResourceManager = class {
     
     updateFoodPerSecond() {
         // Regular ants contribute 0.5 food per second, flying ants contribute 2 food per second
-        this.stats.foodPerSecond = (this.stats.ants * 0.5) + (this.stats.flyingAnts * 2);
+        // Car ants contribute based on their stat
+        this.stats.foodPerSecond = (this.stats.ants * 0.5) + 
+                                   (this.stats.flyingAnts * 2) + 
+                                   (this.stats.carAnts * this.stats.carAntFoodPerSecond) +
+                                   (this.stats.fireAnts * this.stats.fireAntFoodPerSecond);
     }
     
     increaseMaxAnts(amount) {
@@ -407,6 +426,7 @@ IdleAnts.Managers.ResourceManager = class {
         
         this.spendFood(this.stats.queenUnlockCost);
         this.stats.queenUnlocked = true;
+        this.stats.queenLarvaeCapacity += 1;
         return true;
     }
     
@@ -436,13 +456,123 @@ IdleAnts.Managers.ResourceManager = class {
         this.spendFood(this.stats.queenUpgradeCost);
         this.stats.queenUpgradeLevel++;
         
+        // Increase larvae capacity by 1 each level
+        this.stats.queenLarvaeCapacity += 1;
         // Queen HP will be implemented later
-        // For now, the upgrade just increases the level
         console.log(`Queen upgraded to level ${this.stats.queenUpgradeLevel}`);
         
         // Update upgrade cost
         this.updateQueenUpgradeCost();
         
         return true;
+    }
+
+    // Car Ant Methods
+    canUnlockCarAnts() {
+        return this.canAfford(this.stats.carAntUnlockCost) && !this.stats.carAntsUnlocked;
+    }
+
+    unlockCarAnts() {
+        if (this.canUnlockCarAnts()) {
+            this.spendFood(this.stats.carAntUnlockCost);
+            this.stats.carAntsUnlocked = true;
+            this.stats.maxCarAnts = 2; // Unlock a small initial capacity, e.g., 2
+            console.log("Car Ants Unlocked!");
+            // Potentially update UI or trigger game event here
+            return true;
+        }
+        return false;
+    }
+
+    canBuyCarAnt() {
+        return this.stats.carAntsUnlocked && 
+               this.canAfford(this.stats.carAntCost) && 
+               this.stats.carAnts < this.stats.maxCarAnts;
+    }
+
+    buyCarAnt() {
+        if (this.canBuyCarAnt()) {
+            this.spendFood(this.stats.carAntCost);
+            this.stats.carAnts++;
+            this.updateFoodPerSecond(); // Recalculate food per second
+            this.updateCarAntCost();    // Increase cost for the next one
+            console.log("Car Ant Purchased! Total Car Ants: " + this.stats.carAnts);
+            return true;
+        }
+        return false;
+    }
+
+    updateCarAntCost() {
+        this.stats.carAntCost = Math.floor(this.stats.carAntCost * 1.5); // Example cost increase
+    }
+
+    // Method to expand Car Ant capacity (similar to flying ants)
+    canExpandCarAntCapacity() {
+        // Define a cost for expanding car ant capacity, e.g., based on current max or a fixed high cost
+        // For simplicity, let's use a cost that scales with the number of car ants or a fixed high value
+        const expandCarAntCapacityCost = this.stats.maxCarAnts > 0 ? this.stats.carAntCost * (this.stats.maxCarAnts + 1) * 0.5 : 5000;
+        return this.stats.carAntsUnlocked && this.canAfford(expandCarAntCapacityCost);
+    }
+
+    expandCarAntCapacity() {
+        const expandCarAntCapacityCost = this.stats.maxCarAnts > 0 ? this.stats.carAntCost * (this.stats.maxCarAnts + 1) * 0.5 : 5000;
+        if (this.canExpandCarAntCapacity()) {
+            this.spendFood(expandCarAntCapacityCost);
+            this.stats.maxCarAnts += 1; // Increase max by 1 or a fixed amount
+            console.log("Car Ant capacity expanded to: " + this.stats.maxCarAnts);
+            return true;
+        }
+        return false;
+    }
+
+    // Fire Ant Methods
+    canUnlockFireAnts() {
+        return this.canAfford(this.stats.fireAntUnlockCost) && !this.stats.fireAntsUnlocked;
+    }
+
+    unlockFireAnts() {
+        if (this.canUnlockFireAnts()) {
+            this.spendFood(this.stats.fireAntUnlockCost);
+            this.stats.fireAntsUnlocked = true;
+            this.stats.maxFireAnts = 2; // initial capacity
+            return true;
+        }
+        return false;
+    }
+
+    canBuyFireAnt() {
+        return this.stats.fireAntsUnlocked &&
+               this.canAfford(this.stats.fireAntCost) &&
+               this.stats.fireAnts < this.stats.maxFireAnts;
+    }
+
+    buyFireAnt() {
+        if (this.canBuyFireAnt()) {
+            this.spendFood(this.stats.fireAntCost);
+            this.stats.fireAnts++;
+            this.updateFoodPerSecond();
+            this.updateFireAntCost();
+            return true;
+        }
+        return false;
+    }
+
+    updateFireAntCost() {
+        this.stats.fireAntCost = Math.floor(this.stats.fireAntCost * 1.5);
+    }
+
+    canExpandFireAntCapacity() {
+        const cost = this.stats.maxFireAnts > 0 ? this.stats.fireAntCost * (this.stats.maxFireAnts + 1) * 0.5 : 10000;
+        return this.stats.fireAntsUnlocked && this.canAfford(cost);
+    }
+
+    expandFireAntCapacity() {
+        const cost = this.stats.maxFireAnts > 0 ? this.stats.fireAntCost * (this.stats.maxFireAnts + 1) * 0.5 : 10000;
+        if (this.canExpandFireAntCapacity()) {
+            this.spendFood(cost);
+            this.stats.maxFireAnts += 1;
+            return true;
+        }
+        return false;
     }
 } 
