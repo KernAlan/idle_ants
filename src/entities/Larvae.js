@@ -62,27 +62,46 @@ IdleAnts.Entities.Larvae = class {
     }
     
     createEggGraphic() {
-        // Create a glow behind the egg
+        // Create realistic ant egg appearance
+        
+        // Subtle glow for visibility
         this.glow = new PIXI.Graphics();
-        this.glow.beginFill(0xFFFF00, 0.3);
-        this.glow.drawCircle(0, 0, 15);
+        this.glow.beginFill(0xFFF8DC, 0.2); // Very subtle cream glow
+        this.glow.drawCircle(0, 0, 12);
         this.glow.endFill();
         this.container.addChild(this.glow);
         
-        // Create the egg
+        // Main egg body - realistic ant egg colors
         this.egg = new PIXI.Graphics();
-        this.egg.beginFill(0xFFFFF0);
-        this.egg.drawEllipse(0, 0, 8, 12);
+        this.egg.beginFill(0xFFFAF0); // Creamy white
+        this.egg.drawEllipse(0, 0, 6, 9); // Smaller, more realistic proportions
         this.egg.endFill();
         
-        // Add a border
-        this.egg.lineStyle(2, 0xAA9900);
-        this.egg.drawEllipse(0, 0, 8, 12);
+        // Add subtle gradient effect
+        this.egg.beginFill(0xF5F5DC, 0.4); // Beige highlight
+        this.egg.drawEllipse(-1, -2, 4, 6);
+        this.egg.endFill();
+        
+        // Very thin, subtle border
+        this.egg.lineStyle(0.8, 0xDDD8B8, 0.8); // Muted border
+        this.egg.drawEllipse(0, 0, 6, 9);
+        
+        // Add texture dots for realism
+        this.egg.lineStyle(0);
+        this.egg.beginFill(0xEEE8CD, 0.3);
+        for(let i = 0; i < 8; i++){
+            const angle = (i / 8) * Math.PI * 2;
+            const x = Math.cos(angle) * 3;
+            const y = Math.sin(angle) * 4.5;
+            this.egg.drawCircle(x, y, 0.5);
+        }
+        this.egg.endFill();
         
         this.container.addChild(this.egg);
         
-        // Add a pulsing animation
+        // Animation parameters
         this.pulseTime = 0;
+        this.developmentTime = 0;
     }
     
     update(delta = 1/60) {
@@ -104,13 +123,42 @@ IdleAnts.Entities.Larvae = class {
         
         // Update pulsing animation - keep it simple and subtle
         this.pulseTime += delta * 2;
-        
-        // Simple, consistent pulse that doesn't change or flicker
-        const pulse = 1 + Math.sin(this.pulseTime) * 0.1; // Subtle 10% pulse
-        this.container.scale.set(pulse);
+        this.developmentTime += delta;
         
         // Calculate how close we are to hatching (0 to 1)
         const hatchProgress = this.age / this.hatchingTime;
+        
+        // Realistic egg development animation
+        if(this.egg && this.glow){
+            // Subtle pulse that gets more pronounced as hatching approaches
+            const pulseIntensity = 0.05 + (hatchProgress * 0.1); // 5% to 15% pulse
+            const pulse = 1 + Math.sin(this.pulseTime) * pulseIntensity;
+            this.egg.scale.set(pulse);
+            
+            // Glow becomes more active as development progresses
+            const glowIntensity = 0.1 + (hatchProgress * 0.3);
+            this.glow.alpha = glowIntensity + Math.sin(this.pulseTime * 1.5) * 0.1;
+            
+            // Egg becomes slightly more opaque as development progresses
+            this.egg.alpha = 0.9 + (hatchProgress * 0.1);
+            
+            // In final 20%, add slight movement to indicate life inside
+            if(hatchProgress > 0.8){
+                const wiggleIntensity = (hatchProgress - 0.8) * 5; // 0 to 1 for final 20%
+                const wiggle = Math.sin(this.developmentTime * 8) * wiggleIntensity * 0.5;
+                this.egg.rotation = wiggle * 0.1; // Very subtle rotation
+                
+                // Slight position shift
+                this.egg.x = Math.sin(this.developmentTime * 6) * wiggleIntensity * 0.8;
+                this.egg.y = Math.cos(this.developmentTime * 7) * wiggleIntensity * 0.6;
+            }
+            
+            // In final 10%, show visible cracks
+            if(hatchProgress > 0.9 && !this.cracksAdded){
+                this.addCracks();
+                this.cracksAdded = true;
+            }
+        }
         
         // Log progress at key percentages
         if (
@@ -232,5 +280,25 @@ IdleAnts.Entities.Larvae = class {
         if (this.container && this.container.parent) {
             this.container.parent.removeChild(this.container);
         }
+    }
+    
+    addCracks(){
+        // Add visible cracks to the egg as it's about to hatch
+        this.cracks = new PIXI.Graphics();
+        this.cracks.lineStyle(1, 0x8B7355, 0.8);
+        
+        // Draw several crack lines
+        this.cracks.moveTo(-2, -4);
+        this.cracks.lineTo(1, -1);
+        this.cracks.lineTo(-1, 2);
+        
+        this.cracks.moveTo(2, -3);
+        this.cracks.lineTo(-1, 0);
+        this.cracks.lineTo(2, 3);
+        
+        this.cracks.moveTo(-3, 1);
+        this.cracks.lineTo(0, -2);
+        
+        this.container.addChild(this.cracks);
     }
 }; 

@@ -77,57 +77,66 @@ IdleAnts.Effects.LarvaeEffect = class extends IdleAnts.Effects.Effect {
     }
     
     createEggGraphic() {
-        // Create a bright glow behind everything
+        // Create realistic egg appearance for hatching effect
         this.glow = new PIXI.Graphics();
-        this.glow.beginFill(0xFFFF00, 0.4); // Bright yellow glow
-        this.glow.drawCircle(0, 0, 14); // Reduced from 20
+        this.glow.beginFill(0xFFF8DC, 0.3); // Subtle cream glow
+        this.glow.drawCircle(0, 0, 12);
         this.glow.endFill();
         this.container.addChild(this.glow);
         
-        // Create a highlight circle behind the egg for better visibility
-        this.highlight = new PIXI.Graphics();
-        this.highlight.beginFill(0xFFFFAA, 0.5); // Light yellow glow, more opaque
-        this.highlight.drawCircle(0, 0, 10.5); // Reduced from 15
-        this.highlight.endFill();
-        this.container.addChild(this.highlight);
-        
-        // Create the egg graphic
+        // Main egg body
         this.egg = new PIXI.Graphics();
-        this.egg.beginFill(0xFFFFF0); // Off-white color for egg
-        this.egg.drawEllipse(0, 0, 5, 7); // Reduced from 7, 10
+        this.egg.beginFill(0xFFFAF0); // Creamy white
+        this.egg.drawEllipse(0, 0, 6, 9);
         this.egg.endFill();
         
-        // Add a slight shadow to the egg
-        this.egg.beginFill(0xEEEEDD, 0.3);
-        this.egg.drawEllipse(0.7, 0.7, 4.2, 6.3); // Reduced from 1, 1, 6, 9
+        // Gradient highlight
+        this.egg.beginFill(0xF5F5DC, 0.4);
+        this.egg.drawEllipse(-1, -2, 4, 6);
         this.egg.endFill();
         
-        // Add a thicker border to the egg for better visibility
-        this.egg.lineStyle(1.4, 0xAA9900); // Reduced from 2
-        this.egg.drawEllipse(0, 0, 5, 7); // Reduced from 7, 10
+        // Subtle border
+        this.egg.lineStyle(0.8, 0xDDD8B8, 0.8);
+        this.egg.drawEllipse(0, 0, 6, 9);
+        
+        // Pre-cracked appearance for hatching
+        this.egg.lineStyle(1.2, 0x8B7355, 0.9);
+        this.egg.moveTo(-2, -4);
+        this.egg.lineTo(1, -1);
+        this.egg.lineTo(-1, 2);
+        this.egg.moveTo(2, -3);
+        this.egg.lineTo(-1, 0);
+        this.egg.lineTo(2, 3);
         
         this.container.addChild(this.egg);
     }
     
     createLarvaeGraphic() {
-        // Create the larvae
+        // Create realistic ant larvae
         this.larvae = new PIXI.Graphics();
-        this.larvae.beginFill(0xFFFF00); // Bright yellow for larvae
-        this.larvae.drawEllipse(0, 0, 3.5, 5); // Reduced from 5, 7
+        this.larvae.beginFill(0xFFFAF0); // Pale cream - realistic larvae color
+        this.larvae.drawEllipse(0, 0, 4, 6); // Slightly larger than egg
         this.larvae.endFill();
         
-        // Add some segmentation to the larvae
-        this.larvae.lineStyle(1, 0xAA9900); // Reduced from 1.5
-        this.larvae.moveTo(-3.5, -2.1); // Reduced from -5, -3
-        this.larvae.lineTo(3.5, -2.1); // Reduced from 5, -3
-        this.larvae.moveTo(-3.5, 0); // Reduced from -5, 0
-        this.larvae.lineTo(3.5, 0); // Reduced from 5, 0
-        this.larvae.moveTo(-3.5, 2.1); // Reduced from -5, 3
-        this.larvae.lineTo(3.5, 2.1); // Reduced from 5, 3
+        // Add subtle body segmentation
+        this.larvae.lineStyle(0.8, 0xE6D7C3, 0.6);
+        for(let i = 0; i < 3; i++){
+            const y = -3 + i * 2;
+            this.larvae.moveTo(-3, y);
+            this.larvae.lineTo(3, y);
+        }
         
-        // Add a thicker border to the larvae for better visibility
-        this.larvae.lineStyle(1.4, 0xAA9900); // Reduced from 2
-        this.larvae.drawEllipse(0, 0, 3.5, 5); // Reduced from 5, 7
+        // Soft border
+        this.larvae.lineStyle(0.8, 0xDDD8B8, 0.7);
+        this.larvae.drawEllipse(0, 0, 4, 6);
+        
+        // Add tiny dark spots for realism
+        this.larvae.lineStyle(0);
+        this.larvae.beginFill(0xE6D7C3, 0.4);
+        this.larvae.drawCircle(-1, -2, 0.4);
+        this.larvae.drawCircle(1, 0, 0.4);
+        this.larvae.drawCircle(-0.5, 2, 0.4);
+        this.larvae.endFill();
         
         this.larvae.alpha = 0; // Start invisible
         this.container.addChild(this.larvae);
@@ -136,19 +145,19 @@ IdleAnts.Effects.LarvaeEffect = class extends IdleAnts.Effects.Effect {
     createParticles() {
         // Create hatching particles
         this.particles = [];
-        const particleCount = 16; // Even more particles
+        const particleCount = 12; // Moderate amount
         
         for (let i = 0; i < particleCount; i++) {
             const particle = new PIXI.Graphics();
-            particle.beginFill(0xFFFF00); // Bright yellow
-            particle.drawCircle(0, 0, 1.75); // Reduced from 2.5
+            particle.beginFill(0xF5F5DC); // Cream colored particles
+            particle.drawCircle(0, 0, 1.2); // Small particles
             particle.endFill();
             
             const angle = (i / particleCount) * Math.PI * 2;
-            particle.vx = Math.cos(angle) * 2.5; // Faster movement
-            particle.vy = Math.sin(angle) * 2.5;
+            particle.vx = Math.cos(angle) * 1.8; // Moderate movement
+            particle.vy = Math.sin(angle) * 1.8;
             particle.alpha = 0; // Start invisible
-            particle.delay = i * 0.05; // Stagger the appearance
+            particle.delay = i * 0.08; // Stagger the appearance
             
             this.container.addChild(particle);
             this.particles.push(particle);
@@ -164,13 +173,8 @@ IdleAnts.Effects.LarvaeEffect = class extends IdleAnts.Effects.Effect {
         
         // Update glow if it exists
         if (this.glow) {
-            this.glow.alpha = 0.4 + Math.sin(progress * Math.PI * 6) * 0.3;
-            this.glow.scale.set(1 + Math.sin(progress * Math.PI * 3) * 0.2);
-        }
-        
-        // Update highlight if it exists
-        if (this.highlight) {
-            this.highlight.alpha = 0.5 + Math.sin(progress * Math.PI * 4) * 0.3;
+            this.glow.alpha = 0.2 + Math.sin(progress * Math.PI * 4) * 0.2;
+            this.glow.scale.set(1 + Math.sin(progress * Math.PI * 2) * 0.15);
         }
         
         // First 60%: egg pulsates and starts to crack
@@ -185,18 +189,16 @@ IdleAnts.Effects.LarvaeEffect = class extends IdleAnts.Effects.Effect {
             // In the last part of this phase, start showing some particles
             if (eggPhaseProgress > 0.8) {
                 // Calculate particle progress
-                const particleProgress = (eggPhaseProgress - 0.8) * 5; // 0-1 for the last 20% of egg phase
+                const particleProgress = (eggPhaseProgress - 0.8) * 5;
                 
-                // Show a few particles
-                for (let i = 0; i < Math.min(4, this.particles.length); i++) {
+                // Show initial particles
+                for (let i = 0; i < Math.min(3, this.particles.length); i++) {
                     const particle = this.particles[i];
                     
-                    // Fade in
                     particle.alpha = Math.min(1, particleProgress);
                     
-                    // Move slightly
-                    particle.x = particle.vx * particleProgress * 5;
-                    particle.y = particle.vy * particleProgress * 5;
+                    particle.x = particle.vx * particleProgress * 3;
+                    particle.y = particle.vy * particleProgress * 3;
                 }
             }
         } 
@@ -206,7 +208,7 @@ IdleAnts.Effects.LarvaeEffect = class extends IdleAnts.Effects.Effect {
             const crackPhaseProgress = (progress - 0.6) / 0.2;
             
             // Egg cracks more visibly
-            const eggScale = 1 + Math.sin(crackPhaseProgress * Math.PI * 3) * 0.3;
+            const eggScale = 1 + Math.sin(crackPhaseProgress * Math.PI * 4) * 0.25;
             this.egg.scale.set(eggScale);
             
             // Update particles
@@ -222,8 +224,8 @@ IdleAnts.Effects.LarvaeEffect = class extends IdleAnts.Effects.Effect {
                     particle.alpha = Math.sin(particleProgress * Math.PI);
                     
                     // Move outward
-                    particle.x = particle.vx * particleProgress * 12;
-                    particle.y = particle.vy * particleProgress * 12;
+                    particle.x = particle.vx * particleProgress * 8;
+                    particle.y = particle.vy * particleProgress * 8;
                 }
             }
         } 
@@ -236,11 +238,11 @@ IdleAnts.Effects.LarvaeEffect = class extends IdleAnts.Effects.Effect {
             
             // Larvae fades in and grows slightly
             this.larvae.alpha = finalPhaseProgress;
-            const larvaeScale = 0.8 + finalPhaseProgress * 0.8;
+            const larvaeScale = 0.6 + finalPhaseProgress * 0.6; // Grows from small to normal
             this.larvae.scale.set(larvaeScale);
             
-            // Add a more pronounced wiggle to the larvae
-            this.larvae.rotation = Math.sin(finalPhaseProgress * Math.PI * 8) * 0.4;
+            // Subtle wiggle to show life
+            this.larvae.rotation = Math.sin(finalPhaseProgress * Math.PI * 6) * 0.2;
             
             // Continue particle animation
             for (let i = 0; i < this.particles.length; i++) {
@@ -250,7 +252,7 @@ IdleAnts.Effects.LarvaeEffect = class extends IdleAnts.Effects.Effect {
                 particle.alpha = Math.max(0, 1 - finalPhaseProgress * 2);
                 
                 // Continue moving outward
-                const particleDistance = 12 + finalPhaseProgress * 10;
+                const particleDistance = 8 + finalPhaseProgress * 6;
                 particle.x = particle.vx * particleDistance;
                 particle.y = particle.vy * particleDistance;
             }

@@ -526,14 +526,28 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
     }
     
     // Add a new method for moving towards a target (food, etc.)
-    moveTowardsTarget(target) {
+    moveTowardsTarget(target, jitter = 0.35) {
+        // Create placeholders if not present
+        if (!this._pathJitter) this._pathJitter = 0;
+        if (!this._lastTarget) this._lastTarget = null;
+
+        // If we've switched to a new target, roll a new jitter angle
+        if (this._lastTarget !== target) {
+            this._lastTarget = target;
+            this._pathJitter = (Math.random() * 2 - 1) * jitter; // store offset once
+        }
+
         const dx = target.x - this.x;
         const dy = target.y - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        // Simple normalized movement towards target
-        this.vx = (dx / distance) * this.speed;
-        this.vy = (dy / distance) * this.speed;
+        if (distance === 0) return;
+
+        // Base angle plus stored jitter
+        const baseAngle = Math.atan2(dy, dx);
+        const angle = baseAngle + this._pathJitter;
+
+        this.vx = Math.cos(angle) * this.speed;
+        this.vy = Math.sin(angle) * this.speed;
     }
     
     // Template method that can be customized by subclasses

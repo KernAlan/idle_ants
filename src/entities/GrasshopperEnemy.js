@@ -11,16 +11,20 @@ IdleAnts.Entities.GrasshopperEnemy = class extends IdleAnts.Entities.Enemy {
         this.createBody();
 
         this.scale.set(2.0); // big
-        this.speed = 1.0; // faster crawl speed
-        this.attackDamage = 15;
-        this.maxHp = 120;
+        this.speed = 2.0; // faster crawl speed
+        this.attackDamage = 10;
+        this.maxHp = 200;
         this.hp=this.maxHp;
         this.updateHealthBar();
 
         // Hopping behaviour
         this.hopCooldown = 180; // frames between hops (~3s)
         this.hopTimer = Math.floor(Math.random()*this.hopCooldown);
-        this.hopSpeed = 3; // velocity applied during hop
+        this.hopSpeed = 20; // velocity applied during hop
+
+        // Leg animation parameters
+        this.legPhase = Math.random()*Math.PI*2;
+        this.legAnimationSpeed = 0.1;
     }
 
     update(ants){
@@ -53,6 +57,8 @@ IdleAnts.Entities.GrasshopperEnemy = class extends IdleAnts.Entities.Enemy {
         if(Math.abs(this.vx) + Math.abs(this.vy) > 0.1){
             this.rotation = Math.atan2(this.vy,this.vx) + Math.PI/2;
         }
+        // animate legs each frame
+        if(this.legs) this.animateLegs();
         super.update(ants);
 
         if(this.targetAnt && !this.targetAnt.isDead){
@@ -70,59 +76,172 @@ IdleAnts.Entities.GrasshopperEnemy = class extends IdleAnts.Entities.Enemy {
     }
 
     createBody(){
+        // Container for legs (drawn first so body sits on top)
+        this.legsContainer = new PIXI.Container();
+        this.addChild(this.legsContainer);
+
+        // Create legs similar to ant style but scaled up
+        this.legs = [];
+        const shellCol = 0x2E7D32;
+        const legBaseYs = [ -2, 2, 8 ]; // front, middle, hind
+
+        legBaseYs.forEach((y, idx)=>{
+            // left leg
+            const left = new PIXI.Graphics();
+            left.lineStyle(1.8, shellCol);
+            left.position.set(-5, y);
+            left.index = idx;
+            left.side = 'left';
+            this.legsContainer.addChild(left);
+            this.legs.push(left);
+
+            // right leg
+            const right = new PIXI.Graphics();
+            right.lineStyle(1.8, shellCol);
+            right.position.set(5, y);
+            right.index = idx;
+            right.side = 'right';
+            this.legsContainer.addChild(right);
+            this.legs.push(right);
+        });
+
         const body = new PIXI.Graphics();
-        // Abdomen
-        body.beginFill(0x4CAF50); // green
-        body.drawEllipse(0, 6, 8, 10);
+        // Realistic grasshopper colors
+        const bodyGreen = 0x7CB342; // bright leaf green
+        const darkGreen = 0x558B2F;
+        const lightGreen = 0x9CCC65;
+        const brownAccent = 0x8D6E63;
+        
+        // Long, segmented abdomen (grasshoppers have elongated bodies)
+        body.beginFill(bodyGreen);
+        body.drawEllipse(0, 12, 6, 20); // longer, narrower
         body.endFill();
-
-        // Thorax
-        body.beginFill(0x43A047);
-        body.drawEllipse(0, -4, 6, 8);
-        body.endFill();
-
-        // Head
-        body.beginFill(0x388E3C);
-        body.drawCircle(0, -14, 5);
-        body.endFill();
-
-        // Eyes
-        body.beginFill(0x000000);
-        body.drawCircle(-2, -15, 1.5);
-        body.drawCircle(2, -15, 1.5);
-        body.endFill();
-
-        // Hind legs (big)
-        body.lineStyle(2, 0x2E7D32);
-        body.moveTo(-4, 4);
-        body.lineTo(-12, 12);
-        body.lineTo(-14, 18);
-
-        body.moveTo(4, 4);
-        body.lineTo(12, 12);
-        body.lineTo(14, 18);
-
-        // Forelegs
-        body.lineStyle(1.5,0x33691E);
-        body.moveTo(-3,-2);
-        body.lineTo(-10,2);
-        body.moveTo(3,-2);
-        body.lineTo(10,2);
-
-        // Antennae
-        body.lineStyle(1,0x1B5E20);
-        body.moveTo(-1,-17);
-        body.lineTo(-6,-24);
-        body.moveTo(1,-17);
-        body.lineTo(6,-24);
-
-        // Segment lines on abdomen
-        body.lineStyle(1,0x2E7D32,0.4);
-        for(let i=1;i<=2;i++){
-            body.moveTo(-6,6+i*3);
-            body.lineTo(6,6+i*3);
+        
+        // Abdomen segments
+        body.lineStyle(1, darkGreen, 0.6);
+        for(let i = 0; i < 5; i++){
+            const y = 2 + i * 4;
+            body.moveTo(-5, y);
+            body.lineTo(5, y);
         }
+        
+        // Thorax (prothorax + mesothorax)
+        body.lineStyle(0);
+        body.beginFill(darkGreen);
+        body.drawEllipse(0, -2, 5, 8);
+        body.endFill();
+        
+        // Wing covers (elytra) - grasshoppers have prominent wing covers
+        body.beginFill(brownAccent, 0.8);
+        body.drawEllipse(-3, 8, 2, 12);
+        body.drawEllipse(3, 8, 2, 12);
+        body.endFill();
+        
+        // Wing membrane hints
+        body.beginFill(0xFFFFFF, 0.3);
+        body.drawEllipse(-3, 10, 1.5, 8);
+        body.drawEllipse(3, 10, 1.5, 8);
+        body.endFill();
+        
+        // Head - more angular, realistic shape
+        body.beginFill(bodyGreen);
+        body.drawPolygon([
+            -4, -12,  // left side
+            -3, -18,  // left top
+            0, -20,   // tip
+            3, -18,   // right top
+            4, -12,   // right side
+            2, -8,    // right bottom
+            -2, -8    // left bottom
+        ]);
+        body.endFill();
+        
+        // Large compound eyes (grasshoppers have very prominent eyes)
+        body.beginFill(0x000000);
+        body.drawEllipse(-3, -15, 2, 3); // larger, oval eyes
+        body.drawEllipse(3, -15, 2, 3);
+        body.endFill();
+        
+        // Eye highlights
+        body.beginFill(0xFFFFFF, 0.4);
+        body.drawCircle(-3, -16, 0.8);
+        body.drawCircle(3, -16, 0.8);
+        body.endFill();
+        
+        // Mandibles/mouth parts
+        body.beginFill(brownAccent);
+        body.drawEllipse(0, -10, 1, 2);
+        body.endFill();
+        
+        // Long antennae (grasshoppers have thread-like antennae)
+        const antennae = new PIXI.Graphics();
+        antennae.lineStyle(1.2, darkGreen);
+        // Left antenna - curved
+        antennae.moveTo(-2, -18);
+        antennae.lineTo(-4, -26);
+        antennae.lineTo(-7, -32);
+        antennae.lineTo(-8, -38);
+        // Right antenna - curved
+        antennae.moveTo(2, -18);
+        antennae.lineTo(4, -26);
+        antennae.lineTo(7, -32);
+        antennae.lineTo(8, -38);
+        
+        // Thorax markings
+        body.lineStyle(1, lightGreen, 0.7);
+        body.moveTo(-4, -8);
+        body.lineTo(4, -8);
+        body.moveTo(-3, -4);
+        body.lineTo(3, -4);
 
+        // Add components in order
         this.addChild(body);
+        this.addChild(antennae);
+    }
+
+    animateLegs(){
+        this.legPhase += this.legAnimationSpeed;
+        const speedMag = Math.sqrt(this.vx*this.vx + this.vy*this.vy);
+        const rate = Math.max(0.05, speedMag*0.25);
+        this.legPhase += rate;
+
+        const shellCol = 0x2E7D32;
+        const scale = 1.8;
+
+        this.legs.forEach(leg=>{
+            const phase = this.legPhase + (leg.index*Math.PI/3) + (leg.side==='right'?Math.PI:0);
+            const move = Math.sin(phase)*2.5;
+            const bend = Math.max(0, -Math.sin(phase));
+
+            leg.clear();
+            // Hind legs are much thicker and more prominent
+            const thickness = leg.index === 2 ? 3 : 1.8;
+            leg.lineStyle(thickness, shellCol);
+            leg.moveTo(0,0);
+
+            let midX, midY, endX, endY;
+            if(leg.side==='left'){
+                midX = (leg.index===2 ? -6 : -4)*scale - bend*2;
+                midY = move - 2 - bend*2;
+                endX = (leg.index===2 ? -14 : -8)*scale; // hind much longer
+                endY = (leg.index===2 ? 18 : 6)*scale/3 + move;
+            } else {
+                midX = (leg.index===2 ? 6 : 4)*scale + bend*2;
+                midY = move - 2 - bend*2;
+                endX = (leg.index===2 ? 14 : 8)*scale;
+                endY = (leg.index===2 ? 18 : 6)*scale/3 + move;
+            }
+            leg.lineTo(midX, midY);
+            leg.lineTo(endX, endY);
+            
+            // Add femur (thigh) segment for hind legs
+            if(leg.index === 2){
+                leg.lineStyle(4, 0x689F38); // thicker, darker green femur
+                const femurEndX = leg.side==='left' ? -3*scale : 3*scale;
+                const femurEndY = 2 + move*0.5;
+                leg.moveTo(0, 0);
+                leg.lineTo(femurEndX, femurEndY);
+            }
+        });
     }
 }; 

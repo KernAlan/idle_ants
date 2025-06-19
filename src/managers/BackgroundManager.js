@@ -10,8 +10,9 @@ IdleAnts.Managers.BackgroundManager = class {
         // Create a tiled background with the ground texture
         const groundTexture = this.assetManager.getTexture('ground');
         
-        // Ensure the texture has CLAMP wrapping to prevent artifacts at edges
+        // Use repeat wrapping and nearest-neighbour sampling so pixels line up exactly
         groundTexture.baseTexture.wrapMode = PIXI.WRAP_MODES.REPEAT;
+        groundTexture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
         
         // Use provided width/height for the larger map, or fallback to screen size
         const mapWidth = width || this.app.screen.width;
@@ -23,9 +24,9 @@ IdleAnts.Managers.BackgroundManager = class {
             mapHeight
         );
         
-        // Adjust tileScale to slightly overlap tiles and prevent green lines
-        // A small increase ensures no gaps between tiles
-        this.background.tileScale.set(1.01, 1.01);
+        // Exact 1:1 scale – NEAREST filtering + integer positioning avoids seams
+        this.background.tileScale.set(1, 1);
+        this.background.roundPixels = true;
         
         // Add to world container instead of directly to stage
         this.worldContainer.addChildAt(this.background, 0);

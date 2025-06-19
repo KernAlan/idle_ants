@@ -262,8 +262,10 @@ IdleAnts.Managers.UIManager = class {
                 
                 // Keep the UI elements but don't update them based on upgrades
                 // These will be replaced with HP in a future update
-                updateElementText('queen-larvae-capacity', 3); // Fixed value
-                updateElementText('queen-larvae-rate', '60-120'); // Updated to 1-2 minutes
+                const queenLevel = this.resourceManager.stats.queenUpgradeLevel;
+                const larvaePerSpawn = 1 + queenLevel;
+                updateElementText('queen-larvae-capacity', `${larvaePerSpawn} per spawn`);
+                updateElementText('queen-larvae-rate', '15-45s'); // Updated to reflect faster spawn rate
             }
         } catch (error) {
             console.error('Error updating UI:', error);

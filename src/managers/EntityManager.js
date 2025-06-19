@@ -64,7 +64,7 @@ IdleAnts.Managers.EntityManager = class {
         };
         
         this.enemySpawnCounter = 0;
-        this.enemySpawnInterval = 900; // spawn every 15s
+        this.enemySpawnInterval = 600; // spawn every 10s
     }
     
     setEffectManager(effectManager) {
@@ -94,8 +94,11 @@ IdleAnts.Managers.EntityManager = class {
         // Create food sources
         this.createFood(20); // More food for a larger map
         
-        // Create initial enemies
-        this.createEnemy(5);
+        // Create one of each enemy type at start
+        this.spawnInitialEnemies();
+        
+        // Create initial larvae so the player sees one immediately
+        this.createInitialLarvae();
     }
     
     createNest() {
@@ -1033,8 +1036,17 @@ IdleAnts.Managers.EntityManager = class {
         for(let i=0;i<count;i++){
             const tex=this.assetManager.getTexture('ant'); // placeholder
             let enemy;
-            if(Math.random()<0.2){
+            const r=Math.random();
+            if(r<0.15){ // 15% grasshopper
                 enemy=new IdleAnts.Entities.GrasshopperEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
+            } else if(r<0.3){ // 15% cricket
+                enemy=new IdleAnts.Entities.CricketEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
+            } else if(r<0.45){ // 15% bee
+                enemy=new IdleAnts.Entities.BeeEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
+            } else if(r<0.6){ // 15% hercules beetle
+                enemy=new IdleAnts.Entities.HerculesBeetleEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
+            } else if(r<0.7){ // 10% mantis
+                enemy=new IdleAnts.Entities.MantisEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
             } else {
                 enemy=new IdleAnts.Entities.WoollyBearEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
             }
@@ -1050,15 +1062,59 @@ IdleAnts.Managers.EntityManager = class {
             if(e.isDead){this.entities.enemies.splice(i,1);continue;}
             if(e instanceof IdleAnts.Entities.WoollyBearEnemy){
                 e.update(this.nestPosition,[],ants);
-            }else{
+            } else {
+                // MantisEnemy, CricketEnemy, GrasshopperEnemy follow base signature
                 e.update(ants);
             }
         }
-        // Spawn new enemy periodically
+        // Dynamic enemy spawning based on colony size
+        const antTotal = this.entities.ants.length + this.entities.flyingAnts.length + this.entities.carAnts.length + this.entities.fireAnts.length;
+        const baseInterval = 900; // 15s default for 0-10 ants
+        // Every extra 10 ants halves the interval, cap at 300 frames (~5s)
+        const scaledInterval = Math.max(300, Math.floor(baseInterval / (1 + antTotal/10)));
+
         this.enemySpawnCounter++;
-        if(this.enemySpawnCounter>=this.enemySpawnInterval){
-            this.createEnemy(1);
-            this.enemySpawnCounter=0;
+        if(this.enemySpawnCounter >= scaledInterval){
+            // Spawn more enemies as colony grows: 1 + 1 per 20 ants
+            const batch = 1 + Math.floor(antTotal / 20);
+            this.createEnemy(batch);
+            this.enemySpawnCounter = 0;
+        }
+    }
+
+    // Spawn one of each enemy type for early variety
+    spawnInitialEnemies(){
+        const tex=this.assetManager.getTexture('ant'); // placeholder texture
+        const bounds={width:this.mapBounds.width,height:this.mapBounds.height};
+        const enemyClasses=[
+            IdleAnts.Entities.GrasshopperEnemy,
+            IdleAnts.Entities.CricketEnemy,
+            IdleAnts.Entities.BeeEnemy,
+            IdleAnts.Entities.HerculesBeetleEnemy,
+            IdleAnts.Entities.WoollyBearEnemy,
+            IdleAnts.Entities.MantisEnemy
+        ];
+        enemyClasses.forEach(cls=>{
+            if(typeof cls!=='function') return;
+            const e=new cls(tex,bounds);
+            this.entitiesContainers.enemies.addChild(e);
+            this.entities.enemies.push(e);
+        });
+    }
+
+    createInitialLarvae() {
+        // Create a larvae near the nest position for immediate visual feedback
+        if (this.nestPosition) {
+            // Position the larvae slightly offset from the nest
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 30 + Math.random() * 20; // 30-50 pixels from nest
+            const larvaeX = this.nestPosition.x + Math.cos(angle) * distance;
+            const larvaeY = this.nestPosition.y + Math.sin(angle) * distance;
+            
+            // Create the larvae
+            this.createLarvae(larvaeX, larvaeY);
+            
+            console.log(`Created initial larvae at (${larvaeX}, ${larvaeY}) near nest`);
         }
     }
 } 

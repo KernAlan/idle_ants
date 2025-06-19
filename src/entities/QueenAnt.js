@@ -12,8 +12,8 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
         this.isQueen = true;
         
         // Larvae production settings
-        this.baseProductionRate = 60 * 60; // Base rate: 60 seconds at 60fps (1 minute)
-        this.productionVariance = 30 * 60; // Variance: +/- 30 seconds (0.5 minute)
+        this.baseProductionRate = 30 * 60; // Base rate: 30 seconds at 60fps (0.5 minute) - FASTER!
+        this.productionVariance = 15 * 60; // Variance: +/- 15 seconds (0.25 minute)
         this.setNextProductionTime(); // Initialize the first production time
         this.larvaeCounter = 0;
         this.larvaeCapacity = 3; // Maximum number of larvae that can be produced at once
@@ -40,7 +40,7 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
             Math.floor((Math.random() * 2 - 1) * this.productionVariance);
         
         // Ensure it's at least 1 minute (60 seconds = 3600 frames)
-        this.larvaeProductionRate = Math.max(60 * 60, this.larvaeProductionRate);
+        this.larvaeProductionRate = Math.max(20 * 60, this.larvaeProductionRate); // Minimum 20 seconds
         
         // Log the next production time for debugging
         console.log(`Queen will produce next larvae in ${this.larvaeProductionRate/60} seconds (${this.larvaeProductionRate/3600} minutes)`);
@@ -221,25 +221,34 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
         // Create a single larvae entity near the queen
         if (IdleAnts.app && IdleAnts.app.entityManager) {
             try {
-                // Generate a random offset from the queen
-                const angle = Math.random() * Math.PI * 2; // Random angle
-                const distance = 40 + Math.random() * 20; // Random distance between 40-60 pixels
-                const offsetX = Math.cos(angle) * distance;
-                const offsetY = Math.sin(angle) * distance;
+                // Calculate how many larvae to spawn based on queen level
+                const queenLevel = IdleAnts.app.resourceManager ? IdleAnts.app.resourceManager.stats.queenUpgradeLevel : 0;
+                const larvaeToSpawn = 1 + queenLevel; // 1 at level 0, 2 at level 1, etc.
                 
-                // Create a larvae entity at the offset position
-                IdleAnts.app.entityManager.produceLarvae(this.x + offsetX, this.y + offsetY);
+                console.log(`Queen level ${queenLevel} spawning ${larvaeToSpawn} larvae`);
                 
-                // Log for debugging
-                console.log(`Queen produced larvae at (${this.x + offsetX}, ${this.y + offsetY})`);
+                // Spawn multiple larvae based on queen level
+                for(let i = 0; i < larvaeToSpawn; i++){
+                    // Generate a random offset from the queen for each larvae
+                    const angle = Math.random() * Math.PI * 2; // Random angle
+                    const distance = 40 + Math.random() * 20; // Random distance between 40-60 pixels
+                    const offsetX = Math.cos(angle) * distance;
+                    const offsetY = Math.sin(angle) * distance;
+                    
+                    // Create a larvae entity at the offset position
+                    IdleAnts.app.entityManager.produceLarvae(this.x + offsetX, this.y + offsetY);
+                    
+                    // Log for debugging
+                    console.log(`Queen produced larvae ${i+1}/${larvaeToSpawn} at (${this.x + offsetX}, ${this.y + offsetY})`);
+                }
                 
                 // Also create a special effect at the queen's position
                 if (IdleAnts.app.effectManager) {
                     IdleAnts.app.effectManager.createSpawnEffect(this.x, this.y, false);
                 }
                 
-                // Increment current larvae count
-                this.currentLarvae++;
+                // Increment current larvae count by the number spawned
+                this.currentLarvae += larvaeToSpawn;
                 console.log(`Queen now has ${this.currentLarvae} larvae`);
             } catch (error) {
                 console.error('Error creating larvae:', error);
