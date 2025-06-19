@@ -15,43 +15,48 @@ IdleAnts.Entities.Nest = class extends PIXI.Container {
     }
     
     createAntHill() {
-        // Main hill mound
+        // Main hill mound - bird's eye view
         this.hillBody = new PIXI.Graphics();
         
-        // Base of the hill - dark brown earth
-        this.hillBody.beginFill(0x8B4513); // Saddle brown
-        this.hillBody.drawEllipse(0, 5, 45, 25); // Wide base
+        // Outer ring - darkest brown (represents the excavated dirt ring)
+        this.hillBody.beginFill(0x654321);
+        this.hillBody.drawCircle(0, 0, 50); // Large outer circle
         this.hillBody.endFill();
         
-        // Middle layer - lighter brown
-        this.hillBody.beginFill(0xA0522D); // Sienna
-        this.hillBody.drawEllipse(0, 0, 35, 20);
+        // Middle ring - medium brown
+        this.hillBody.beginFill(0x8B4513);
+        this.hillBody.drawCircle(0, 0, 35); // Medium circle
         this.hillBody.endFill();
         
-        // Top layer - sandy brown
-        this.hillBody.beginFill(0xD2B48C); // Tan
-        this.hillBody.drawEllipse(0, -5, 25, 15);
+        // Inner hill - lightest brown
+        this.hillBody.beginFill(0xA0522D);
+        this.hillBody.drawCircle(0, 0, 25); // Inner circle
         this.hillBody.endFill();
         
-        // Add texture with small dirt particles
+        // Central mound - raised center
+        this.hillBody.beginFill(0xD2B48C);
+        this.hillBody.drawCircle(0, 0, 15); // Central raised area
+        this.hillBody.endFill();
+        
+        // Add texture with small dirt particles scattered around
         this.hillBody.lineStyle(0);
-        this.hillBody.beginFill(0x654321, 0.6); // Dark brown particles
-        for(let i = 0; i < 20; i++){
+        this.hillBody.beginFill(0x5D4037, 0.6);
+        for(let i = 0; i < 25; i++){
             const angle = Math.random() * Math.PI * 2;
-            const distance = Math.random() * 35;
+            const distance = Math.random() * 45; // Spread across the hill
             const x = Math.cos(angle) * distance;
-            const y = Math.sin(angle) * distance * 0.6; // Flatten vertically
-            this.hillBody.drawCircle(x, y, 0.8 + Math.random() * 1.2);
+            const y = Math.sin(angle) * distance;
+            this.hillBody.drawCircle(x, y, 1 + Math.random() * 2);
         }
         this.hillBody.endFill();
         
         // Add small rocks and debris
-        this.hillBody.beginFill(0x696969, 0.8); // Dim gray rocks
-        for(let i = 0; i < 8; i++){
+        this.hillBody.beginFill(0x696969, 0.8);
+        for(let i = 0; i < 12; i++){
             const angle = Math.random() * Math.PI * 2;
-            const distance = 20 + Math.random() * 20;
+            const distance = 15 + Math.random() * 30;
             const x = Math.cos(angle) * distance;
-            const y = Math.sin(angle) * distance * 0.6;
+            const y = Math.sin(angle) * distance;
             this.hillBody.drawCircle(x, y, 1.5 + Math.random() * 2);
         }
         this.hillBody.endFill();
@@ -66,71 +71,68 @@ IdleAnts.Entities.Nest = class extends PIXI.Container {
     }
     
     createEntrances() {
-        // Main entrance - large tunnel opening
+        // Main entrance - large tunnel opening in center
         this.mainEntrance = new PIXI.Graphics();
         this.mainEntrance.beginFill(0x2F1B14); // Very dark brown - tunnel interior
-        this.mainEntrance.drawEllipse(0, 8, 8, 5); // Main entrance hole
+        this.mainEntrance.drawCircle(0, 0, 8); // Main entrance hole
         this.mainEntrance.endFill();
         
         // Add depth shadow
-        this.mainEntrance.beginFill(0x1A0F0A, 0.8); // Even darker shadow
-        this.mainEntrance.drawEllipse(0, 10, 6, 3);
+        this.mainEntrance.beginFill(0x1A0F0A, 0.8);
+        this.mainEntrance.drawCircle(0, 0, 6); // Inner shadow
         this.mainEntrance.endFill();
         
-        // Secondary entrance - smaller
+        // Secondary entrances around the main one
         this.secondaryEntrance = new PIXI.Graphics();
         this.secondaryEntrance.beginFill(0x2F1B14);
-        this.secondaryEntrance.drawEllipse(-15, 3, 4, 2.5);
+        this.secondaryEntrance.drawCircle(-20, -10, 4); // Top-left entrance
+        this.secondaryEntrance.drawCircle(18, 12, 3); // Bottom-right entrance
+        this.secondaryEntrance.drawCircle(-8, 22, 3); // Bottom entrance
         this.secondaryEntrance.endFill();
-        
-        // Third entrance - tiny
-        this.thirdEntrance = new PIXI.Graphics();
-        this.thirdEntrance.beginFill(0x2F1B14);
-        this.thirdEntrance.drawEllipse(18, 6, 3, 2);
-        this.thirdEntrance.endFill();
         
         this.addChild(this.mainEntrance);
         this.addChild(this.secondaryEntrance);
-        this.addChild(this.thirdEntrance);
     }
     
     createVegetation() {
-        // Add small grass tufts around the hill
+        // Add small grass tufts around the hill - bird's eye view
         this.vegetation = new PIXI.Graphics();
         
-        // Grass blades
-        this.vegetation.lineStyle(1.5, 0x228B22, 0.8); // Forest green
-        for(let i = 0; i < 12; i++){
-            const angle = Math.random() * Math.PI * 2;
-            const distance = 35 + Math.random() * 15;
-            const baseX = Math.cos(angle) * distance;
-            const baseY = Math.sin(angle) * distance * 0.6 + 20;
-            
-            // Draw grass blade
-            this.vegetation.moveTo(baseX, baseY);
-            this.vegetation.lineTo(baseX + (Math.random() - 0.5) * 4, baseY - 8 - Math.random() * 6);
-        }
-        
-        // Small flowers
+        // Grass represented as small green circles/dots
         this.vegetation.lineStyle(0);
-        this.vegetation.beginFill(0xFFD700, 0.9); // Gold flowers
-        for(let i = 0; i < 4; i++){
+        this.vegetation.beginFill(0x228B22, 0.8);
+        for(let i = 0; i < 15; i++){
             const angle = Math.random() * Math.PI * 2;
-            const distance = 40 + Math.random() * 10;
+            const distance = 45 + Math.random() * 15; // Around the outer edge
             const x = Math.cos(angle) * distance;
-            const y = Math.sin(angle) * distance * 0.6 + 18;
-            this.vegetation.drawCircle(x, y, 1.2);
+            const y = Math.sin(angle) * distance;
+            
+            // Small grass clumps
+            this.vegetation.drawCircle(x, y, 2 + Math.random() * 2);
+            // Add smaller dots around for texture
+            this.vegetation.drawCircle(x + Math.random() * 4 - 2, y + Math.random() * 4 - 2, 1);
         }
         this.vegetation.endFill();
         
-        // Tiny white flowers
-        this.vegetation.beginFill(0xFFFAFA, 0.8);
-        for(let i = 0; i < 3; i++){
+        // Small flowers as tiny colored dots
+        this.vegetation.beginFill(0xFFD700, 0.9); // Yellow flowers
+        for(let i = 0; i < 6; i++){
             const angle = Math.random() * Math.PI * 2;
-            const distance = 38 + Math.random() * 12;
+            const distance = 50 + Math.random() * 10;
             const x = Math.cos(angle) * distance;
-            const y = Math.sin(angle) * distance * 0.6 + 16;
-            this.vegetation.drawCircle(x, y, 0.8);
+            const y = Math.sin(angle) * distance;
+            this.vegetation.drawCircle(x, y, 1.5);
+        }
+        this.vegetation.endFill();
+        
+        // White flowers
+        this.vegetation.beginFill(0xFFFAFA, 0.8);
+        for(let i = 0; i < 4; i++){
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 48 + Math.random() * 12;
+            const x = Math.cos(angle) * distance;
+            const y = Math.sin(angle) * distance;
+            this.vegetation.drawCircle(x, y, 1);
         }
         this.vegetation.endFill();
         

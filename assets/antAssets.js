@@ -7,139 +7,336 @@
     AssetDefinition.register('ant', function(app) {
         const antGraphics = AssetDefinition.createGraphics();
         
-        // Ant body segments - dark brown with variations
-        // Rear segment (abdomen)
+        // Create angled perspective ant (3/4 view) to match nest perspective
+        
+        // Rear segment (abdomen) - angled ellipse showing depth
+        antGraphics.beginFill(0x2A1B10); // Dark brown base
+        antGraphics.drawEllipse(0, 8, 7, 10); // Main abdomen shape
+        antGraphics.endFill();
+        
+        // Abdomen highlight - shows the "top" surface at an angle
         antGraphics.beginFill(0x3D2817);
-        antGraphics.drawEllipse(0, 8, 7, 10);
+        antGraphics.drawEllipse(-1, 6, 6, 8); // Offset to show angled top
         antGraphics.endFill();
         
-        // Add texture detail to abdomen
-        antGraphics.beginFill(0x2A1B10, 0.5);
-        antGraphics.drawEllipse(0, 8, 5, 8);
+        // Abdomen bright highlight - the most visible "top" surface
+        antGraphics.beginFill(0x5D4037);
+        antGraphics.drawEllipse(-2, 5, 4, 6); // Further offset for depth
         antGraphics.endFill();
         
-        // Middle segment (thorax)
-        antGraphics.beginFill(0x3D2817);
-        antGraphics.drawEllipse(0, -2, 5, 7);
-        antGraphics.endFill();
-        
-        // Ant head - darker
+        // Middle segment (thorax) - angled perspective
         antGraphics.beginFill(0x2A1B10);
-        antGraphics.drawCircle(0, -14, 5);
+        antGraphics.drawEllipse(0, -2, 5, 7); // Base thorax
         antGraphics.endFill();
         
-        // Add eyes
+        // Thorax top surface
+        antGraphics.beginFill(0x3D2817);
+        antGraphics.drawEllipse(-1, -3, 4, 5); // Angled top
+        antGraphics.endFill();
+        
+        // Thorax highlight
+        antGraphics.beginFill(0x5D4037);
+        antGraphics.drawEllipse(-1.5, -4, 3, 3); // Top highlight
+        antGraphics.endFill();
+        
+        // Head - angled circular perspective (more oval when viewed at angle)
+        antGraphics.beginFill(0x2A1B10);
+        antGraphics.drawEllipse(0, -14, 5, 6); // Base head - elliptical due to angle
+        antGraphics.endFill();
+        
+        // Head top surface
+        antGraphics.beginFill(0x3D2817);
+        antGraphics.drawEllipse(-1, -15, 4, 5); // Angled top surface
+        antGraphics.endFill();
+        
+        // Head highlight
+        antGraphics.beginFill(0x5D4037);
+        antGraphics.drawEllipse(-1.5, -15.5, 3, 3); // Top highlight
+        antGraphics.endFill();
+        
+        // Eyes - positioned for angled view (more visible on the "front" side)
         antGraphics.beginFill(0x000000);
-        antGraphics.drawCircle(-2, -15, 1.2);
-        antGraphics.drawCircle(2, -15, 1.2);
+        antGraphics.drawEllipse(-2.5, -15, 1.2, 1.5); // Left eye - more elliptical
+        antGraphics.drawEllipse(1.5, -14.5, 1.2, 1.5); // Right eye - slightly different position
         antGraphics.endFill();
         
-        // Highlight on eyes
-        antGraphics.beginFill(0xFFFFFF, 0.6);
-        antGraphics.drawCircle(-2.3, -15.3, 0.5);
-        antGraphics.drawCircle(1.7, -15.3, 0.5);
+        // Eye highlights - angled perspective
+        antGraphics.beginFill(0xFFFFFF, 0.8);
+        antGraphics.drawEllipse(-2.7, -15.2, 0.5, 0.7); // Left eye highlight
+        antGraphics.drawEllipse(1.3, -14.7, 0.5, 0.7); // Right eye highlight
         antGraphics.endFill();
         
-        // Mandibles
-        antGraphics.lineStyle(1, 0x2A1B10);
-        antGraphics.moveTo(-3, -17);
-        antGraphics.lineTo(-5, -19);
-        antGraphics.moveTo(3, -17);
+        // Mandibles - angled outward from perspective
+        antGraphics.lineStyle(1.2, 0x2A1B10);
+        antGraphics.moveTo(-3, -17); // Left mandible
+        antGraphics.lineTo(-5.5, -19.5);
+        antGraphics.moveTo(2.5, -16.5); // Right mandible - different angle
         antGraphics.lineTo(5, -19);
         
-        // Antennae - more curved and natural
+        // Antennae - curved with angled perspective
         antGraphics.lineStyle(1, 0x2A1B10);
         
-        // Left antenna with curve
-        antGraphics.moveTo(-2, -17);
-        antGraphics.bezierCurveTo(
-            -5, -22, // control point 1
-            -8, -24, // control point 2
-            -7, -26  // end point
-        );
+        // Left antenna - more visible from this angle
+        antGraphics.moveTo(-2.5, -17);
+        antGraphics.bezierCurveTo(-5.5, -21, -7.5, -23, -6.5, -25);
         
-        // Right antenna with curve
-        antGraphics.moveTo(2, -17);
-        antGraphics.bezierCurveTo(
-            5, -22, // control point 1
-            8, -24, // control point 2
-            7, -26  // end point
-        );
+        // Right antenna - partially visible from angle
+        antGraphics.moveTo(2, -16.5);
+        antGraphics.bezierCurveTo(4.5, -20, 6.5, -22, 6, -24);
+        
+        // Antenna tips
+        antGraphics.lineStyle(0);
+        antGraphics.beginFill(0x3D2817);
+        antGraphics.drawCircle(-6.5, -25, 1);
+        antGraphics.drawCircle(6, -24, 1);
+        antGraphics.endFill();
+        
+        // Legs - positioned for angled perspective (some more visible than others)
+        antGraphics.lineStyle(1.5, 0x2A1B10);
+        
+        // Left side legs (more visible from this angle)
+        antGraphics.moveTo(-4, -8); // Front leg
+        antGraphics.lineTo(-8, -6);
+        antGraphics.moveTo(-4, -2); // Middle leg
+        antGraphics.lineTo(-8, 0);
+        antGraphics.moveTo(-4, 4); // Rear leg
+        antGraphics.lineTo(-8, 6);
+        
+        // Right side legs (partially visible from angle)
+        antGraphics.moveTo(3, -7); // Front leg
+        antGraphics.lineTo(6, -5);
+        antGraphics.moveTo(3, -1); // Middle leg
+        antGraphics.lineTo(6, 1);
+        antGraphics.moveTo(3, 5); // Rear leg
+        antGraphics.lineTo(6, 7);
         
         return antGraphics;
     });
     
     // Register queen ant asset
     AssetDefinition.register('queenAnt', function(app) {
-        const queenGraphics = AssetDefinition.createGraphics();
+                  const queenGraphics = AssetDefinition.createGraphics();
+          
+          // Create queen ant - bird's eye view, larger than regular ant
+          
+          // Rear segment (abdomen) - larger for queen
+          queenGraphics.beginFill(0x2A1B10); // Dark brown base
+          queenGraphics.drawCircle(0, 8, 10); // Larger abdomen
+          queenGraphics.endFill();
+          
+          // Abdomen highlight
+          queenGraphics.beginFill(0x3D2817);
+          queenGraphics.drawCircle(0, 8, 8); // Inner highlight
+          queenGraphics.endFill();
+          
+          // Royal pattern on abdomen
+          queenGraphics.beginFill(0x8D6E63);
+          queenGraphics.drawCircle(0, 8, 5); // Royal marking
+          queenGraphics.endFill();
+          
+          // Middle segment (thorax) - larger
+          queenGraphics.beginFill(0x2A1B10);
+          queenGraphics.drawCircle(0, -2, 6); // Base thorax
+          queenGraphics.endFill();
+          
+          // Thorax highlight
+          queenGraphics.beginFill(0x3D2817);
+          queenGraphics.drawCircle(0, -2, 4); // Inner highlight
+          queenGraphics.endFill();
+          
+          // Head - larger for queen
+          queenGraphics.beginFill(0x2A1B10);
+          queenGraphics.drawCircle(0, -14, 7); // Base head
+          queenGraphics.endFill();
+          
+          // Head highlight
+          queenGraphics.beginFill(0x3D2817);
+          queenGraphics.drawCircle(0, -14, 5); // Inner highlight
+          queenGraphics.endFill();
+          
+          // Eyes - larger for queen
+          queenGraphics.beginFill(0x000000);
+          queenGraphics.drawCircle(-3, -14, 2); // Left eye
+          queenGraphics.drawCircle(3, -14, 2); // Right eye
+          queenGraphics.endFill();
+          
+          // Eye highlights
+          queenGraphics.beginFill(0xFFFFFF, 0.8);
+          queenGraphics.drawCircle(-3.5, -14.5, 0.8); // Left eye highlight
+          queenGraphics.drawCircle(2.5, -14.5, 0.8); // Right eye highlight
+          queenGraphics.endFill();
+          
+          // Mandibles - larger for queen
+          queenGraphics.lineStyle(2, 0x2A1B10);
+          queenGraphics.moveTo(-4, -18); // Left mandible
+          queenGraphics.lineTo(-7, -21);
+          queenGraphics.moveTo(4, -18); // Right mandible
+          queenGraphics.lineTo(7, -21);
+          
+          // Antennae - longer for queen
+          queenGraphics.lineStyle(1.5, 0x2A1B10);
+          
+          // Left antenna
+          queenGraphics.moveTo(-3, -18);
+          queenGraphics.bezierCurveTo(-7, -23, -9, -26, -8, -28);
+          
+          // Right antenna
+          queenGraphics.moveTo(3, -18);
+          queenGraphics.bezierCurveTo(7, -23, 9, -26, 8, -28);
+          
+          // Antenna tips - larger for queen
+          queenGraphics.lineStyle(0);
+          queenGraphics.beginFill(0x3D2817);
+          queenGraphics.drawCircle(-8, -28, 1.5);
+          queenGraphics.drawCircle(8, -28, 1.5);
+          queenGraphics.endFill();
+          
+          // Crown - positioned for top-down view
+          queenGraphics.beginFill(0xFFD700); // Gold color
+          
+          // Crown base - circular for top-down view
+          queenGraphics.drawCircle(0, -22, 6); // Crown base
+          queenGraphics.endFill();
+          
+          // Crown highlight
+          queenGraphics.beginFill(0xFFE55C);
+          queenGraphics.drawCircle(0, -22, 4); // Crown highlight
+          queenGraphics.endFill();
+          
+          // Crown points - arranged in circle for top-down view
+          queenGraphics.beginFill(0xFFD700);
+          for(let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2;
+            const x = Math.cos(angle) * 7;
+            const y = Math.sin(angle) * 7 - 22;
+            queenGraphics.drawCircle(x, y, 1.5);
+          }
+          queenGraphics.endFill();
+          
+          // Jewels - arranged in center for top-down view
+          // Red jewel (center)
+          queenGraphics.beginFill(0xFF0000);
+          queenGraphics.drawCircle(0, -22, 1.5);
+          queenGraphics.endFill();
+          queenGraphics.beginFill(0xFF6B6B);
+          queenGraphics.drawCircle(0, -22, 0.8); // Highlight
+          queenGraphics.endFill();
+          
+          // Blue jewels (sides)
+          queenGraphics.beginFill(0x0000FF);
+          queenGraphics.drawCircle(-2.5, -22, 1);
+          queenGraphics.drawCircle(2.5, -22, 1);
+          queenGraphics.endFill();
+          
+          // Green jewels (top/bottom)
+          queenGraphics.beginFill(0x00FF00);
+          queenGraphics.drawCircle(0, -24.5, 1);
+          queenGraphics.drawCircle(0, -19.5, 1);
+          queenGraphics.endFill();
+          
+          // Legs - symmetrical for bird's eye view, slightly longer for queen
+          queenGraphics.lineStyle(2, 0x2A1B10);
+          
+          // Left side legs
+          queenGraphics.moveTo(-6, -8); // Front leg
+          queenGraphics.lineTo(-10, -10);
+          queenGraphics.moveTo(-6, -2); // Middle leg
+          queenGraphics.lineTo(-10, -2);
+          queenGraphics.moveTo(-6, 4); // Rear leg
+          queenGraphics.lineTo(-10, 6);
+          
+          // Right side legs
+          queenGraphics.moveTo(6, -8); // Front leg
+          queenGraphics.lineTo(10, -10);
+          queenGraphics.moveTo(6, -2); // Middle leg
+          queenGraphics.lineTo(10, -2);
+          queenGraphics.moveTo(6, 4); // Rear leg
+          queenGraphics.lineTo(10, 6);
         
-        // Queen ant body segments - slightly darker and larger than regular ants
-        // Rear segment (abdomen) - larger for the queen
-        queenGraphics.beginFill(0x3D2817);
-        queenGraphics.drawEllipse(0, 8, 9, 12); // Larger abdomen
-        queenGraphics.endFill();
+        // Mandibles with depth - larger for queen
+        queenGraphics.lineStyle(1.8, 0x1A0F0A);
+        // Left mandible with shadow
+        queenGraphics.moveTo(-4, -18);
+        queenGraphics.lineTo(-7, -21);
+        queenGraphics.lineStyle(1.5, 0x2A1B10);
+        queenGraphics.moveTo(-3.7, -17.7);
+        queenGraphics.lineTo(-6.7, -20.7);
         
-        // Add texture detail to abdomen
-        queenGraphics.beginFill(0x2A1B10, 0.5);
-        queenGraphics.drawEllipse(0, 8, 7, 10);
-        queenGraphics.endFill();
+        // Right mandible with shadow
+        queenGraphics.lineStyle(1.8, 0x1A0F0A);
+        queenGraphics.moveTo(4, -18);
+        queenGraphics.lineTo(7, -21);
+        queenGraphics.lineStyle(1.5, 0x2A1B10);
+        queenGraphics.moveTo(3.7, -17.7);
+        queenGraphics.lineTo(6.7, -20.7);
         
-        // Middle segment (thorax) - slightly larger
-        queenGraphics.beginFill(0x3D2817);
-        queenGraphics.drawEllipse(0, -2, 6, 8);
-        queenGraphics.endFill();
+        // Antennae with 3D effect - longer for queen
+        queenGraphics.lineStyle(1.8, 0x1A0F0A); // Shadow line
         
-        // Ant head - darker and slightly larger
-        queenGraphics.beginFill(0x2A1B10);
-        queenGraphics.drawCircle(0, -14, 6);
-        queenGraphics.endFill();
+        // Left antenna shadow
+        queenGraphics.moveTo(-2.7, -18);
+        queenGraphics.bezierCurveTo(-6.5, -23, -9.5, -25, -8.5, -27);
         
-        // Add eyes - slightly larger
-        queenGraphics.beginFill(0x000000);
-        queenGraphics.drawCircle(-2.5, -15, 1.5);
-        queenGraphics.drawCircle(2.5, -15, 1.5);
-        queenGraphics.endFill();
+        // Right antenna shadow  
+        queenGraphics.moveTo(2.7, -18);
+        queenGraphics.bezierCurveTo(6.5, -23, 9.5, -25, 8.5, -27);
         
-        // Highlight on eyes
-        queenGraphics.beginFill(0xFFFFFF, 0.6);
-        queenGraphics.drawCircle(-2.8, -15.3, 0.6);
-        queenGraphics.drawCircle(2.2, -15.3, 0.6);
-        queenGraphics.endFill();
+        // Antenna highlights
+        queenGraphics.lineStyle(1.5, 0x2A1B10);
         
-        // Mandibles - slightly larger
-        queenGraphics.lineStyle(1.2, 0x2A1B10);
-        queenGraphics.moveTo(-3.5, -17);
-        queenGraphics.lineTo(-6, -19);
-        queenGraphics.moveTo(3.5, -17);
-        queenGraphics.lineTo(6, -19);
+        // Left antenna
+        queenGraphics.moveTo(-2.5, -17.5);
+        queenGraphics.bezierCurveTo(-6, -22.5, -9, -24.5, -8, -26.5);
         
-        // Antennae - more curved and natural
-        queenGraphics.lineStyle(1.2, 0x2A1B10);
+        // Right antenna
+        queenGraphics.moveTo(2.5, -17.5);
+        queenGraphics.bezierCurveTo(6, -22.5, 9, -24.5, 8, -26.5);
         
-        // Left antenna with curve
-        queenGraphics.moveTo(-2.5, -17);
-        queenGraphics.bezierCurveTo(
-            -6, -22, // control point 1
-            -9, -24, // control point 2
-            -8, -26  // end point
-        );
-        
-        // Right antenna with curve
-        queenGraphics.moveTo(2.5, -17);
-        queenGraphics.bezierCurveTo(
-            6, -22, // control point 1
-            9, -24, // control point 2
-            8, -26  // end point
-        );
-        
-        // Add crown
+        // Antenna tips (clubs) - larger for queen
         queenGraphics.lineStyle(0);
+        queenGraphics.beginFill(0x2A1B10);
+        queenGraphics.drawCircle(-8, -26.5, 1.5);
+        queenGraphics.drawCircle(8, -26.5, 1.5);
+        queenGraphics.endFill();
+        
+        // Antenna tip highlights
+        queenGraphics.beginFill(0x3D2817);
+        queenGraphics.drawCircle(-8.3, -26.8, 1);
+        queenGraphics.drawCircle(7.7, -26.8, 1);
+        queenGraphics.endFill();
+        
+        // Crown with 3D depth effect
+        queenGraphics.lineStyle(0);
+        
+        // Crown shadow
+        queenGraphics.beginFill(0xB8860B, 0.6); // Dark gold shadow
+        queenGraphics.drawRect(-6.5, -21.5, 13, 3.5);
+        queenGraphics.endFill();
+        
+        // Crown base with gradient effect
         queenGraphics.beginFill(0xFFD700); // Gold color
-        
-        // Crown base
         queenGraphics.drawRect(-6, -22, 12, 3);
+        queenGraphics.endFill();
         
-        // Crown points
+        // Crown highlight
+        queenGraphics.beginFill(0xFFE55C);
+        queenGraphics.drawRect(-6, -22, 12, 1.5);
+        queenGraphics.endFill();
+        
+        // Crown points with 3D effect
+        // Shadow points
+        queenGraphics.beginFill(0xB8860B);
+        queenGraphics.moveTo(-6.5, -21.5);
+        queenGraphics.lineTo(-4.5, -26.5);
+        queenGraphics.lineTo(-2.5, -21.5);
+        queenGraphics.lineTo(-0.5, -26.5);
+        queenGraphics.lineTo(1.5, -21.5);
+        queenGraphics.lineTo(3.5, -26.5);
+        queenGraphics.lineTo(5.5, -21.5);
+        queenGraphics.endFill();
+        
+        // Main crown points
+        queenGraphics.beginFill(0xFFD700);
         queenGraphics.moveTo(-6, -22);
         queenGraphics.lineTo(-4, -26);
         queenGraphics.lineTo(-2, -22);
@@ -147,20 +344,59 @@
         queenGraphics.lineTo(2, -22);
         queenGraphics.lineTo(4, -26);
         queenGraphics.lineTo(6, -22);
-        
         queenGraphics.endFill();
         
-        // Add jewels to the crown
-        queenGraphics.beginFill(0xFF0000); // Red jewel
+        // Crown point highlights
+        queenGraphics.beginFill(0xFFE55C);
+        queenGraphics.moveTo(-6, -22);
+        queenGraphics.lineTo(-4.5, -24);
+        queenGraphics.lineTo(-3, -22);
+        queenGraphics.moveTo(-1, -22);
+        queenGraphics.lineTo(-0.5, -24);
+        queenGraphics.lineTo(1, -22);
+        queenGraphics.moveTo(3, -22);
+        queenGraphics.lineTo(3.5, -24);
+        queenGraphics.lineTo(5, -22);
+        queenGraphics.endFill();
+        
+        // Jewels with 3D effect and shadows
+        // Red jewel shadow
+        queenGraphics.beginFill(0x8B0000, 0.6);
+        queenGraphics.drawCircle(-2.7, -22.7, 1.2);
+        queenGraphics.endFill();
+        // Red jewel
+        queenGraphics.beginFill(0xFF0000);
         queenGraphics.drawCircle(-3, -23, 1);
         queenGraphics.endFill();
-        
-        queenGraphics.beginFill(0x0000FF); // Blue jewel
-        queenGraphics.drawCircle(0, -23, 1);
+        // Red jewel highlight
+        queenGraphics.beginFill(0xFF6B6B);
+        queenGraphics.drawCircle(-3.3, -23.3, 0.4);
         queenGraphics.endFill();
         
-        queenGraphics.beginFill(0x00FF00); // Green jewel
+        // Blue jewel shadow
+        queenGraphics.beginFill(0x000080, 0.6);
+        queenGraphics.drawCircle(0.3, -22.7, 1.2);
+        queenGraphics.endFill();
+        // Blue jewel
+        queenGraphics.beginFill(0x0000FF);
+        queenGraphics.drawCircle(0, -23, 1);
+        queenGraphics.endFill();
+        // Blue jewel highlight
+        queenGraphics.beginFill(0x6B6BFF);
+        queenGraphics.drawCircle(-0.3, -23.3, 0.4);
+        queenGraphics.endFill();
+        
+        // Green jewel shadow
+        queenGraphics.beginFill(0x006400, 0.6);
+        queenGraphics.drawCircle(3.3, -22.7, 1.2);
+        queenGraphics.endFill();
+        // Green jewel
+        queenGraphics.beginFill(0x00FF00);
         queenGraphics.drawCircle(3, -23, 1);
+        queenGraphics.endFill();
+        // Green jewel highlight
+        queenGraphics.beginFill(0x6BFF6B);
+        queenGraphics.drawCircle(2.7, -23.3, 0.4);
         queenGraphics.endFill();
         
         return queenGraphics;

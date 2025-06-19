@@ -27,42 +27,49 @@ IdleAnts.Entities.Ant = class extends IdleAnts.Entities.AntBase {
         this.legsContainer = new PIXI.Container();
         this.addChild(this.legsContainer);
         
-        // Create each pair of legs - these will be animated
+        // Create each pair of legs - positioned for bird's eye view
         this.legs = [];
         
-        // Leg positions (relative to ant center)
+        // Leg positions for bird's eye view - symmetrical
         const legPositions = [
-            {x: 0, y: -8}, // Front legs
-            {x: 0, y: -2}, // Middle legs
-            {x: 0, y: 6}   // Rear legs
+            {x: -4, y: -8, side: 'left'},   // Left front leg
+            {x: 4, y: -8, side: 'right'},   // Right front leg
+            {x: -4, y: -2, side: 'left'},   // Left middle leg
+            {x: 4, y: -2, side: 'right'},   // Right middle leg
+            {x: -4, y: 4, side: 'left'},    // Left rear leg
+            {x: 4, y: 4, side: 'right'}     // Right rear leg
         ];
         
-        // Create each pair of legs
-        for (let i = 0; i < 3; i++) {
-            // Left leg
-            const leftLeg = new PIXI.Graphics();
-            leftLeg.lineStyle(1.5, 0x2A1B10);
-            leftLeg.moveTo(0, 0);
-            leftLeg.lineTo(-8, -5);
-            leftLeg.position.set(-5, legPositions[i].y);
-            leftLeg.baseY = legPositions[i].y;
-            leftLeg.index = i;
-            leftLeg.side = 'left';
+        // Create each leg
+        for (let i = 0; i < legPositions.length; i++) {
+            const legPos = legPositions[i];
+            const leg = new PIXI.Graphics();
             
-            // Right leg
-            const rightLeg = new PIXI.Graphics();
-            rightLeg.lineStyle(1.5, 0x2A1B10);
-            rightLeg.moveTo(0, 0);
-            rightLeg.lineTo(8, -5);
-            rightLeg.position.set(5, legPositions[i].y);
-            rightLeg.baseY = legPositions[i].y;
-            rightLeg.index = i;
-            rightLeg.side = 'right';
+            // Set leg properties
+            leg.position.set(legPos.x, legPos.y);
+            leg.baseX = legPos.x;
+            leg.baseY = legPos.y;
+            leg.index = Math.floor(i / 2); // 0, 0, 1, 1, 2, 2
+            leg.side = legPos.side;
             
-            this.legsContainer.addChild(leftLeg);
-            this.legsContainer.addChild(rightLeg);
+            // Draw initial leg
+            this.drawLeg(leg);
             
-            this.legs.push(leftLeg, rightLeg);
+            this.legsContainer.addChild(leg);
+            this.legs.push(leg);
+        }
+    }
+    
+    drawLeg(leg) {
+        leg.clear();
+        leg.lineStyle(1.5, 0x2A1B10);
+        
+        // Draw leg extending outward from body - symmetrical for bird's eye view
+        leg.moveTo(0, 0);
+        if (leg.side === 'left') {
+            leg.lineTo(-4, 2); // Left legs extend left and slightly down
+        } else {
+            leg.lineTo(4, 2); // Right legs extend right and slightly down
         }
     }
     
@@ -79,7 +86,7 @@ IdleAnts.Entities.Ant = class extends IdleAnts.Entities.AntBase {
         const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
         const animationRate = Math.max(0.1, speed * 0.3);
         
-        // Animate each leg
+        // Animate each leg with symmetrical movement
         for (let i = 0; i < this.legs.length; i++) {
             const leg = this.legs[i];
             
@@ -89,32 +96,25 @@ IdleAnts.Entities.Ant = class extends IdleAnts.Entities.AntBase {
                 phase += Math.PI; // Opposite phase for right legs
             }
             
-            // Apply leg animation - a slight up and down movement
-            const legMovement = Math.sin(phase) * 2;
+            // Apply leg animation - symmetrical movement
+            const legMovement = Math.sin(phase) * 2; // Full movement for both sides
             
-            // For a walking motion, bend the legs when they're moving down
+            // Redraw the leg with animation
+            leg.clear();
+            leg.lineStyle(1.5, 0x2A1B10);
+            leg.moveTo(0, 0);
+            
+            // Symmetrical leg animation for bird's eye view
+            const bendFactor = Math.max(0, -Math.sin(phase)) * 0.8;
+            
             if (leg.side === 'left') {
-                leg.clear();
-                leg.lineStyle(1.5, 0x2A1B10);
-                leg.moveTo(0, 0);
-                
-                // Bend the leg differently based on the phase
-                const bendFactor = Math.max(0, -Math.sin(phase));
-                const midX = -4 - bendFactor * 2;
-                const midY = legMovement - 2 - bendFactor * 2;
-                leg.lineTo(midX, midY);
-                leg.lineTo(-8, -5 + legMovement);
+                const endX = -4 + legMovement;
+                const endY = 2 + bendFactor;
+                leg.lineTo(endX, endY);
             } else {
-                leg.clear();
-                leg.lineStyle(1.5, 0x2A1B10);
-                leg.moveTo(0, 0);
-                
-                // Bend the leg differently based on the phase
-                const bendFactor = Math.max(0, -Math.sin(phase));
-                const midX = 4 + bendFactor * 2;
-                const midY = legMovement - 2 - bendFactor * 2;
-                leg.lineTo(midX, midY);
-                leg.lineTo(8, -5 + legMovement);
+                const endX = 4 - legMovement; // Mirror the movement for right side
+                const endY = 2 + bendFactor;
+                leg.lineTo(endX, endY);
             }
         }
     }
