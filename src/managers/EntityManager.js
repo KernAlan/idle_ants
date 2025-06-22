@@ -531,8 +531,24 @@ IdleAnts.Managers.EntityManager = class {
             
             // Remove dead ants
             if(ant.isDead){
+                // Update resource manager stats based on ant type
+                if(this.resourceManager){
+                    if(antEntities === this.entities.ants && typeof this.resourceManager.decreaseAntCount === 'function'){
+                        this.resourceManager.decreaseAntCount();
+                    } else if(antEntities === this.entities.flyingAnts){
+                        this.resourceManager.stats.flyingAnts = Math.max(0, this.resourceManager.stats.flyingAnts - 1);
+                    } else if(antEntities === this.entities.carAnts){
+                        this.resourceManager.stats.carAnts = Math.max(0, this.resourceManager.stats.carAnts - 1);
+                    } else if(antEntities === this.entities.fireAnts){
+                        this.resourceManager.stats.fireAnts = Math.max(0, this.resourceManager.stats.fireAnts - 1);
+                    }
+                    // Recompute food per second since ant counts changed
+                    this.resourceManager.updateFoodPerSecond();
+                }
+                // Remove from array and continue iteration
                 antEntities.splice(i,1);
-                i--; continue;
+                i--;
+                continue;
             }
         }
     }
@@ -1039,16 +1055,18 @@ IdleAnts.Managers.EntityManager = class {
             const r=Math.random();
             if(r<0.15){ // 15% grasshopper
                 enemy=new IdleAnts.Entities.GrasshopperEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
-            } else if(r<0.3){ // 15% cricket
-                enemy=new IdleAnts.Entities.CricketEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
-            } else if(r<0.45){ // 15% bee
-                enemy=new IdleAnts.Entities.BeeEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
-            } else if(r<0.6){ // 15% hercules beetle
-                enemy=new IdleAnts.Entities.HerculesBeetleEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
-            } else if(r<0.7){ // 10% mantis
+            } else if(r<0.30){ // 15% mantis
                 enemy=new IdleAnts.Entities.MantisEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
-            } else {
+            } else if(r<0.45){ // 15% cricket
+                enemy=new IdleAnts.Entities.CricketEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
+            } else if(r<0.60){ // 15% bee
+                enemy=new IdleAnts.Entities.BeeEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
+            } else if(r<0.75){ // 15% hercules beetle
+                enemy=new IdleAnts.Entities.HerculesBeetleEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
+            } else if(r<0.90){ // 15% woolly bear
                 enemy=new IdleAnts.Entities.WoollyBearEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
+            } else { // 10% frog
+                enemy=new IdleAnts.Entities.FrogEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
             }
             this.entitiesContainers.enemies.addChild(enemy);
             this.entities.enemies.push(enemy);
@@ -1086,15 +1104,16 @@ IdleAnts.Managers.EntityManager = class {
     spawnInitialEnemies(){
         const tex=this.assetManager.getTexture('ant'); // placeholder texture
         const bounds={width:this.mapBounds.width,height:this.mapBounds.height};
-        const enemyClasses=[
-            IdleAnts.Entities.GrasshopperEnemy,
+        const enemyTypes = [
             IdleAnts.Entities.CricketEnemy,
             IdleAnts.Entities.BeeEnemy,
             IdleAnts.Entities.HerculesBeetleEnemy,
+            IdleAnts.Entities.GrasshopperEnemy,
+            IdleAnts.Entities.MantisEnemy,
             IdleAnts.Entities.WoollyBearEnemy,
-            IdleAnts.Entities.MantisEnemy
+            IdleAnts.Entities.FrogEnemy
         ];
-        enemyClasses.forEach(cls=>{
+        enemyTypes.forEach(cls=>{
             if(typeof cls!=='function') return;
             const e=new cls(tex,bounds);
             this.entitiesContainers.enemies.addChild(e);

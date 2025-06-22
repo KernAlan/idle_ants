@@ -180,10 +180,11 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
             IdleAnts.app.resourceManager) {
             
             const currentAnts = IdleAnts.app.entityManager.entities.ants.length;
+            const currentLarvae = IdleAnts.app.entityManager.entities.larvae.length;
             const maxAnts = IdleAnts.app.resourceManager.stats.maxAnts;
             
-            // If colony is at max capacity, don't produce larvae
-            if (currentAnts >= maxAnts) {
+            // If colony is at or above max capacity accounting for existing larvae, don't produce
+            if (currentAnts + currentLarvae >= maxAnts) {
                 // Reset counter to avoid immediate production when space becomes available
                 this.larvaeCounter = 0;
                 return;
@@ -209,10 +210,11 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
             IdleAnts.app.resourceManager) {
             
             const currentAnts = IdleAnts.app.entityManager.entities.ants.length;
+            const currentLarvae = IdleAnts.app.entityManager.entities.larvae.length;
             const maxAnts = IdleAnts.app.resourceManager.stats.maxAnts;
             
             // If colony is at max capacity, don't produce larvae
-            if (currentAnts >= maxAnts) {
+            if (currentAnts + currentLarvae >= maxAnts) {
                 console.log("Cannot produce larvae: colony at maximum capacity");
                 return;
             }

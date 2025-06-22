@@ -10,9 +10,17 @@ IdleAnts.Managers.BackgroundManager = class {
         // Create a tiled background with the ground texture
         const groundTexture = this.assetManager.getTexture('ground');
         
-        // Use repeat wrapping and nearest-neighbour sampling so pixels line up exactly
+        // Use repeat wrapping and linear filtering for smooth tiling
         groundTexture.baseTexture.wrapMode = PIXI.WRAP_MODES.REPEAT;
-        groundTexture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
+        groundTexture.baseTexture.scaleMode = PIXI.SCALE_MODES.LINEAR;
+        
+        // Ensure the texture is properly set up for tiling
+        if (groundTexture.baseTexture.resource) {
+            groundTexture.baseTexture.resource.style = {
+                ...groundTexture.baseTexture.resource.style,
+                imageRendering: 'pixelated'
+            };
+        }
         
         // Use provided width/height for the larger map, or fallback to screen size
         const mapWidth = width || this.app.screen.width;
@@ -24,15 +32,21 @@ IdleAnts.Managers.BackgroundManager = class {
             mapHeight
         );
         
-        // Exact 1:1 scale – NEAREST filtering + integer positioning avoids seams
+        // Use exact integer scaling and positioning to prevent seams
         this.background.tileScale.set(1, 1);
         this.background.roundPixels = true;
+        this.background.anchor.set(0, 0);
+        this.background.position.set(0, 0);
+        
+        // Force pixel-perfect rendering
+        this.background.filters = [];
+        this.background.alpha = 1.0;
         
         // Add to world container instead of directly to stage
         this.worldContainer.addChildAt(this.background, 0);
         
-        // Create border to visually indicate map edges
-        this.createMapBorder(mapWidth, mapHeight);
+        // Create border. Interior grid disabled by default to avoid visible seams
+        this.createMapBorder(mapWidth, mapHeight, false);
         
         // Only update the viewport size when the window is resized, not the map size
         window.addEventListener('resize', () => {
@@ -41,25 +55,24 @@ IdleAnts.Managers.BackgroundManager = class {
         });
     }
     
-    createMapBorder(width, height) {
+    createMapBorder(width, height, interiorGrid = true) {
         // Create a border around the map to indicate its edges
         const border = new PIXI.Graphics();
         border.lineStyle(5, 0x333333, 0.8);
         border.drawRect(0, 0, width, height);
         
-        // Add some grid lines to help with navigation and sense of space
-        border.lineStyle(1, 0x333333, 0.3);
-        
-        // Add vertical grid lines every 500 pixels
-        for (let x = 500; x < width; x += 500) {
-            border.moveTo(x, 0);
-            border.lineTo(x, height);
-        }
-        
-        // Add horizontal grid lines every 500 pixels
-        for (let y = 500; y < height; y += 500) {
-            border.moveTo(0, y);
-            border.lineTo(width, y);
+        if(interiorGrid){
+            border.lineStyle(1, 0x333333, 0.3);
+            // Add vertical grid lines every 500 pixels
+            for (let x = 500; x < width; x += 500) {
+                border.moveTo(x, 0);
+                border.lineTo(x, height);
+            }
+            // Add horizontal grid lines every 500 pixels
+            for (let y = 500; y < height; y += 500) {
+                border.moveTo(0, y);
+                border.lineTo(width, y);
+            }
         }
         
         this.worldContainer.addChild(border);

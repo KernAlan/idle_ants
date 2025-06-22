@@ -31,44 +31,51 @@
     AssetDefinition.register('ground', function(app) {
         const groundGraphics = AssetDefinition.createGraphics();
         
-        // Draw a slightly larger rectangle to ensure coverage
-        groundGraphics.beginFill(0x4CAF50); // Base grass green color
-        // Add 1px padding to all sides to prevent edge artifacts
-        groundGraphics.drawRect(-1, -1, 102, 102);
+        // Create a grass texture that tiles perfectly
+        const tileSize = 64;
+        
+        // Base grass color
+        groundGraphics.beginFill(0x4CAF50);
+        groundGraphics.drawRect(0, 0, tileSize, tileSize);
         groundGraphics.endFill();
         
-        // Add some variation to make the grass look more natural
-        groundGraphics.beginFill(0x388E3C, 0.4); // Darker green spots with transparency
+        // Add grass variation using a pattern that repeats perfectly
+        // Use mathematical patterns instead of random placement
+        groundGraphics.beginFill(0x388E3C, 0.3); // Darker green spots
         
-        // Add shorter strokes of grass - using simple shapes instead of transforms
-        for (let i = 0; i < 60; i++) {
-            const x = Math.random() * 100;
-            const y = Math.random() * 100;
-            const width = 1 + Math.random() * 2;
-            const height = 3 + Math.random() * 5;
-            
-            groundGraphics.drawRect(x, y, width, height);
+        // Create a repeating pattern of grass blades
+        for (let x = 2; x < tileSize; x += 6) {
+            for (let y = 2; y < tileSize; y += 8) {
+                // Stagger every other row for more natural look
+                const offsetX = (y % 16 === 2) ? 3 : 0;
+                const grassX = (x + offsetX) % tileSize;
+                
+                // Draw small grass blade
+                groundGraphics.drawRect(grassX, y, 1, 3);
+                groundGraphics.drawRect(grassX + 1, y + 1, 1, 2);
+            }
         }
         groundGraphics.endFill();
         
-        // Add some lighter grass blades
-        groundGraphics.beginFill(0x81C784, 0.6); // Lighter green highlights
-        for (let i = 0; i < 40; i++) {
-            const x = Math.random() * 100;
-            const y = Math.random() * 100;
-            const width = 1 + Math.random() * 1.5;
-            const height = 2 + Math.random() * 4;
-            
-            groundGraphics.drawRect(x, y, width, height);
+        // Add lighter highlights
+        groundGraphics.beginFill(0x81C784, 0.4);
+        for (let x = 4; x < tileSize; x += 8) {
+            for (let y = 4; y < tileSize; y += 10) {
+                const offsetX = (y % 20 === 4) ? 4 : 0;
+                const grassX = (x + offsetX) % tileSize;
+                
+                // Smaller highlight blades
+                groundGraphics.drawRect(grassX, y, 1, 2);
+            }
         }
         groundGraphics.endFill();
         
-        // Add some small highlights
-        groundGraphics.beginFill(0xA5D6A7, 0.3); // Very light green for highlights
-        for (let i = 0; i < 25; i++) {
-            const x = Math.random() * 100;
-            const y = Math.random() * 100;
-            groundGraphics.drawCircle(x, y, 1 + Math.random() * 2);
+        // Add very subtle texture dots
+        groundGraphics.beginFill(0xA5D6A7, 0.2);
+        for (let x = 8; x < tileSize; x += 12) {
+            for (let y = 6; y < tileSize; y += 14) {
+                groundGraphics.drawCircle(x, y, 1);
+            }
         }
         groundGraphics.endFill();
         

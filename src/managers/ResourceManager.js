@@ -184,6 +184,14 @@ IdleAnts.Managers.ResourceManager = class {
         this.updateFoodPerSecond();
     }
     
+    // Add complementary method to decrease ant count when an ant dies
+    decreaseAntCount() {
+        if (this.stats.ants > 0) {
+            this.stats.ants--;
+            this.updateFoodPerSecond();
+        }
+    }
+    
     // Method to check if an ant can be purchased
     canBuyAnt() {
         return this.canAfford(this.stats.antCost) && 
