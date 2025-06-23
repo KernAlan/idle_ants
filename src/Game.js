@@ -678,7 +678,7 @@ IdleAnts.Game = class {
             // Handle resource management
             this.resourceManager.spendFood(expandCost);
             this.resourceManager.stats.maxAnts += 5;
-            this.resourceManager.stats.expandCost = Math.floor(this.resourceManager.stats.expandCost * 2);
+            this.resourceManager.stats.expandCost = Math.floor(this.resourceManager.stats.expandCost * 1.3);
             
             // Delegate nest expansion to EntityManager
             this.entityManager.expandNest();

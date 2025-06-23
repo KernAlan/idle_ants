@@ -627,4 +627,49 @@ input, textarea {
         margin: 1px 0 !important;
         text-align: center;
     }
+}
+
+/* Notification Banner (Toast) */
+.notification-banner {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translate(-50%, 100%);
+    max-width: 80%;
+    padding: 10px 20px;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: bold;
+    color: #fff;
+    z-index: 9999;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    opacity: 0;
+    pointer-events: none; /* clicks pass through */
+}
+
+.notification-banner.show {
+    transform: translate(-50%, 0);
+    opacity: 1;
+}
+
+/* Color themes – tuned to match game palette */
+.notification-banner.info    {
+    background: linear-gradient(to bottom, #555, #333);
+    color: #FFD700; /* gold text for consistency */
+}
+
+.notification-banner.success {
+    background: linear-gradient(to bottom, #4CAF50, #3e8e41); /* same green as upgrade buttons */
+    color: #fff;
+}
+
+.notification-banner.warning {
+    background: linear-gradient(to bottom, #FFD700, #C8A400); /* gold accent */
+    color: #333;
+}
+
+.notification-banner.error   {
+    background: linear-gradient(to bottom, #d32f2f, #b71c1c);
+    color: #fff;
 } 

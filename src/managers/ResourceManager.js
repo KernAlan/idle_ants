@@ -213,16 +213,18 @@ IdleAnts.Managers.ResourceManager = class {
     
     updateAntCost() {
         const oldCost = this.stats.antCost;
-        this.stats.antCost = Math.floor(this.stats.antCost * 1.2);
+        // Gentle incremental increase (≈15 %)
+        this.stats.antCost = Math.floor(this.stats.antCost * 1.15);
         console.log(`Ant cost updated: ${oldCost} -> ${this.stats.antCost}`);
     }
     
     updateFoodUpgradeCost() {
-        this.stats.foodUpgradeCost = Math.floor(this.stats.foodUpgradeCost * 10);
+        // Previously ×10 ‑ now ×2 for smoother progression
+        this.stats.foodUpgradeCost = Math.floor(this.stats.foodUpgradeCost * 2);
     }
     
     updateExpandCost() {
-        this.stats.expandCost = Math.floor(this.stats.expandCost * 2);
+        this.stats.expandCost = Math.floor(this.stats.expandCost * 1.3);
     }
     
     upgradeFoodMultiplier(amount) {
@@ -297,7 +299,7 @@ IdleAnts.Managers.ResourceManager = class {
     }
     
     updateSpeedUpgradeCost() {
-        this.stats.speedUpgradeCost = Math.floor(this.stats.speedUpgradeCost * 1.8);
+        this.stats.speedUpgradeCost = Math.floor(this.stats.speedUpgradeCost * 1.25);
     }
     
     upgradeSpeedMultiplier(amount) {
@@ -334,8 +336,8 @@ IdleAnts.Managers.ResourceManager = class {
             this.spendFood(this.stats.flyingAntCost);
             this.stats.flyingAnts++;
             const oldCost = this.stats.flyingAntCost;
-            this.stats.flyingAntCost = Math.floor(this.stats.flyingAntCost * 1.4); // Flying ant cost increases faster
-            console.log(`Flying ant cost updated: ${oldCost} -> ${this.stats.flyingAntCost}`);
+            this.stats.flyingAntCost = Math.floor(this.stats.flyingAntCost * 1.25);
+            console.log(`Flying Ant cost updated: ${oldCost} -> ${this.stats.flyingAntCost}`);
             this.updateFoodPerSecond();
             return true;
         }
@@ -354,7 +356,7 @@ IdleAnts.Managers.ResourceManager = class {
     
     // New strength-related methods
     updateStrengthUpgradeCost() {
-        this.stats.strengthUpgradeCost = Math.floor(this.stats.strengthUpgradeCost * 1.3);
+        this.stats.strengthUpgradeCost = Math.floor(this.stats.strengthUpgradeCost * 1.2);
     }
     
     upgradeStrengthMultiplier(amount) {
@@ -412,7 +414,7 @@ IdleAnts.Managers.ResourceManager = class {
     }
     
     updateAutofeederUpgradeCost() {
-        this.stats.autofeederUpgradeCost = Math.floor(this.stats.autofeederUpgradeCost * 1.8);
+        this.stats.autofeederUpgradeCost = Math.floor(this.stats.autofeederUpgradeCost * 1.3);
     }
     
     getAutofeederFoodAmount() {
@@ -421,7 +423,7 @@ IdleAnts.Managers.ResourceManager = class {
     }
     
     updateQueenUpgradeCost() {
-        this.stats.queenUpgradeCost = Math.floor(this.stats.queenUpgradeCost * 2);
+        this.stats.queenUpgradeCost = Math.floor(this.stats.queenUpgradeCost * 1.4);
     }
     
     // Queen ant methods
@@ -511,7 +513,7 @@ IdleAnts.Managers.ResourceManager = class {
     }
 
     updateCarAntCost() {
-        this.stats.carAntCost = Math.floor(this.stats.carAntCost * 1.5); // Example cost increase
+        this.stats.carAntCost = Math.floor(this.stats.carAntCost * 1.25);
     }
 
     // Method to expand Car Ant capacity (similar to flying ants)
@@ -566,7 +568,7 @@ IdleAnts.Managers.ResourceManager = class {
     }
 
     updateFireAntCost() {
-        this.stats.fireAntCost = Math.floor(this.stats.fireAntCost * 1.5);
+        this.stats.fireAntCost = Math.floor(this.stats.fireAntCost * 1.25);
     }
 
     canExpandFireAntCapacity() {

@@ -11,12 +11,12 @@ IdleAnts.Entities.FrogEnemy = class extends IdleAnts.Entities.Enemy {
         this.tint = 0x228B22; // Forest green base color
         
         // Combat stats - stronger than cricket (15 HP, 6 dmg), weaker than grasshopper (30 HP, 10 dmg)
-        this.maxHp = 22; // Between cricket (15) and grasshopper (30)
+        this.maxHp = 300; // Between cricket (15) and grasshopper (30)
         this.hp = this.maxHp;
-        this.damage = 8; // Between cricket (6) and grasshopper (10)
+        this.damage = 5; // Between cricket (6) and grasshopper (10)
         this.attackSpeed = 75; // Moderate attack speed
         
-        // Hopping movement properties
+        // Hopping 
         this.isHopping = false;
         this.hopCooldown = 0;
         this.hopDuration = 0;

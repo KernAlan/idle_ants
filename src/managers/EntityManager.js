@@ -65,6 +65,27 @@ IdleAnts.Managers.EntityManager = class {
         
         this.enemySpawnCounter = 0;
         this.enemySpawnInterval = 600; // spawn every 10s
+        
+        // Enemy spawn level tracking for tiered spawning
+        this.enemySpawnLevel = 0; // 0-based level (initial waves)
+        this.enemyTiers = [
+            ['WoollyBearEnemy', 'CricketEnemy'],                   // Level 0 – basic
+            ['BeeEnemy'],                                  // Level 1 – after 10 ants
+            ['GrasshopperEnemy'],                                       // Level 2 – 20 ants
+            ['FrogEnemy'],                                          // Level 3 – 30 ants
+            ['HerculesBeetleEnemy'],                               // Level 4 – 40 ants
+            ['MantisEnemy'],                                          // Level 5 – 50 ants
+        ];
+        // Map enemy string names to classes for easy instantiation
+        this.enemyClassMap = {
+            CricketEnemy: IdleAnts.Entities.CricketEnemy,
+            WoollyBearEnemy: IdleAnts.Entities.WoollyBearEnemy,
+            GrasshopperEnemy: IdleAnts.Entities.GrasshopperEnemy,
+            MantisEnemy: IdleAnts.Entities.MantisEnemy,
+            BeeEnemy: IdleAnts.Entities.BeeEnemy,
+            HerculesBeetleEnemy: IdleAnts.Entities.HerculesBeetleEnemy,
+            FrogEnemy: IdleAnts.Entities.FrogEnemy
+        };
     }
     
     setEffectManager(effectManager) {
@@ -1048,32 +1069,40 @@ IdleAnts.Managers.EntityManager = class {
         }
     }
     
-    createEnemy(count=1){
-        for(let i=0;i<count;i++){
-            const tex=this.assetManager.getTexture('ant'); // placeholder
-            let enemy;
-            const r=Math.random();
-            if(r<0.15){ // 15% grasshopper
-                enemy=new IdleAnts.Entities.GrasshopperEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
-            } else if(r<0.30){ // 15% mantis
-                enemy=new IdleAnts.Entities.MantisEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
-            } else if(r<0.45){ // 15% cricket
-                enemy=new IdleAnts.Entities.CricketEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
-            } else if(r<0.60){ // 15% bee
-                enemy=new IdleAnts.Entities.BeeEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
-            } else if(r<0.75){ // 15% hercules beetle
-                enemy=new IdleAnts.Entities.HerculesBeetleEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
-            } else if(r<0.90){ // 15% woolly bear
-                enemy=new IdleAnts.Entities.WoollyBearEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
-            } else { // 10% frog
-                enemy=new IdleAnts.Entities.FrogEnemy(tex,{width:this.mapBounds.width,height:this.mapBounds.height});
-            }
+    createEnemy(count = 1){
+        const unlockedTypes = this.enemyTiers.slice(0, this.enemySpawnLevel + 1).flat();
+        if(unlockedTypes.length === 0) return;
+
+        for(let i = 0; i < count; i++){
+            const tex = this.assetManager.getTexture('ant'); // placeholder texture
+            // Randomly pick an unlocked enemy type
+            const typeName = unlockedTypes[Math.floor(Math.random() * unlockedTypes.length)];
+            const EnemyClass = this.enemyClassMap[typeName];
+            if(!EnemyClass){ continue; }
+            const enemy = new EnemyClass(tex, {width: this.mapBounds.width, height: this.mapBounds.height});
             this.entitiesContainers.enemies.addChild(enemy);
             this.entities.enemies.push(enemy);
         }
     }
     
     updateEnemies(){
+        // Calculate total ants in colony
+        const antTotal = this.entities.ants.length + this.entities.flyingAnts.length + this.entities.carAnts.length + this.entities.fireAnts.length;
+
+        // ---------- NEW: Update spawn level based on colony size ----------
+        const maxLevel = this.enemyTiers.length - 1;
+        const newLevel = Math.min(Math.floor(antTotal / 10), maxLevel);
+        if(newLevel > this.enemySpawnLevel){
+            this.enemySpawnLevel = newLevel;
+            // Notify player about new enemy tier
+            if(typeof IdleAnts.notify === 'function'){
+                const lvl = newLevel; // 1-based for players
+                IdleAnts.notify(`Level ${lvl} unlocked! New creatures are appearing…`, 'warning');
+            }
+        }
+        // ------------------------------------------------------------------
+
+        // Update existing enemies
         const ants=[...this.entities.ants,...this.entities.flyingAnts,...this.entities.carAnts,...this.entities.fireAnts];
         for(let i=this.entities.enemies.length-1;i>=0;i--){
             const e=this.entities.enemies[i];
@@ -1081,19 +1110,15 @@ IdleAnts.Managers.EntityManager = class {
             if(e instanceof IdleAnts.Entities.WoollyBearEnemy){
                 e.update(this.nestPosition,[],ants);
             } else {
-                // MantisEnemy, CricketEnemy, GrasshopperEnemy follow base signature
                 e.update(ants);
             }
         }
         // Dynamic enemy spawning based on colony size
-        const antTotal = this.entities.ants.length + this.entities.flyingAnts.length + this.entities.carAnts.length + this.entities.fireAnts.length;
         const baseInterval = 900; // 15s default for 0-10 ants
-        // Every extra 10 ants halves the interval, cap at 300 frames (~5s)
         const scaledInterval = Math.max(300, Math.floor(baseInterval / (1 + antTotal/10)));
 
         this.enemySpawnCounter++;
         if(this.enemySpawnCounter >= scaledInterval){
-            // Spawn more enemies as colony grows: 1 + 1 per 20 ants
             const batch = 1 + Math.floor(antTotal / 20);
             this.createEnemy(batch);
             this.enemySpawnCounter = 0;
@@ -1102,20 +1127,14 @@ IdleAnts.Managers.EntityManager = class {
 
     // Spawn one of each enemy type for early variety
     spawnInitialEnemies(){
-        const tex=this.assetManager.getTexture('ant'); // placeholder texture
-        const bounds={width:this.mapBounds.width,height:this.mapBounds.height};
-        const enemyTypes = [
-            IdleAnts.Entities.CricketEnemy,
-            IdleAnts.Entities.BeeEnemy,
-            IdleAnts.Entities.HerculesBeetleEnemy,
-            IdleAnts.Entities.GrasshopperEnemy,
-            IdleAnts.Entities.MantisEnemy,
-            IdleAnts.Entities.WoollyBearEnemy,
-            IdleAnts.Entities.FrogEnemy
-        ];
-        enemyTypes.forEach(cls=>{
-            if(typeof cls!=='function') return;
-            const e=new cls(tex,bounds);
+        // Spawn only initial tier enemies (woolly bear & cricket)
+        const initialTypes = this.enemyTiers[0];
+        const tex = this.assetManager.getTexture('ant');
+        const bounds = {width:this.mapBounds.width,height:this.mapBounds.height};
+        initialTypes.forEach(typeName => {
+            const EnemyClass = this.enemyClassMap[typeName];
+            if(!EnemyClass) return;
+            const e = new EnemyClass(tex, bounds);
             this.entitiesContainers.enemies.addChild(e);
             this.entities.enemies.push(e);
         });
