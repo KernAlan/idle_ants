@@ -361,12 +361,12 @@ IdleAnts.Managers.EntityManager = class {
     
     // Method to detect and resolve clustering of ants at the nest
     resolveNestClustering() {
-        // Only check every 15 frames to save performance (increased frequency from 30)
-        if (this.frameCounter % 15 !== 0) return;
+        // Only check every 30 frames to save performance (reduced frequency for better performance)
+        if (this.frameCounter % 30 !== 0) return;
         
         const nestX = this.nestPosition.x;
         const nestY = this.nestPosition.y;
-        const checkRadius = 8; // Increased from 5 to cover more area
+        const checkRadiusSq = 8 * 8; // Use squared radius for faster comparison
         const stuckThreshold = 3; // How many ants within radius is considered a cluster
         
         // First identify ants with food that need to deposit
@@ -380,7 +380,7 @@ IdleAnts.Managers.EntityManager = class {
                 const dy = ant.y - nestY;
                 const distSq = dx * dx + dy * dy; // Squared distance (faster than sqrt)
                 
-                if (distSq < checkRadius * checkRadius) {
+                if (distSq < checkRadiusSq) {
                     if (ant.foodCollected > 0) {
                         antsWithFood.push(ant);
                     } else {
@@ -454,61 +454,66 @@ IdleAnts.Managers.EntityManager = class {
     
     // Generic method to update any type of ant entities
     updateAntEntities(antEntities, shouldCreateTrail, isFlying = false) {
+        // Only process enemy detection every 3 frames for performance
+        const shouldCheckEnemies = this.frameCounter % 3 === 0;
+        
         for (let i = 0; i < antEntities.length; i++) {
             const ant = antEntities[i];
             
-            const perceptionSq = 250 * 250; // 250-px perception radius
-            const engageDist = 20;
+            // Skip enemy detection if not needed this frame, unless ant is already targeting
+            if (shouldCheckEnemies || ant.targetEnemy) {
+                const perceptionSq = 250 * 250; // 250-px perception radius (squared)
+                const engageDistSq = 20 * 20; // 20-px engage radius (squared)
 
-            // Locate closest living enemy
-            let closestE = null,
-                closestESq = Infinity;
-            for (const enemy of this.entities.enemies) {
-                if (enemy.isDead) continue;
-                const dx = enemy.x - ant.x,
-                      dy = enemy.y - ant.y,
-                      d = dx * dx + dy * dy;
-                if (d < closestESq) { closestESq = d; closestE = enemy; }
-            }
-
-            if (closestE && closestESq <= perceptionSq) {
-                const dist = Math.sqrt(closestESq);
-                ant.targetEnemy = closestE;
-
-                // Force ant into aggressive pursuit unless already in combat
-                if (ant.state !== IdleAnts.Entities.AntBase.States.FIGHTING) {
-                    // Ensure we're in a movable state while chasing
-                    if (ant.state !== IdleAnts.Entities.AntBase.States.SEEKING_FOOD) {
-                        ant.transitionToState(IdleAnts.Entities.AntBase.States.SEEKING_FOOD);
-                    }
+                // Locate closest living enemy using squared distances
+                let closestE = null,
+                    closestESq = Infinity;
+                for (const enemy of this.entities.enemies) {
+                    if (enemy.isDead) continue;
+                    const dx = enemy.x - ant.x,
+                          dy = enemy.y - ant.y,
+                          distSq = dx * dx + dy * dy;
+                    if (distSq < closestESq) { closestESq = distSq; closestE = enemy; }
                 }
 
-                if (dist > engageDist) {
-                    // Move toward the enemy
-                    ant.vx = (closestE.x - ant.x) / dist * ant.speed;
-                    ant.vy = (closestE.y - ant.y) / dist * ant.speed;
-                } else {
-                    // Engage – freeze and switch to fighting if not already
-                    ant.vx = ant.vy = 0;
+                if (closestE && closestESq <= perceptionSq) {
+                    ant.targetEnemy = closestE;
+
+                    // Force ant into aggressive pursuit unless already in combat
                     if (ant.state !== IdleAnts.Entities.AntBase.States.FIGHTING) {
-                        ant.transitionToState(IdleAnts.Entities.AntBase.States.FIGHTING);
+                        // Ensure we're in a movable state while chasing
+                        if (ant.state !== IdleAnts.Entities.AntBase.States.SEEKING_FOOD) {
+                            ant.transitionToState(IdleAnts.Entities.AntBase.States.SEEKING_FOOD);
+                        }
                     }
+
+                    if (closestESq > engageDistSq) {
+                        // Move toward the enemy using squared distance comparison
+                        const dist = Math.sqrt(closestESq); // Only calculate sqrt when needed
+                        ant.vx = (closestE.x - ant.x) / dist * ant.speed;
+                        ant.vy = (closestE.y - ant.y) / dist * ant.speed;
+                    } else {
+                        // Engage – freeze and switch to fighting if not already
+                        ant.vx = ant.vy = 0;
+                        if (ant.state !== IdleAnts.Entities.AntBase.States.FIGHTING) {
+                            ant.transitionToState(IdleAnts.Entities.AntBase.States.FIGHTING);
+                        }
+                    }
+                } else {
+                    // No enemy in perception – clear any previous lock
+                    ant.targetEnemy = null;
                 }
-            } else {
-                // No enemy in perception – clear any previous lock
-                ant.targetEnemy = null;
             }
             
             // Update the ant with nest position and available foods
             const actionResult = ant.update(this.nestPosition, this.entities.foods);
             
-            // Skip boundary checks for ants at the nest - allows ants to overlap at nest
-            const distToNest = Math.sqrt(
-                Math.pow(ant.x - this.nestPosition.x, 2) + 
-                Math.pow(ant.y - this.nestPosition.y, 2)
-            );
+            // Skip boundary checks for ants at the nest - allows ants to overlap at nest (optimized)
+            const dx = ant.x - this.nestPosition.x;
+            const dy = ant.y - this.nestPosition.y;
+            const distToNestSq = dx * dx + dy * dy;
             
-            const atNest = distToNest < 15;
+            const atNest = distToNestSq < 15 * 15; // Compare with squared distance
             
             // Only apply boundary handling if not at the nest
             if (!atNest) {
