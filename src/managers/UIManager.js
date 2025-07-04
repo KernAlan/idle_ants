@@ -5,6 +5,9 @@ IdleAnts.Managers.UIManager = class {
         this.game = game;
         this.effectManager = effectManager;
         
+        // Cache DOM elements to avoid repeated getElementById calls
+        this.cacheElements();
+        
         // Set up UI button click events
         this.setupEventListeners();
         
@@ -16,6 +19,49 @@ IdleAnts.Managers.UIManager = class {
         
         // Show debug indicator if in debug mode
         this.updateDebugIndicator();
+    }
+    
+    cacheElements() {
+        // Cache frequently accessed elements
+        this.elements = {
+            foodCount: document.getElementById('food-count'),
+            antCount: document.getElementById('ant-count'),
+            antMax: document.getElementById('ant-max'),
+            flyingAntCount: document.getElementById('flying-ant-count'),
+            flyingAntMax: document.getElementById('flying-ant-max'),
+            carAntCount: document.getElementById('car-ant-count'),
+            carAntMax: document.getElementById('car-ant-max'),
+            carAntResourceCount: document.getElementById('car-ant-resource-count'),
+            carAntResourceMax: document.getElementById('car-ant-resource-max'),
+            fireAntCount: document.getElementById('fire-ant-count'),
+            fireAntMax: document.getElementById('fire-ant-max'),
+            fireAntResourceCount: document.getElementById('fire-ant-resource-count'),
+            fireAntResourceMax: document.getElementById('fire-ant-resource-max'),
+            foodPerSecondActual: document.getElementById('food-per-second-actual'),
+            foodType: document.getElementById('food-type'),
+            // Costs
+            antCost: document.getElementById('ant-cost'),
+            foodUpgradeCost: document.getElementById('food-upgrade-cost'),
+            speedUpgradeCost: document.getElementById('speed-upgrade-cost'),
+            strengthUpgradeCost: document.getElementById('strength-upgrade-cost'),
+            expandCost: document.getElementById('expand-cost'),
+            flyingAntUnlockCost: document.getElementById('flying-ant-unlock-cost'),
+            flyingAntCost: document.getElementById('flying-ant-cost'),
+            expandFlyingCost: document.getElementById('expand-flying-cost'),
+            carAntUnlockCost: document.getElementById('car-ant-unlock-cost'),
+            carAntCost: document.getElementById('car-ant-cost'),
+            expandCarAntCost: document.getElementById('expand-car-ant-cost'),
+            fireAntUnlockCost: document.getElementById('fire-ant-unlock-cost'),
+            fireAntCost: document.getElementById('fire-ant-cost'),
+            expandFireAntCost: document.getElementById('expand-fire-ant-cost'),
+            autofeederCost: document.getElementById('autofeeder-cost'),
+            autofeederUpgradeCost: document.getElementById('autofeeder-upgrade-cost'),
+            autofeederLevel: document.getElementById('autofeeder-level'),
+            upgradeQueenCost: document.getElementById('upgrade-queen-cost'),
+            queenLevel: document.getElementById('queen-level'),
+            queenLarvaeCapacity: document.getElementById('queen-larvae-capacity'),
+            queenLarvaeRate: document.getElementById('queen-larvae-rate')
+        };
     }
     
     setupEventListeners() {
@@ -140,9 +186,8 @@ IdleAnts.Managers.UIManager = class {
     }
     
     updateUI() {
-        // Helper function to safely update element text content
-        const updateElementText = (id, value) => {
-            const element = document.getElementById(id);
+        // Helper function to safely update cached element text content
+        const updateCachedElementText = (element, value) => {
             if (element) {
                 element.textContent = value;
             }
@@ -150,67 +195,66 @@ IdleAnts.Managers.UIManager = class {
         
         try {
             // Update food counter directly for immediate feedback
-            const foodCountElement = document.getElementById('food-count');
-            if (foodCountElement) {
-                foodCountElement.textContent = Math.floor(this.resourceManager.resources.food);
+            if (this.elements.foodCount) {
+                this.elements.foodCount.textContent = Math.floor(this.resourceManager.resources.food);
                 // Also update the display food value to match the actual food value
                 this.resourceManager.resources.displayFood = this.resourceManager.resources.food;
             }
             
-            // Update ant counts
-            updateElementText('ant-count', this.resourceManager.stats.ants);
-            updateElementText('ant-max', this.resourceManager.stats.maxAnts);
-            updateElementText('flying-ant-count', this.resourceManager.stats.flyingAnts);
-            updateElementText('flying-ant-max', this.resourceManager.stats.maxFlyingAnts);
+            // Update ant counts using cached elements
+            updateCachedElementText(this.elements.antCount, this.resourceManager.stats.ants);
+            updateCachedElementText(this.elements.antMax, this.resourceManager.stats.maxAnts);
+            updateCachedElementText(this.elements.flyingAntCount, this.resourceManager.stats.flyingAnts);
+            updateCachedElementText(this.elements.flyingAntMax, this.resourceManager.stats.maxFlyingAnts);
             
-            // Update Car Ant counts
-            updateElementText('car-ant-count', this.resourceManager.stats.carAnts);
-            updateElementText('car-ant-max', this.resourceManager.stats.maxCarAnts);
-            updateElementText('car-ant-resource-count', this.resourceManager.stats.carAnts);
-            updateElementText('car-ant-resource-max', this.resourceManager.stats.maxCarAnts);
+            // Update Car Ant counts using cached elements
+            updateCachedElementText(this.elements.carAntCount, this.resourceManager.stats.carAnts);
+            updateCachedElementText(this.elements.carAntMax, this.resourceManager.stats.maxCarAnts);
+            updateCachedElementText(this.elements.carAntResourceCount, this.resourceManager.stats.carAnts);
+            updateCachedElementText(this.elements.carAntResourceMax, this.resourceManager.stats.maxCarAnts);
             
-            // Update costs
-            updateElementText('ant-cost', this.resourceManager.stats.antCost);
-            updateElementText('food-upgrade-cost', this.resourceManager.stats.foodUpgradeCost);
-            updateElementText('speed-upgrade-cost', this.resourceManager.stats.speedUpgradeCost);
-            updateElementText('strength-upgrade-cost', this.resourceManager.stats.strengthUpgradeCost);
-            updateElementText('expand-cost', this.resourceManager.stats.expandCost);
-            updateElementText('flying-ant-unlock-cost', this.resourceManager.stats.flyingAntUnlockCost);
-            updateElementText('flying-ant-cost', this.resourceManager.stats.flyingAntCost);
-            updateElementText('expand-flying-cost', Math.floor(this.resourceManager.stats.expandCost * 1.5));
+            // Update costs using cached elements
+            updateCachedElementText(this.elements.antCost, this.resourceManager.stats.antCost);
+            updateCachedElementText(this.elements.foodUpgradeCost, this.resourceManager.stats.foodUpgradeCost);
+            updateCachedElementText(this.elements.speedUpgradeCost, this.resourceManager.stats.speedUpgradeCost);
+            updateCachedElementText(this.elements.strengthUpgradeCost, this.resourceManager.stats.strengthUpgradeCost);
+            updateCachedElementText(this.elements.expandCost, this.resourceManager.stats.expandCost);
+            updateCachedElementText(this.elements.flyingAntUnlockCost, this.resourceManager.stats.flyingAntUnlockCost);
+            updateCachedElementText(this.elements.flyingAntCost, this.resourceManager.stats.flyingAntCost);
+            updateCachedElementText(this.elements.expandFlyingCost, Math.floor(this.resourceManager.stats.expandCost * 1.5));
 
-            // Update Car Ant costs
-            updateElementText('car-ant-unlock-cost', this.resourceManager.stats.carAntUnlockCost);
-            updateElementText('car-ant-cost', this.resourceManager.stats.carAntCost);
+            // Update Car Ant costs using cached elements
+            updateCachedElementText(this.elements.carAntUnlockCost, this.resourceManager.stats.carAntUnlockCost);
+            updateCachedElementText(this.elements.carAntCost, this.resourceManager.stats.carAntCost);
             // Assuming expand car ant cost is dynamic or needs a specific stat in ResourceManager
             // For now, let's use a placeholder or make it dependent on carAntCost like flying ants if similar logic applies
             const expandCarAntCapacityCost = this.resourceManager.stats.maxCarAnts > 0 ? this.resourceManager.stats.carAntCost * (this.resourceManager.stats.maxCarAnts + 1) * 0.5 : 5000;
-            updateElementText('expand-car-ant-cost', Math.floor(expandCarAntCapacityCost));
+            updateCachedElementText(this.elements.expandCarAntCost, Math.floor(expandCarAntCapacityCost));
             
-            // Update autofeeder UI elements
-            updateElementText('autofeeder-cost', this.resourceManager.stats.autofeederCost);
-            updateElementText('autofeeder-upgrade-cost', this.resourceManager.stats.autofeederUpgradeCost);
-            updateElementText('autofeeder-level', this.resourceManager.stats.autofeederLevel);
+            // Update autofeeder UI elements using cached elements
+            updateCachedElementText(this.elements.autofeederCost, this.resourceManager.stats.autofeederCost);
+            updateCachedElementText(this.elements.autofeederUpgradeCost, this.resourceManager.stats.autofeederUpgradeCost);
+            updateCachedElementText(this.elements.autofeederLevel, this.resourceManager.stats.autofeederLevel);
             
-            // Update actual food collection rate
+            // Update actual food collection rate using cached elements
             const actualRate = this.resourceManager.getActualFoodRate();
-            updateElementText('food-per-second-actual', actualRate.toFixed(1));
+            updateCachedElementText(this.elements.foodPerSecondActual, actualRate.toFixed(1));
             
-            // Update food type
+            // Update food type using cached elements
             const currentFoodType = this.resourceManager.getCurrentFoodType();
-            updateElementText('food-type', currentFoodType.name);
+            updateCachedElementText(this.elements.foodType, currentFoodType.name);
 
-            // Update Fire Ant counts
-            updateElementText('fire-ant-count', this.resourceManager.stats.fireAnts);
-            updateElementText('fire-ant-max', this.resourceManager.stats.maxFireAnts);
-            updateElementText('fire-ant-resource-count', this.resourceManager.stats.fireAnts);
-            updateElementText('fire-ant-resource-max', this.resourceManager.stats.maxFireAnts);
+            // Update Fire Ant counts using cached elements
+            updateCachedElementText(this.elements.fireAntCount, this.resourceManager.stats.fireAnts);
+            updateCachedElementText(this.elements.fireAntMax, this.resourceManager.stats.maxFireAnts);
+            updateCachedElementText(this.elements.fireAntResourceCount, this.resourceManager.stats.fireAnts);
+            updateCachedElementText(this.elements.fireAntResourceMax, this.resourceManager.stats.maxFireAnts);
             
-            // Update Fire Ant costs
-            updateElementText('fire-ant-unlock-cost', this.resourceManager.stats.fireAntUnlockCost);
-            updateElementText('fire-ant-cost', this.resourceManager.stats.fireAntCost);
+            // Update Fire Ant costs using cached elements
+            updateCachedElementText(this.elements.fireAntUnlockCost, this.resourceManager.stats.fireAntUnlockCost);
+            updateCachedElementText(this.elements.fireAntCost, this.resourceManager.stats.fireAntCost);
             const expandFireAntCapacityCost = this.resourceManager.stats.maxFireAnts > 0 ? this.resourceManager.stats.fireAntCost * (this.resourceManager.stats.maxFireAnts + 1) * 0.5 : 10000;
-            updateElementText('expand-fire-ant-cost', Math.floor(expandFireAntCapacityCost));
+            updateCachedElementText(this.elements.expandFireAntCost, Math.floor(expandFireAntCapacityCost));
         } catch (error) {
             console.error('Error updating UI resources:', error);
         }
@@ -256,16 +300,16 @@ IdleAnts.Managers.UIManager = class {
                 queenStats.style.display = 'block';
                 upgradeQueenButton.style.display = 'block';
                 
-                // Update queen stats
-                updateElementText('upgrade-queen-cost', this.resourceManager.stats.queenUpgradeCost);
-                updateElementText('queen-level', this.resourceManager.stats.queenUpgradeLevel);
+                // Update queen stats using cached elements
+                updateCachedElementText(this.elements.upgradeQueenCost, this.resourceManager.stats.queenUpgradeCost);
+                updateCachedElementText(this.elements.queenLevel, this.resourceManager.stats.queenUpgradeLevel);
                 
                 // Keep the UI elements but don't update them based on upgrades
                 // These will be replaced with HP in a future update
                 const queenLevel = this.resourceManager.stats.queenUpgradeLevel;
                 const larvaePerSpawn = 1 + queenLevel;
-                updateElementText('queen-larvae-capacity', `${larvaePerSpawn} per spawn`);
-                updateElementText('queen-larvae-rate', '15-45s'); // Updated to reflect faster spawn rate
+                updateCachedElementText(this.elements.queenLarvaeCapacity, `${larvaePerSpawn} per spawn`);
+                updateCachedElementText(this.elements.queenLarvaeRate, '15-45s'); // Updated to reflect faster spawn rate
             }
         } catch (error) {
             console.error('Error updating UI:', error);
@@ -428,22 +472,20 @@ IdleAnts.Managers.UIManager = class {
     
     animateCounters() {
         try {
-            // Smoothly animate the food counter
+            // Smoothly animate the food counter using cached element
             const diff = this.resourceManager.resources.food - this.resourceManager.resources.displayFood;
             
             if (Math.abs(diff) > 0.01) {
                 // Increase animation speed for more responsive updates
                 // Change from 0.1 to 0.5 (50% of the difference per frame)
                 this.resourceManager.resources.displayFood += diff * 0.5;
-                const foodCountElement = document.getElementById('food-count');
-                if (foodCountElement) {
-                    foodCountElement.textContent = Math.floor(this.resourceManager.resources.displayFood);
+                if (this.elements.foodCount) {
+                    this.elements.foodCount.textContent = Math.floor(this.resourceManager.resources.displayFood);
                 }
             } else {
                 this.resourceManager.resources.displayFood = this.resourceManager.resources.food;
-                const foodCountElement = document.getElementById('food-count');
-                if (foodCountElement) {
-                    foodCountElement.textContent = Math.floor(this.resourceManager.resources.food);
+                if (this.elements.foodCount) {
+                    this.elements.foodCount.textContent = Math.floor(this.resourceManager.resources.food);
                 }
             }
         } catch (error) {

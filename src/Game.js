@@ -347,11 +347,7 @@ IdleAnts.Game = class {
             // Set up idle resource generation
             setInterval(() => {
                 this.resourceManager.addFood(this.resourceManager.stats.foodPerSecond);
-                try {
-                    this.uiManager.updateUI();
-                } catch (error) {
-                    console.error("Error updating UI in interval:", error);
-                }
+                // UI will be updated in gameLoop at optimized intervals
             }, 1000);
         };
         
@@ -511,10 +507,15 @@ IdleAnts.Game = class {
         // Update effects
         this.effectManager.update();
         
-        // Update UI every 30 frames (approximately twice per second at 60fps)
+        // Update UI every 60 frames (approximately once per second at 60fps)
         // This is frequent enough for smooth updates but not too frequent to cause performance issues
-        if (this.frameCounter % 30 === 0) {
+        if (this.frameCounter % 60 === 0) {
             this.uiManager.updateUI();
+        }
+        
+        // Update minimap less frequently for better performance
+        if (this.frameCounter % 120 === 0) {
+            this.updateMinimap();
         }
         
         // Update food collection rate more frequently for accuracy

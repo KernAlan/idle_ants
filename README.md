@@ -2,6 +2,34 @@
 
 A 2D idle game inspired by Idle Ants by Madbox, built with Pixi.js. In this game, you manage a colony of ants that collect food to grow your colony.
 
+## Quick Start
+
+### Development Mode (with individual files for debugging):
+```bash
+npm install
+npm run start:dev
+```
+
+### Production Mode (optimized bundle for better performance):
+```bash
+npm install
+npm run start:prod
+```
+
+Or start a simple HTTP server in the project directory and open `index.html` in your browser.
+
+## Performance Optimizations
+
+This game has been optimized for mobile devices and slower hardware:
+
+- **Reduced UI updates** from 3x/second to 1x/second
+- **Optimized entity processing** with distance-squared calculations  
+- **Cached DOM elements** to avoid repeated queries
+- **JavaScript bundling** reduces 45 HTTP requests to 1
+- **Reduced enemy detection frequency** from every frame to every 3 frames
+
+For production use, always use `index-production.html` which loads the optimized bundle. See `PERFORMANCE_IMPROVEMENTS.md` for detailed technical information.
+
 ## How to Play
 
 - **Collect Food**: Click on the game area to manually add food and earn food points
