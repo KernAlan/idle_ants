@@ -70,6 +70,9 @@ IdleAnts.Managers.DailyChallengeManager = class {
             clickFood: 0
         };
         
+        // Modal state
+        this.isModalOpen = false;
+        
         // Initialize challenges
         this.init();
     }
@@ -239,67 +242,172 @@ IdleAnts.Managers.DailyChallengeManager = class {
     }
     
     createChallengeUI() {
-        // Create challenge panel
-        const challengePanel = document.createElement('div');
-        challengePanel.id = 'daily-challenges';
-        challengePanel.className = 'daily-challenges-panel';
-        challengePanel.innerHTML = `
-            <div class="challenge-header">
+        // Create trigger button
+        const triggerButton = document.createElement('div');
+        triggerButton.id = 'challenge-trigger';
+        triggerButton.className = 'challenge-trigger';
+        triggerButton.innerHTML = '🎯';
+        triggerButton.title = 'Daily Challenges';
+        
+        // Position button in top-right corner
+        document.body.appendChild(triggerButton);
+        
+        // Create modal backdrop
+        const modalBackdrop = document.createElement('div');
+        modalBackdrop.id = 'challenge-modal-backdrop';
+        modalBackdrop.className = 'challenge-modal-backdrop';
+        document.body.appendChild(modalBackdrop);
+        
+        // Create modal
+        const modal = document.createElement('div');
+        modal.id = 'challenge-modal';
+        modal.className = 'challenge-modal';
+        modal.innerHTML = `
+            <div class="challenge-modal-header">
                 <h3>🎯 Daily Challenges</h3>
                 <div class="challenge-timer" id="challenge-timer">Next: 00:00:00</div>
+                <button class="challenge-close-btn" id="challenge-close-btn">×</button>
             </div>
             <div class="challenge-list" id="challenge-list"></div>
         `;
         
-        // Add to page
-        document.body.appendChild(challengePanel);
+        modalBackdrop.appendChild(modal);
+        
+        // Add event listeners
+        triggerButton.addEventListener('click', () => this.openModal());
+        modalBackdrop.addEventListener('click', (e) => {
+            if (e.target === modalBackdrop) {
+                this.closeModal();
+            }
+        });
+        document.getElementById('challenge-close-btn').addEventListener('click', () => this.closeModal());
         
         // Add CSS
         const style = document.createElement('style');
         style.textContent = `
-            .daily-challenges-panel {
+            .challenge-trigger {
                 position: fixed;
-                top: 80px;
-                left: 20px;
-                width: 280px;
+                top: 20px;
+                right: 20px;
+                width: 50px;
+                height: 50px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+                cursor: pointer;
+                z-index: 1000;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+                transition: all 0.3s ease;
+                font-family: 'Comic Sans MS', sans-serif;
+            }
+            
+            .challenge-trigger:hover {
+                transform: scale(1.1);
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            }
+            
+            .challenge-trigger.has-rewards {
+                animation: pulse 2s infinite;
+            }
+            
+            @keyframes pulse {
+                0% { box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
+                50% { box-shadow: 0 4px 15px rgba(255, 215, 0, 0.6); }
+                100% { box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
+            }
+            
+            .challenge-modal-backdrop {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1001;
+                display: none;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .challenge-modal-backdrop.show {
+                display: flex;
+            }
+            
+            .challenge-modal {
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 border-radius: 15px;
                 box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-                padding: 15px;
-                z-index: 100;
-                font-family: 'Comic Sans MS', sans-serif;
+                padding: 20px;
+                max-width: 400px;
+                width: 90%;
+                max-height: 80vh;
+                overflow-y: auto;
                 color: white;
+                font-family: 'Comic Sans MS', sans-serif;
+                position: relative;
+                transform: scale(0.8);
+                transition: transform 0.3s ease;
             }
             
-            .challenge-header {
+            .challenge-modal-backdrop.show .challenge-modal {
+                transform: scale(1);
+            }
+            
+            .challenge-modal-header {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                margin-bottom: 10px;
+                margin-bottom: 15px;
+                flex-wrap: wrap;
             }
             
-            .challenge-header h3 {
+            .challenge-modal-header h3 {
                 margin: 0;
-                font-size: 16px;
+                font-size: 18px;
             }
             
             .challenge-timer {
-                font-size: 11px;
+                font-size: 12px;
                 opacity: 0.8;
+                margin-left: auto;
+                margin-right: 15px;
+            }
+            
+            .challenge-close-btn {
+                background: none;
+                border: none;
+                color: white;
+                font-size: 24px;
+                cursor: pointer;
+                padding: 0;
+                width: 30px;
+                height: 30px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                transition: background 0.3s ease;
+            }
+            
+            .challenge-close-btn:hover {
+                background: rgba(255, 255, 255, 0.2);
             }
             
             .challenge-item {
                 background: rgba(255, 255, 255, 0.1);
                 border-radius: 10px;
-                padding: 10px;
-                margin-bottom: 8px;
+                padding: 15px;
+                margin-bottom: 10px;
                 display: flex;
                 align-items: center;
-                gap: 10px;
+                gap: 15px;
             }
             
             .challenge-icon {
-                font-size: 24px;
+                font-size: 28px;
                 flex-shrink: 0;
             }
             
@@ -309,27 +417,27 @@ IdleAnts.Managers.DailyChallengeManager = class {
             
             .challenge-name {
                 font-weight: bold;
-                font-size: 12px;
-                margin-bottom: 3px;
+                font-size: 14px;
+                margin-bottom: 5px;
             }
             
             .challenge-description {
-                font-size: 10px;
+                font-size: 12px;
                 opacity: 0.9;
-                margin-bottom: 5px;
+                margin-bottom: 8px;
             }
             
             .challenge-progress {
                 display: flex;
                 align-items: center;
-                gap: 5px;
+                gap: 8px;
             }
             
             .challenge-progress-bar {
                 flex: 1;
-                height: 8px;
+                height: 10px;
                 background: rgba(255, 255, 255, 0.2);
-                border-radius: 4px;
+                border-radius: 5px;
                 overflow: hidden;
             }
             
@@ -340,9 +448,9 @@ IdleAnts.Managers.DailyChallengeManager = class {
             }
             
             .challenge-progress-text {
-                font-size: 10px;
+                font-size: 11px;
                 font-weight: bold;
-                min-width: 40px;
+                min-width: 50px;
                 text-align: right;
             }
             
@@ -351,15 +459,16 @@ IdleAnts.Managers.DailyChallengeManager = class {
                 color: white;
                 border: none;
                 border-radius: 8px;
-                padding: 5px 10px;
-                font-size: 10px;
+                padding: 8px 12px;
+                font-size: 12px;
                 font-weight: bold;
                 cursor: pointer;
                 transition: all 0.3s ease;
+                margin-left: 10px;
             }
             
             .challenge-claim-btn:hover {
-                transform: scale(1.1);
+                transform: scale(1.05);
                 box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
             }
             
@@ -377,11 +486,41 @@ IdleAnts.Managers.DailyChallengeManager = class {
                 opacity: 0.6;
             }
             
+            .no-challenges {
+                text-align: center;
+                padding: 20px;
+                opacity: 0.8;
+                font-size: 14px;
+            }
+            
             @media (max-width: 768px) {
-                .daily-challenges-panel {
-                    width: 250px;
-                    left: 10px;
-                    top: 60px;
+                .challenge-trigger {
+                    top: 10px;
+                    right: 10px;
+                    width: 45px;
+                    height: 45px;
+                    font-size: 20px;
+                }
+                
+                .challenge-modal {
+                    width: 95%;
+                    max-height: 85vh;
+                }
+                
+                .challenge-modal-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 10px;
+                }
+                
+                .challenge-timer {
+                    margin: 0;
+                }
+                
+                .challenge-close-btn {
+                    position: absolute;
+                    top: 15px;
+                    right: 15px;
                 }
             }
         `;
@@ -390,26 +529,47 @@ IdleAnts.Managers.DailyChallengeManager = class {
         // Update timer
         this.updateTimer();
         setInterval(() => this.updateTimer(), 1000);
+        
+        // Initial UI update
+        this.updateChallengeUI();
+    }
+    
+    openModal() {
+        this.isModalOpen = true;
+        const backdrop = document.getElementById('challenge-modal-backdrop');
+        if (backdrop) {
+            backdrop.classList.add('show');
+        }
+    }
+    
+    closeModal() {
+        this.isModalOpen = false;
+        const backdrop = document.getElementById('challenge-modal-backdrop');
+        if (backdrop) {
+            backdrop.classList.remove('show');
+        }
     }
     
     updateChallengeUI() {
         const challengeList = document.getElementById('challenge-list');
-        const challengePanel = document.getElementById('daily-challenges');
-        if (!challengeList || !challengePanel) return;
+        const triggerButton = document.getElementById('challenge-trigger');
+        if (!challengeList || !triggerButton) return;
         
         challengeList.innerHTML = '';
         
-        // Check if there are any active challenges (not all claimed)
-        const hasActiveChallenges = this.currentChallenges.some(challenge => !challenge.claimed);
-        
-        // Hide the panel if there are no active challenges
-        if (!hasActiveChallenges || this.currentChallenges.length === 0) {
-            challengePanel.style.display = 'none';
-            return;
+        // Update trigger button appearance
+        const hasCompletedChallenges = this.currentChallenges.some(challenge => challenge.completed && !challenge.claimed);
+        if (hasCompletedChallenges) {
+            triggerButton.classList.add('has-rewards');
+        } else {
+            triggerButton.classList.remove('has-rewards');
         }
         
-        // Show the panel if there are active challenges
-        challengePanel.style.display = 'block';
+        // Show challenges if any exist
+        if (this.currentChallenges.length === 0) {
+            challengeList.innerHTML = '<div class="no-challenges">No challenges available today.<br>Check back tomorrow!</div>';
+            return;
+        }
         
         this.currentChallenges.forEach(challenge => {
             const item = document.createElement('div');
@@ -431,7 +591,7 @@ IdleAnts.Managers.DailyChallengeManager = class {
                 </div>
                 ${challenge.completed && !challenge.claimed ? `
                     <button class="challenge-claim-btn" onclick="IdleAnts.game.dailyChallengeManager.claimReward('${challenge.id}')">
-                        Claim +${challenge.reward.amount}
+                        Claim<br>+${challenge.reward.amount}
                     </button>
                 ` : ''}
             `;
@@ -470,7 +630,7 @@ IdleAnts.Managers.DailyChallengeManager = class {
             <div class="notification-icon">🎯</div>
             <div class="notification-content">
                 <div class="notification-title">New Daily Challenges!</div>
-                <div class="notification-text">Check your challenge panel for today's tasks</div>
+                <div class="notification-text">Click the challenge button to view tasks</div>
             </div>
         `;
         
@@ -495,7 +655,7 @@ IdleAnts.Managers.DailyChallengeManager = class {
             <div class="notification-icon">🎉</div>
             <div class="notification-content">
                 <div class="notification-title">Challenge Complete!</div>
-                <div class="notification-text">${challenge.name} - Click to claim reward</div>
+                <div class="notification-text">${challenge.name} - Open challenges to claim reward</div>
             </div>
         `;
         
@@ -574,13 +734,13 @@ notificationStyle.textContent = `
         padding: 15px 20px;
         border-radius: 15px;
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-        z-index: 1001;
+        z-index: 1002;
         display: flex;
         align-items: center;
         gap: 15px;
         transform: translateX(-400px);
         transition: all 0.5s ease;
-        max-width: 280px;
+        max-width: 300px;
         font-family: 'Comic Sans MS', sans-serif;
     }
     
@@ -593,6 +753,11 @@ notificationStyle.textContent = `
         animation: bounce 1s infinite;
     }
     
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    
     .notification-title {
         font-weight: bold;
         font-size: 14px;
@@ -602,6 +767,13 @@ notificationStyle.textContent = `
     .notification-text {
         font-size: 12px;
         opacity: 0.9;
+    }
+    
+    @media (max-width: 768px) {
+        .challenge-notification {
+            left: 10px;
+            max-width: 250px;
+        }
     }
 `;
 document.head.appendChild(notificationStyle);
