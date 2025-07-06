@@ -97,11 +97,19 @@ IdleAnts.Managers.ResourceManager = class {
     }
     
     // Food resource methods
-    addFood(amount) {
+    addFood(amount, foodType = null) {
         this.resources.food += amount;
         
         // Track this food addition for rate calculation
         this.trackFoodCollection(amount);
+        
+        // If foodType is provided, notify daily challenge manager
+        if (foodType && typeof window !== 'undefined' && 
+            window.IdleAnts && window.IdleAnts.game && 
+            window.IdleAnts.game.dailyChallengeManager) {
+            // Note: The DailyChallengeManager will handle its own food collection tracking
+            // We don't need to duplicate the tracking here
+        }
     }
     
     // Track food collection for rate calculation

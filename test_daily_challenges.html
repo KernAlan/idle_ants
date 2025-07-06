@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Challenge Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-passed {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .test-failed {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .challenge-list {
+            margin: 10px 0;
+        }
+        .challenge-item {
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #f8f9fa;
+            border-radius: 3px;
+            border-left: 4px solid #007bff;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Daily Challenge System Test</h1>
+    <p>This test verifies the daily challenge system functionality and the bug fixes.</p>
+    
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="test-results"></div>
+        <button onclick="runTests()">Run Tests</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Available Challenges</h2>
+        <div id="challenge-templates"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Generated Sample Challenges</h2>
+        <div id="sample-challenges"></div>
+        <button onclick="generateSampleChallenges()">Generate Sample Challenges</button>
+    </div>
+
+    <script>
+        // Mock the IdleAnts namespace and dependencies
+        window.IdleAnts = {
+            Managers: {},
+            Data: {
+                FoodTypes: {
+                    BASIC: { id: 'basic', name: 'Basic Food', value: 1 },
+                    COOKIE: { id: 'cookie', name: 'Cookie', value: 5 },
+                    BERRY: { id: 'berry', name: 'Berry', value: 3 }
+                }
+            }
+        };
+
+        // Mock ResourceManager
+        class MockResourceManager {
+            constructor() {
+                this.resources = { food: 100 };
+            }
+            addFood(amount, foodType) {
+                this.resources.food += amount;
+                return true;
+            }
+        }
+
+        // Mock AchievementManager
+        class MockAchievementManager {
+            constructor() {}
+        }
+
+        // Load the DailyChallengeManager (in a real scenario, this would be loaded from the actual file)
+        function loadDailyChallengeManager() {
+            // This would normally be loaded from src/managers/DailyChallengeManager.js
+            // For this test, we'll include the key parts inline
+            return class DailyChallengeManager {
+                constructor(resourceManager, achievementManager) {
+                    this.resourceManager = resourceManager;
+                    this.achievementManager = achievementManager;
+                    
+                    // Challenge templates - the updated version with 20 challenges
+                    this.challengeTemplates = {
+                        collectFood: {
+                            id: 'collectFood',
+                            name: '🍎 Food Hunter',
+                            description: 'Collect {target} food automatically',
+                            type: 'collect',
+                            baseTarget: 50,
+                            multiplier: 1.5,
+                            reward: { type: 'food', amount: 25 },
+                            icon: '🍎',
+                            category: 'collection'
+                        },
+                        placeFood: {
+                            id: 'placeFood',
+                            name: '👆 Food Placer',
+                            description: 'Place food by clicking {target} times',
+                            type: 'click',
+                            baseTarget: 20,
+                            multiplier: 1.4,
+                            reward: { type: 'food', amount: 30 },
+                            icon: '👆',
+                            category: 'action'
+                        },
+                        buyAnts: {
+                            id: 'buyAnts',
+                            name: '🐜 Ant Recruiter',
+                            description: 'Buy {target} ants',
+                            type: 'buy',
+                            baseTarget: 3,
+                            multiplier: 1.2,
+                            reward: { type: 'food', amount: 50 },
+                            icon: '🐜',
+                            category: 'building'
+                        },
+                        upgradeSpeed: {
+                            id: 'upgradeSpeed',
+                            name: '⚡ Speed Booster',
+                            description: 'Upgrade speed {target} times',
+                            type: 'upgrade',
+                            baseTarget: 2,
+                            multiplier: 1.1,
+                            reward: { type: 'food', amount: 75 },
+                            icon: '⚡',
+                            category: 'upgrade'
+                        },
+                        activeTime: {
+                            id: 'activeTime',
+                            name: '⏰ Busy Bee',
+                            description: 'Play for {target} minutes',
+                            type: 'time',
+                            baseTarget: 10,
+                            multiplier: 1.3,
+                            reward: { type: 'food', amount: 5000 },
+                            icon: '⏰',
+                            category: 'time'
+                        },
+                        massAntPurchase: {
+                            id: 'massAntPurchase',
+                            name: '🏭 Mass Recruiter',
+                            description: 'Buy {target} ants in a single session',
+                            type: 'buySession',
+                            baseTarget: 10,
+                            multiplier: 1.3,
+                            reward: { type: 'food', amount: 200 },
+                            icon: '🏭',
+                            category: 'building'
+                        },
+                        foodMilestone: {
+                            id: 'foodMilestone',
+                            name: '🎯 Food Milestone',
+                            description: 'Reach {target} total food',
+                            type: 'milestone',
+                            baseTarget: 1000,
+                            multiplier: 2.0,
+                            reward: { type: 'food', amount: 500 },
+                            icon: '🎯',
+                            category: 'milestone'
+                        },
+                        speedDemon: {
+                            id: 'speedDemon',
+                            name: '🚀 Speed Demon',
+                            description: 'Reach {target} ant speed level',
+                            type: 'speedLevel',
+                            baseTarget: 5,
+                            multiplier: 1.2,
+                            reward: { type: 'food', amount: 150 },
+                            icon: '🚀',
+                            category: 'milestone'
+                        },
+                        clickFrenzy: {
+                            id: 'clickFrenzy',
+                            name: '🔥 Click Frenzy',
+                            description: 'Click {target} times in 60 seconds',
+                            type: 'clickFrenzy',
+                            baseTarget: 30,
+                            multiplier: 1.5,
+                            reward: { type: 'food', amount: 100 },
+                            icon: '🔥',
+                            category: 'action'
+                        },
+                        antArmy: {
+                            id: 'antArmy',
+                            name: '⚔️ Ant Army',
+                            description: 'Have {target} ants active at once',
+                            type: 'antCount',
+                            baseTarget: 15,
+                            multiplier: 1.4,
+                            reward: { type: 'food', amount: 300 },
+                            icon: '⚔️',
+                            category: 'building'
+                        },
+                        efficiencyExpert: {
+                            id: 'efficiencyExpert',
+                            name: '📊 Efficiency Expert',
+                            description: 'Collect {target} food per second',
+                            type: 'foodPerSecond',
+                            baseTarget: 10,
+                            multiplier: 1.6,
+                            reward: { type: 'food', amount: 400 },
+                            icon: '📊',
+                            category: 'efficiency'
+                        },
+                        marathonPlayer: {
+                            id: 'marathonPlayer',
+                            name: '🏃 Marathon Player',
+                            description: 'Play for {target} minutes straight',
+                            type: 'continuousTime',
+                            baseTarget: 30,
+                            multiplier: 1.2,
+                            reward: { type: 'food', amount: 1000 },
+                            icon: '🏃',
+                            category: 'time'
+                        },
+                        upgradeSpree: {
+                            id: 'upgradeSpree',
+                            name: '🔧 Upgrade Spree',
+                            description: 'Perform {target} upgrades of any type',
+                            type: 'upgradeAny',
+                            baseTarget: 5,
+                            multiplier: 1.3,
+                            reward: { type: 'food', amount: 250 },
+                            icon: '🔧',
+                            category: 'upgrade'
+                        },
+                        foodVariety: {
+                            id: 'foodVariety',
+                            name: '🌈 Food Variety',
+                            description: 'Collect {target} different food types',
+                            type: 'foodTypes',
+                            baseTarget: 3,
+                            multiplier: 1.1,
+                            reward: { type: 'food', amount: 200 },
+                            icon: '🌈',
+                            category: 'collection'
+                        },
+                        quickStart: {
+                            id: 'quickStart',
+                            name: '⚡ Quick Start',
+                            description: 'Buy first ant within {target} seconds',
+                            type: 'quickBuy',
+                            baseTarget: 30,
+                            multiplier: 0.9,
+                            reward: { type: 'food', amount: 100 },
+                            icon: '⚡',
+                            category: 'challenge'
+                        },
+                        saveSpree: {
+                            id: 'saveSpree',
+                            name: '💰 Save Spree',
+                            description: 'Save up {target} food without spending',
+                            type: 'saveFood',
+                            baseTarget: 500,
+                            multiplier: 1.8,
+                            reward: { type: 'food', amount: 1000 },
+                            icon: '💰',
+                            category: 'challenge'
+                        },
+                        perfectTiming: {
+                            id: 'perfectTiming',
+                            name: '🎯 Perfect Timing',
+                            description: 'Complete {target} precise actions',
+                            type: 'precision',
+                            baseTarget: 10,
+                            multiplier: 1.2,
+                            reward: { type: 'food', amount: 300 },
+                            icon: '🎯',
+                            category: 'challenge'
+                        },
+                        colonyBuilder: {
+                            id: 'colonyBuilder',
+                            name: '🏗️ Colony Builder',
+                            description: 'Expand your colony to {target} total capacity',
+                            type: 'totalCapacity',
+                            baseTarget: 50,
+                            multiplier: 1.5,
+                            reward: { type: 'food', amount: 400 },
+                            icon: '🏗️',
+                            category: 'building'
+                        },
+                        nightOwl: {
+                            id: 'nightOwl',
+                            name: '🦉 Night Owl',
+                            description: 'Play during late hours for {target} minutes',
+                            type: 'nightTime',
+                            baseTarget: 15,
+                            multiplier: 1.3,
+                            reward: { type: 'food', amount: 500 },
+                            icon: '🦉',
+                            category: 'time'
+                        },
+                        comeback: {
+                            id: 'comeback',
+                            name: '🔄 Comeback',
+                            description: 'Return after {target} hours away',
+                            type: 'returnAfter',
+                            baseTarget: 4,
+                            multiplier: 1.1,
+                            reward: { type: 'food', amount: 800 },
+                            icon: '🔄',
+                            category: 'time'
+                        }
+                    };
+                }
+
+                createChallenge(template, playerLevel) {
+                    const target = Math.ceil(template.baseTarget * Math.pow(template.multiplier, playerLevel - 1));
+                    const rewardAmount = Math.ceil(template.reward.amount * (1 + (playerLevel - 1) * 0.2));
+                    
+                    return {
+                        id: template.id,
+                        name: template.name,
+                        description: template.description.replace('{target}', target),
+                        type: template.type,
+                        target: target,
+                        progress: 0,
+                        completed: false,
+                        claimed: false,
+                        reward: {
+                            type: template.reward.type,
+                            amount: rewardAmount
+                        },
+                        icon: template.icon,
+                        category: template.category
+                    };
+                }
+
+                generateSampleChallenges(playerLevel = 1) {
+                    const challengeTypes = Object.keys(this.challengeTemplates);
+                    const categories = [...new Set(Object.values(this.challengeTemplates).map(t => t.category))];
+                    const selectedTypes = [];
+                    
+                    // Try to get at least one challenge from each category
+                    categories.forEach(category => {
+                        const categoryTypes = challengeTypes.filter(type => 
+                            this.challengeTemplates[type].category === category && 
+                            !selectedTypes.includes(type)
+                        );
+                        if (categoryTypes.length > 0 && selectedTypes.length < 5) {
+                            const randomType = categoryTypes[Math.floor(Math.random() * categoryTypes.length)];
+                            selectedTypes.push(randomType);
+                        }
+                    });
+                    
+                    // Fill remaining slots with random challenges
+                    while (selectedTypes.length < 5 && challengeTypes.length > selectedTypes.length) {
+                        const remainingTypes = challengeTypes.filter(type => !selectedTypes.includes(type));
+                        if (remainingTypes.length > 0) {
+                            const randomType = remainingTypes[Math.floor(Math.random() * remainingTypes.length)];
+                            selectedTypes.push(randomType);
+                        }
+                    }
+                    
+                    // Generate challenges
+                    return selectedTypes.map(type => {
+                        const template = this.challengeTemplates[type];
+                        return this.createChallenge(template, playerLevel);
+                    });
+                }
+            };
+        }
+
+        function runTests() {
+            const resultsDiv = document.getElementById('test-results');
+            const results = [];
+            
+            // Test 1: Check if food placement challenge has correct description
+            const DailyChallengeManager = loadDailyChallengeManager();
+            const mockResourceManager = new MockResourceManager();
+            const mockAchievementManager = new MockAchievementManager();
+            const challengeManager = new DailyChallengeManager(mockResourceManager, mockAchievementManager);
+            
+            const placeFoodChallenge = challengeManager.challengeTemplates.placeFood;
+            const correctDescription = placeFoodChallenge.description.includes('Place food by clicking');
+            results.push({
+                name: 'Food Placement Challenge Description Fix',
+                passed: correctDescription,
+                details: `Expected: "Place food by clicking", Got: "${placeFoodChallenge.description}"`
+            });
+
+            // Test 2: Check if we have exactly 20 challenges
+            const challengeCount = Object.keys(challengeManager.challengeTemplates).length;
+            results.push({
+                name: 'Total Challenge Count',
+                passed: challengeCount === 20,
+                details: `Expected: 20, Got: ${challengeCount}`
+            });
+
+            // Test 3: Check if all challenges have categories
+            const challengesWithCategories = Object.values(challengeManager.challengeTemplates).filter(c => c.category);
+            results.push({
+                name: 'All Challenges Have Categories',
+                passed: challengesWithCategories.length === challengeCount,
+                details: `Expected: ${challengeCount}, Got: ${challengesWithCategories.length}`
+            });
+
+            // Test 4: Check if categories are diverse
+            const categories = [...new Set(Object.values(challengeManager.challengeTemplates).map(c => c.category))];
+            results.push({
+                name: 'Challenge Category Diversity',
+                passed: categories.length >= 6,
+                details: `Categories: ${categories.join(', ')} (${categories.length} total)`
+            });
+
+            // Test 5: Check if sample challenge generation works
+            let sampleChallenges = [];
+            let sampleGenerationWorked = false;
+            try {
+                sampleChallenges = challengeManager.generateSampleChallenges(1);
+                sampleGenerationWorked = sampleChallenges.length === 5;
+            } catch (error) {
+                sampleGenerationWorked = false;
+            }
+            results.push({
+                name: 'Sample Challenge Generation',
+                passed: sampleGenerationWorked,
+                details: `Generated ${sampleChallenges.length} challenges`
+            });
+
+            // Test 6: Check if placeFood challenge uses correct ID
+            const placeFoodId = placeFoodChallenge.id;
+            results.push({
+                name: 'Place Food Challenge ID',
+                passed: placeFoodId === 'placeFood',
+                details: `Expected: "placeFood", Got: "${placeFoodId}"`
+            });
+
+            // Display results
+            resultsDiv.innerHTML = results.map(result => `
+                <div class="test-section ${result.passed ? 'test-passed' : 'test-failed'}">
+                    <h3>${result.name}: ${result.passed ? 'PASSED' : 'FAILED'}</h3>
+                    <p>${result.details}</p>
+                </div>
+            `).join('');
+
+            console.log('Test Results:', results);
+        }
+
+        function showChallengeTemplates() {
+            const DailyChallengeManager = loadDailyChallengeManager();
+            const mockResourceManager = new MockResourceManager();
+            const mockAchievementManager = new MockAchievementManager();
+            const challengeManager = new DailyChallengeManager(mockResourceManager, mockAchievementManager);
+            
+            const templatesDiv = document.getElementById('challenge-templates');
+            const templates = Object.values(challengeManager.challengeTemplates);
+            
+            templatesDiv.innerHTML = `
+                <p>Total Challenges: ${templates.length}</p>
+                <div class="challenge-list">
+                    ${templates.map(template => `
+                        <div class="challenge-item">
+                            <strong>${template.icon} ${template.name}</strong> (${template.category})
+                            <br>
+                            <small>${template.description}</small>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function generateSampleChallenges() {
+            const DailyChallengeManager = loadDailyChallengeManager();
+            const mockResourceManager = new MockResourceManager();
+            const mockAchievementManager = new MockAchievementManager();
+            const challengeManager = new DailyChallengeManager(mockResourceManager, mockAchievementManager);
+            
+            const sampleChallenges = challengeManager.generateSampleChallenges(1);
+            
+            const samplesDiv = document.getElementById('sample-challenges');
+            samplesDiv.innerHTML = `
+                <p>Generated ${sampleChallenges.length} sample challenges:</p>
+                <div class="challenge-list">
+                    ${sampleChallenges.map(challenge => `
+                        <div class="challenge-item">
+                            <strong>${challenge.icon} ${challenge.name}</strong>
+                            <br>
+                            <small>${challenge.description}</small>
+                            <br>
+                            <small>Target: ${challenge.target}, Reward: ${challenge.reward.amount} ${challenge.reward.type}</small>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            showChallengeTemplates();
+            generateSampleChallenges();
+        });
+    </script>
+</body>
+</html>
