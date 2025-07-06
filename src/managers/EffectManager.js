@@ -115,4 +115,77 @@ IdleAnts.Managers.EffectManager = class {
         // Create the larvae effect
         return this.createEffect('larvae', x, y, color, scale);
     }
+    
+    createFoodRewardEffect(x, y, amount) {
+        // Create multiple food collect effects to show reward
+        const numEffects = Math.min(8, Math.floor(amount / 20) + 1);
+        
+        for (let i = 0; i < numEffects; i++) {
+            const angle = (i / numEffects) * Math.PI * 2;
+            const radius = 10 + Math.random() * 15;
+            const effectX = x + Math.cos(angle) * radius;
+            const effectY = y + Math.sin(angle) * radius;
+            
+            // Use golden color for food rewards
+            const color = 0xFFD700;
+            
+            // Create the effect with a slight delay for each one
+            setTimeout(() => {
+                this.createFoodCollectEffect(effectX, effectY, color, 1.5);
+            }, i * 50);
+        }
+        
+        // Create a text effect showing the amount
+        this.createTextEffect(x, y - 20, `+${amount} Food`, 0xFFD700);
+    }
+    
+    createTextEffect(x, y, text, color) {
+        // Create a simple text effect that floats upward
+        const textEffect = new PIXI.Text(text, {
+            fontFamily: 'Arial',
+            fontSize: 16,
+            fill: color,
+            fontWeight: 'bold',
+            dropShadow: true,
+            dropShadowColor: 0x000000,
+            dropShadowBlur: 3,
+            dropShadowAngle: Math.PI / 2,
+            dropShadowDistance: 2
+        });
+        
+        textEffect.x = x;
+        textEffect.y = y;
+        textEffect.anchor.set(0.5);
+        textEffect.alpha = 1;
+        
+        // Add to the world container
+        if (this.app.worldContainer) {
+            this.app.worldContainer.addChild(textEffect);
+        }
+        
+        // Animate the text effect
+        let life = 0;
+        const maxLife = 2; // 2 seconds
+        
+        const animate = () => {
+            life += 0.016; // 60fps
+            
+            // Move upward
+            textEffect.y -= 30 * 0.016;
+            
+            // Fade out
+            textEffect.alpha = Math.max(0, 1 - (life / maxLife));
+            
+            if (life >= maxLife) {
+                if (textEffect.parent) {
+                    textEffect.parent.removeChild(textEffect);
+                }
+                return;
+            }
+            
+            requestAnimationFrame(animate);
+        };
+        
+        animate();
+    }
 } 

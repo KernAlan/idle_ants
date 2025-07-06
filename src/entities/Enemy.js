@@ -31,6 +31,76 @@ IdleAnts.Entities.Enemy = class extends PIXI.Sprite {
         // Random start position
         this.x = Math.random()*mapBounds.width;
         this.y = Math.random()*mapBounds.height;
+        
+        // Track the last ant that damaged this enemy
+        this.lastAttacker = null;
+        
+        // Food value when defeated
+        this.foodValue = 100 + Math.random() * 50; // 100-150 food per enemy
+        
+        // Enemy type name for tooltip
+        this.enemyName = "Enemy";
+        
+        // Make enemy interactive for tooltips
+        this.interactive = true;
+        this.buttonMode = true;
+        this.setupTooltip();
+    }
+
+    setupTooltip() {
+        this.on('pointerover', () => {
+            this.showTooltip();
+        });
+        
+        this.on('pointerout', () => {
+            this.hideTooltip();
+        });
+    }
+    
+    showTooltip() {
+        // Create tooltip if it doesn't exist
+        if (!this.tooltip) {
+            this.tooltip = document.createElement('div');
+            this.tooltip.className = 'enemy-tooltip';
+            this.tooltip.style.cssText = `
+                position: fixed;
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 8px 12px;
+                border-radius: 4px;
+                font-size: 14px;
+                pointer-events: none;
+                z-index: 10000;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            `;
+            document.body.appendChild(this.tooltip);
+        }
+        
+        this.tooltip.innerHTML = `
+            <div style="font-weight: bold; margin-bottom: 4px;">${this.enemyName}</div>
+            <div style="font-size: 12px; color: #ccc;">HP: ${this.hp}/${this.maxHp}</div>
+            <div style="font-size: 12px; color: #ffeb3b;">Food Reward: ${Math.floor(this.foodValue)}</div>
+        `;
+        
+        this.tooltip.style.display = 'block';
+        this.updateTooltipPosition();
+    }
+    
+    hideTooltip() {
+        if (this.tooltip) {
+            this.tooltip.style.display = 'none';
+        }
+    }
+    
+    updateTooltipPosition() {
+        if (this.tooltip && this.tooltip.style.display === 'block') {
+            const bounds = this.getBounds();
+            const screenPos = this.toGlobal(new PIXI.Point(0, 0));
+            
+            this.tooltip.style.left = (screenPos.x + 20) + 'px';
+            this.tooltip.style.top = (screenPos.y - 40) + 'px';
+        }
     }
 
     createHealthBar() {
@@ -66,13 +136,35 @@ IdleAnts.Entities.Enemy = class extends PIXI.Sprite {
         this.healthBarContainer.rotation = 0;
     }
 
-    takeDamage(dmg){
+    takeDamage(dmg, attacker = null){
         this.hp -= dmg;
         this.updateHealthBar();
+        
+        // Track the last attacker (the ant that dealt the damage)
+        if (attacker) {
+            this.lastAttacker = attacker;
+        }
+        
         if(this.hp<=0) this.die();
     }
 
     die(){
+        // Reward food to the last attacker (the ant that dealt the killing blow)
+        if (this.lastAttacker && IdleAnts.app && IdleAnts.app.resourceManager) {
+            IdleAnts.app.resourceManager.addFood(this.foodValue);
+            
+            // Create a visual effect showing the food reward
+            if (IdleAnts.app.effectManager) {
+                IdleAnts.app.effectManager.createFoodRewardEffect(this.x, this.y, this.foodValue);
+            }
+        }
+        
+        // Clean up tooltip
+        if (this.tooltip) {
+            document.body.removeChild(this.tooltip);
+            this.tooltip = null;
+        }
+        
         if(this.parent) this.parent.removeChild(this);
         this.isDead=true;
         if(this.healthBarContainer && this.healthBarContainer.parent){
@@ -138,5 +230,8 @@ IdleAnts.Entities.Enemy = class extends PIXI.Sprite {
             this.healthBarContainer.y = this.y - 20;
             this.healthBarContainer.rotation = 0;
         }
+        
+        // Update tooltip position if visible
+        this.updateTooltipPosition();
     }
 }; 

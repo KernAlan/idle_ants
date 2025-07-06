@@ -11,6 +11,9 @@ IdleAnts.Entities.BeeEnemy = class extends IdleAnts.Entities.Enemy {
         this.createWings();
         this.scale.set(1.4);
 
+        // Enemy name for tooltip
+        this.enemyName = "Bee";
+
         // Stats
         this.speed = 2.0;
         this.attackDamage = 8;

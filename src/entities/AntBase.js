@@ -100,8 +100,11 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         // State initialization
         this.state = IdleAnts.Entities.AntBase.States.SPAWNING;
         
-        // Health properties
-        this.maxHp = 50;
+        // Health properties - base HP affected by strength
+        const baseHp = 50;
+        const strengthMultiplier = IdleAnts.app && IdleAnts.app.resourceManager ? 
+            IdleAnts.app.resourceManager.stats.strengthMultiplier : 1;
+        this.maxHp = baseHp + (strengthMultiplier - 1) * 25; // +25 HP per strength level
         this.hp = this.maxHp;
         this.createHealthBar();
         this.healthBarTimer = 0; // frames remaining to show health bar
@@ -1082,7 +1085,7 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
     transitionToState(newState) {
         // Debug logging for state transitions only when capacity is changing
         if (this.capacityWeight > 0) {
-            console.log(`Ant state transition: ${this.state} -> ${newState}, Capacity=${this.capacity}, CurrentWeight=${this.capacityWeight}, FoodCollected=${this.foodCollected}`);
+            // console.log(`Ant state transition: ${this.state} -> ${newState}, Capacity=${this.capacity}, CurrentWeight=${this.capacityWeight}, FoodCollected=${this.foodCollected}`);
         }
         
         // Exit actions for current state
@@ -1219,7 +1222,7 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         if(this._attackTimer>0){this._attackTimer--;}
         else{
             if(typeof this.targetEnemy.takeDamage==='function')
-                this.targetEnemy.takeDamage(this.attackDamage);
+                this.targetEnemy.takeDamage(this.attackDamage, this); // Pass the attacking ant
             this._attackTimer=this.attackCooldown;
         }
         return false;

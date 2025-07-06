@@ -10,6 +10,9 @@ IdleAnts.Entities.MantisEnemy = class extends IdleAnts.Entities.Enemy {
         this.createBody();
         this.scale.set(2.5); // Larger and more intimidating than grasshopper (which is 2.0)
 
+        // Enemy name for tooltip
+        this.enemyName = "Praying Mantis";
+
         // Stats – slow but deadly
         this.speed = 1.0;
         this.dashSpeed = 5;
