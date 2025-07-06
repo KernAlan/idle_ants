@@ -81,6 +81,12 @@ IdleAnts.Managers.InputManager = class {
         
         const currentFoodType = this.resourceManager.getCurrentFoodType();
         this.entityManager.addFood({ x: worldX, y: worldY, clickPlaced: true }, currentFoodType);
+        
+        // Track daily challenge for food clicking
+        if (this.game.dailyChallengeManager) {
+            this.game.dailyChallengeManager.trackFoodClick();
+        }
+        
         if (this.game.uiManager) this.game.uiManager.updateUI();
     }
 
@@ -243,6 +249,12 @@ IdleAnts.Managers.InputManager = class {
                 // Apply tap delay for mobile
                 setTimeout(() => {
                     this.entityManager.addFood({ x: worldX, y: worldY, clickPlaced: true }, currentFoodType);
+                    
+                    // Track daily challenge for food clicking
+                    if (this.game.dailyChallengeManager) {
+                        this.game.dailyChallengeManager.trackFoodClick();
+                    }
+                    
                     if (this.game.uiManager) this.game.uiManager.updateUI();
                 }, this.mobileSettings.tapDelay);
             }
