@@ -19,6 +19,22 @@ IdleAnts.Data.FoodTypes = {
         description: 'Simple seeds that ants collect for food.'
     },
     
+    // Apple slice - healthy and common
+    APPLE: {
+        id: 'apple',
+        name: 'Apple Slice',
+        value: 3,              // Simple progression
+        weight: 1,             // Still manageable
+        collectionTime: 0.5,   // Quick to collect
+        rarity: 2,             // Common
+        scale: {min: 0.8, max: 1.4},
+        color: 0xFF4500,       // Red apple color
+        shadowColor: 0x8B0000, // Dark red shadow
+        glowColor: 0xFF6347,   // Tomato glow
+        glowAlpha: 0.3,
+        description: 'Fresh apple slices are a healthy snack for ants!'
+    },
+    
     // Cookie crumb - fun food type for kids
     COOKIE: {
         id: 'cookie',
@@ -35,6 +51,54 @@ IdleAnts.Data.FoodTypes = {
         description: 'Delicious cookie crumbs are a special treat for ants!'
     },
     
+    // Marshmallow - light and fluffy
+    MARSHMALLOW: {
+        id: 'marshmallow',
+        name: 'Marshmallow',
+        value: 8,              // Sweet and valuable
+        weight: 1,             // Light despite size
+        collectionTime: 2.0,   // Takes time to collect
+        rarity: 4,             // More rare
+        scale: {min: 1.2, max: 1.8},
+        color: 0xFFF8DC,       // Cornsilk white
+        shadowColor: 0xF0E68C, // Khaki shadow
+        glowColor: 0xFFE4E1,   // Misty rose glow
+        glowAlpha: 0.5,
+        description: 'Fluffy marshmallows are a delightful surprise for ants!'
+    },
+    
+    // Mango piece - tropical fruit
+    MANGO: {
+        id: 'mango',
+        name: 'Mango Piece',
+        value: 15,             // Tropical and valuable
+        weight: 3,             // Heavier fruit
+        collectionTime: 2.5,   // Takes time to collect
+        rarity: 5,             // Rare tropical fruit
+        scale: {min: 1.3, max: 2.0},
+        color: 0xFF8C00,       // Dark orange
+        shadowColor: 0xFF4500, // Orange red shadow
+        glowColor: 0xFFD700,   // Golden glow
+        glowAlpha: 0.5,
+        description: 'Sweet tropical mango pieces are a rare delicacy!'
+    },
+    
+    // Hot dog piece - protein-rich
+    HOT_DOG: {
+        id: 'hot_dog',
+        name: 'Hot Dog Piece',
+        value: 20,             // Protein-rich food
+        weight: 4,             // Heavy protein
+        collectionTime: 3.0,   // Takes time to collect
+        rarity: 6,             // Rare protein source
+        scale: {min: 1.4, max: 2.1},
+        color: 0xDC143C,       // Crimson red
+        shadowColor: 0xB22222, // Fire brick shadow
+        glowColor: 0xFF69B4,   // Hot pink glow
+        glowAlpha: 0.6,
+        description: 'Juicy hot dog pieces provide valuable protein for the colony!'
+    },
+    
     // Watermelon piece - premium food source
     WATERMELON: {
         id: 'watermelon',
@@ -49,6 +113,38 @@ IdleAnts.Data.FoodTypes = {
         glowColor: 0xFF9999,   // Pinkish glow
         glowAlpha: 0.5,        // Stronger glow for premium food
         description: 'Sweet watermelon pieces are a rare and valuable food source!'
+    },
+    
+    // Donut - premium sugary treat
+    DONUT: {
+        id: 'donut',
+        name: 'Donut Piece',
+        value: 35,             // Premium treat
+        weight: 5,             // Heavy and filling
+        collectionTime: 4.0,   // Takes time due to size
+        rarity: 7,             // Very rare treat
+        scale: {min: 1.6, max: 2.3},
+        color: 0xDDA0DD,       // Plum color (glazed)
+        shadowColor: 0x9370DB, // Medium slate blue shadow
+        glowColor: 0xFF1493,   // Deep pink glow
+        glowAlpha: 0.6,
+        description: 'Glazed donut pieces are the ultimate sugary reward!'
+    },
+    
+    // Cake slice - ultimate premium food
+    CAKE: {
+        id: 'cake',
+        name: 'Cake Slice',
+        value: 50,             // Ultimate premium food
+        weight: 6,             // Heaviest food
+        collectionTime: 5.0,   // Takes longest to collect
+        rarity: 8,             // Ultra rare
+        scale: {min: 1.8, max: 2.5},
+        color: 0xFFB6C1,       // Light pink
+        shadowColor: 0xDB7093, // Pale violet red shadow
+        glowColor: 0xFF69B4,   // Hot pink glow
+        glowAlpha: 0.7,        // Strongest glow
+        description: 'Delicious cake slices are the ultimate feast for the colony!'
     }
 };
 

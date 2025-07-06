@@ -6,6 +6,9 @@ IdleAnts.Entities.FrogEnemy = class extends IdleAnts.Entities.Enemy {
         // Hide just the base texture, not the entire sprite
         this.texture = PIXI.Texture.EMPTY; // Use empty/transparent texture instead
         
+        // Enemy name for tooltip
+        this.enemyName = "Frog";
+        
         // Frog-specific properties
         this.scale.set(2.0); // Slightly bigger than cricket (1.5), smaller than grasshopper (2.0)
         this.tint = 0x228B22; // Forest green base color

@@ -2,7 +2,7 @@
 IdleAnts.Managers.ResourceManager = class {
     constructor() {
         // Log debug status for verification
-        console.log('ResourceManager initializing with debug mode:', IdleAnts.Config.debug);
+        // console.log('ResourceManager initializing with debug mode:', IdleAnts.Config.debug);
         
         // Game resources
         this.resources = {
@@ -32,7 +32,7 @@ IdleAnts.Managers.ResourceManager = class {
             strengthMultiplier: 1, // Now represents the actual carrying capacity
             // Food tier properties
             foodTier: 1,  // Start with basic food (tier 1)
-            maxFoodTier: 3, // Now includes watermelon (tier 3)
+            maxFoodTier: 9, // Now includes cake (tier 9)
             // Autofeeder properties
             autofeederUnlocked: false,
             autofeederLevel: 0,
@@ -64,15 +64,21 @@ IdleAnts.Managers.ResourceManager = class {
             maxFireAnts: 0,
             fireAntsUnlocked: false,
             fireAntUnlockCost: 20000,
-            fireAntCost: 5000,
+            fireAntCost: 700,
             fireAntFoodPerSecond: 8
         };
         
         // Map of food tier to food type
         this.foodTierMap = {
             1: IdleAnts.Data.FoodTypes.BASIC,
-            2: IdleAnts.Data.FoodTypes.COOKIE,
-            3: IdleAnts.Data.FoodTypes.WATERMELON
+            2: IdleAnts.Data.FoodTypes.APPLE,
+            3: IdleAnts.Data.FoodTypes.COOKIE,
+            4: IdleAnts.Data.FoodTypes.MARSHMALLOW,
+            5: IdleAnts.Data.FoodTypes.MANGO,
+            6: IdleAnts.Data.FoodTypes.HOT_DOG,
+            7: IdleAnts.Data.FoodTypes.WATERMELON,
+            8: IdleAnts.Data.FoodTypes.DONUT,
+            9: IdleAnts.Data.FoodTypes.CAKE
         };
         
         // Food collection rate tracking
@@ -215,7 +221,7 @@ IdleAnts.Managers.ResourceManager = class {
         const oldCost = this.stats.antCost;
         // Gentle incremental increase (≈15 %)
         this.stats.antCost = Math.floor(this.stats.antCost * 1.15);
-        console.log(`Ant cost updated: ${oldCost} -> ${this.stats.antCost}`);
+        // console.log(`Ant cost updated: ${oldCost} -> ${this.stats.antCost}`);
     }
     
     updateFoodUpgradeCost() {
@@ -337,7 +343,7 @@ IdleAnts.Managers.ResourceManager = class {
             this.stats.flyingAnts++;
             const oldCost = this.stats.flyingAntCost;
             this.stats.flyingAntCost = Math.floor(this.stats.flyingAntCost * 1.25);
-            console.log(`Flying Ant cost updated: ${oldCost} -> ${this.stats.flyingAntCost}`);
+            // console.log(`Flying Ant cost updated: ${oldCost} -> ${this.stats.flyingAntCost}`);
             this.updateFoodPerSecond();
             return true;
         }
@@ -423,7 +429,7 @@ IdleAnts.Managers.ResourceManager = class {
     }
     
     updateQueenUpgradeCost() {
-        this.stats.queenUpgradeCost = Math.floor(this.stats.queenUpgradeCost * 1.4);
+        this.stats.queenUpgradeCost = Math.floor(this.stats.queenUpgradeCost * 1.15);
     }
     
     // Queen ant methods
@@ -469,7 +475,7 @@ IdleAnts.Managers.ResourceManager = class {
         // Increase larvae capacity by 1 each level
         this.stats.queenLarvaeCapacity += 1;
         // Queen HP will be implemented later
-        console.log(`Queen upgraded to level ${this.stats.queenUpgradeLevel}`);
+        // console.log(`Queen upgraded to level ${this.stats.queenUpgradeLevel}`);
         
         // Update upgrade cost
         this.updateQueenUpgradeCost();
@@ -487,7 +493,7 @@ IdleAnts.Managers.ResourceManager = class {
             this.spendFood(this.stats.carAntUnlockCost);
             this.stats.carAntsUnlocked = true;
             this.stats.maxCarAnts = 2; // Unlock a small initial capacity, e.g., 2
-            console.log("Car Ants Unlocked!");
+            // console.log("Car Ants Unlocked!");
             // Potentially update UI or trigger game event here
             return true;
         }
@@ -506,7 +512,7 @@ IdleAnts.Managers.ResourceManager = class {
             this.stats.carAnts++;
             this.updateFoodPerSecond(); // Recalculate food per second
             this.updateCarAntCost();    // Increase cost for the next one
-            console.log("Car Ant Purchased! Total Car Ants: " + this.stats.carAnts);
+            // console.log("Car Ant Purchased! Total Car Ants: " + this.stats.carAnts);
             return true;
         }
         return false;
@@ -529,7 +535,7 @@ IdleAnts.Managers.ResourceManager = class {
         if (this.canExpandCarAntCapacity()) {
             this.spendFood(expandCarAntCapacityCost);
             this.stats.maxCarAnts += 1; // Increase max by 1 or a fixed amount
-            console.log("Car Ant capacity expanded to: " + this.stats.maxCarAnts);
+            // console.log("Car Ant capacity expanded to: " + this.stats.maxCarAnts);
             return true;
         }
         return false;

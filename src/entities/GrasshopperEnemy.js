@@ -10,6 +10,9 @@ IdleAnts.Entities.GrasshopperEnemy = class extends IdleAnts.Entities.Enemy {
         // Add custom body graphics
         this.createBody();
 
+        // Enemy name for tooltip
+        this.enemyName = "Grasshopper";
+
         this.scale.set(2.0); // big
         this.speed = 2.0; // faster crawl speed
         this.attackDamage = 10;

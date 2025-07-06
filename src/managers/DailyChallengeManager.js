@@ -43,7 +43,7 @@ IdleAnts.Managers.DailyChallengeManager = class {
                 type: 'time',
                 baseTarget: 10,
                 multiplier: 1.3,
-                reward: { type: 'food', amount: 40 },
+                reward: { type: 'food', amount: 5000 },
                 icon: '⏰'
             },
             clickFood: {
@@ -394,9 +394,22 @@ IdleAnts.Managers.DailyChallengeManager = class {
     
     updateChallengeUI() {
         const challengeList = document.getElementById('challenge-list');
-        if (!challengeList) return;
+        const challengePanel = document.getElementById('daily-challenges');
+        if (!challengeList || !challengePanel) return;
         
         challengeList.innerHTML = '';
+        
+        // Check if there are any active challenges (not all claimed)
+        const hasActiveChallenges = this.currentChallenges.some(challenge => !challenge.claimed);
+        
+        // Hide the panel if there are no active challenges
+        if (!hasActiveChallenges || this.currentChallenges.length === 0) {
+            challengePanel.style.display = 'none';
+            return;
+        }
+        
+        // Show the panel if there are active challenges
+        challengePanel.style.display = 'block';
         
         this.currentChallenges.forEach(challenge => {
             const item = document.createElement('div');

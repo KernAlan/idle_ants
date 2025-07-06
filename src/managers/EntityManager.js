@@ -799,11 +799,23 @@ IdleAnts.Managers.EntityManager = class {
             // Set the capacity directly to the strength value
             antEntities[i].capacity = currentStrength;
             
+            // Update HP based on strength
+            const baseHp = 50;
+            const newMaxHp = baseHp + (currentStrength - 1) * 25; // +25 HP per strength level
+            const hpRatio = antEntities[i].hp / antEntities[i].maxHp; // Preserve HP percentage
+            antEntities[i].maxHp = newMaxHp;
+            antEntities[i].hp = newMaxHp * hpRatio; // Scale current HP
+            
+            // Update health bar if it exists
+            if (antEntities[i].updateHealthBar) {
+                antEntities[i].updateHealthBar();
+            }
+            
             // Ensure the canStackFood config is updated based on capacity
             antEntities[i].config.canStackFood = antEntities[i].capacity > 1;
             
             // Log capacity and canStackFood status
-            console.log(`Updating ant strength: capacity=${antEntities[i].capacity}, canStackFood=${antEntities[i].config.canStackFood}`);
+            // console.log(`Updating ant strength: capacity=${antEntities[i].capacity}, canStackFood=${antEntities[i].config.canStackFood}`);
             
             // If the ant is already carrying food but not at full capacity with the new strength,
             // allow it to collect more food
