@@ -74,6 +74,15 @@ IdleAnts.Game = class {
             // Initialize audio manager
             IdleAnts.AudioManager.init();
             
+            // Initialize achievement manager
+            this.achievementManager = new IdleAnts.Managers.AchievementManager(this.resourceManager, this.effectManager);
+            
+            // Initialize daily challenge manager
+            this.dailyChallengeManager = new IdleAnts.Managers.DailyChallengeManager(this.resourceManager, this.achievementManager);
+            
+            // Make it accessible globally for UI interactions
+            IdleAnts.game = this;
+            
             // Set up effect manager reference
             this.entityManager.setEffectManager(this.effectManager);
             
@@ -582,6 +591,11 @@ IdleAnts.Game = class {
             // Delegate entity creation to EntityManager
             this.entityManager.createAnt();
             
+            // Track daily challenge
+            if (this.dailyChallengeManager) {
+                this.dailyChallengeManager.trackAntPurchase();
+            }
+            
             // Update UI
             this.uiManager.updateUI();
             this.uiManager.showUpgradeEffect('buy-ant', 'New ant added!');
@@ -660,6 +674,11 @@ IdleAnts.Game = class {
             // Try to upgrade the food tier
             const tierUpgraded = this.resourceManager.upgradeFoodTier();
             
+            // Track achievement
+            if (this.achievementManager) {
+                this.achievementManager.trackUpgrade();
+            }
+            
             // Update the UI
             this.uiManager.updateUI();
             
@@ -684,6 +703,12 @@ IdleAnts.Game = class {
             // Delegate nest expansion to EntityManager
             this.entityManager.expandNest();
             
+            // Track achievements
+            if (this.achievementManager) {
+                this.achievementManager.trackUpgrade();
+                this.achievementManager.checkAchievements(); // Check for expand colony achievement
+            }
+            
             // Update UI
             this.uiManager.updateUI();
             this.uiManager.showUpgradeEffect('expand-colony', 'Colony expanded!');
@@ -701,6 +726,17 @@ IdleAnts.Game = class {
             // Delegate entity updates to EntityManager
             this.entityManager.updateAntsSpeed();
             
+            // Track achievements
+            if (this.achievementManager) {
+                this.achievementManager.trackUpgrade();
+                this.achievementManager.trackSpeedUpgrade();
+            }
+            
+            // Track daily challenge
+            if (this.dailyChallengeManager) {
+                this.dailyChallengeManager.trackSpeedUpgrade();
+            }
+            
             // Update UI
             this.uiManager.updateUI();
             this.uiManager.showUpgradeEffect('upgrade-speed', 'Ants move faster!');
@@ -717,6 +753,12 @@ IdleAnts.Game = class {
             
             // Delegate entity updates to EntityManager
             this.entityManager.updateAntsCapacity();
+            
+            // Track achievements
+            if (this.achievementManager) {
+                this.achievementManager.trackUpgrade();
+                this.achievementManager.trackStrengthUpgrade();
+            }
             
             // Update UI
             this.uiManager.updateUI();
