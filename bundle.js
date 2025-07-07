@@ -1,5 +1,5 @@
 // Idle Ants - Bundled JavaScript
-// Generated on: 2025-07-04T04:47:50.194Z
+// Generated on: 2025-07-07T04:55:40.688Z
 
 
 // ===== src/core/Namespace.js =====
@@ -34,6 +34,22 @@ IdleAnts.Data.FoodTypes = {
         description: 'Simple seeds that ants collect for food.'
     },
     
+    // Apple slice - healthy and common
+    APPLE: {
+        id: 'apple',
+        name: 'Apple Slice',
+        value: 3,              // Simple progression
+        weight: 1,             // Still manageable
+        collectionTime: 0.5,   // Quick to collect
+        rarity: 2,             // Common
+        scale: {min: 0.8, max: 1.4},
+        color: 0xFF4500,       // Red apple color
+        shadowColor: 0x8B0000, // Dark red shadow
+        glowColor: 0xFF6347,   // Tomato glow
+        glowAlpha: 0.3,
+        description: 'Fresh apple slices are a healthy snack for ants!'
+    },
+    
     // Cookie crumb - fun food type for kids
     COOKIE: {
         id: 'cookie',
@@ -50,6 +66,54 @@ IdleAnts.Data.FoodTypes = {
         description: 'Delicious cookie crumbs are a special treat for ants!'
     },
     
+    // Marshmallow - light and fluffy
+    MARSHMALLOW: {
+        id: 'marshmallow',
+        name: 'Marshmallow',
+        value: 8,              // Sweet and valuable
+        weight: 1,             // Light despite size
+        collectionTime: 2.0,   // Takes time to collect
+        rarity: 4,             // More rare
+        scale: {min: 1.2, max: 1.8},
+        color: 0xFFF8DC,       // Cornsilk white
+        shadowColor: 0xF0E68C, // Khaki shadow
+        glowColor: 0xFFE4E1,   // Misty rose glow
+        glowAlpha: 0.5,
+        description: 'Fluffy marshmallows are a delightful surprise for ants!'
+    },
+    
+    // Mango piece - tropical fruit
+    MANGO: {
+        id: 'mango',
+        name: 'Mango Piece',
+        value: 15,             // Tropical and valuable
+        weight: 3,             // Heavier fruit
+        collectionTime: 2.5,   // Takes time to collect
+        rarity: 5,             // Rare tropical fruit
+        scale: {min: 1.3, max: 2.0},
+        color: 0xFF8C00,       // Dark orange
+        shadowColor: 0xFF4500, // Orange red shadow
+        glowColor: 0xFFD700,   // Golden glow
+        glowAlpha: 0.5,
+        description: 'Sweet tropical mango pieces are a rare delicacy!'
+    },
+    
+    // Hot dog piece - protein-rich
+    HOT_DOG: {
+        id: 'hot_dog',
+        name: 'Hot Dog Piece',
+        value: 20,             // Protein-rich food
+        weight: 4,             // Heavy protein
+        collectionTime: 3.0,   // Takes time to collect
+        rarity: 6,             // Rare protein source
+        scale: {min: 1.4, max: 2.1},
+        color: 0xDC143C,       // Crimson red
+        shadowColor: 0xB22222, // Fire brick shadow
+        glowColor: 0xFF69B4,   // Hot pink glow
+        glowAlpha: 0.6,
+        description: 'Juicy hot dog pieces provide valuable protein for the colony!'
+    },
+    
     // Watermelon piece - premium food source
     WATERMELON: {
         id: 'watermelon',
@@ -64,6 +128,38 @@ IdleAnts.Data.FoodTypes = {
         glowColor: 0xFF9999,   // Pinkish glow
         glowAlpha: 0.5,        // Stronger glow for premium food
         description: 'Sweet watermelon pieces are a rare and valuable food source!'
+    },
+    
+    // Donut - premium sugary treat
+    DONUT: {
+        id: 'donut',
+        name: 'Donut Piece',
+        value: 35,             // Premium treat
+        weight: 5,             // Heavy and filling
+        collectionTime: 4.0,   // Takes time due to size
+        rarity: 7,             // Very rare treat
+        scale: {min: 1.6, max: 2.3},
+        color: 0xDDA0DD,       // Plum color (glazed)
+        shadowColor: 0x9370DB, // Medium slate blue shadow
+        glowColor: 0xFF1493,   // Deep pink glow
+        glowAlpha: 0.6,
+        description: 'Glazed donut pieces are the ultimate sugary reward!'
+    },
+    
+    // Cake slice - ultimate premium food
+    CAKE: {
+        id: 'cake',
+        name: 'Cake Slice',
+        value: 50,             // Ultimate premium food
+        weight: 6,             // Heaviest food
+        collectionTime: 5.0,   // Takes longest to collect
+        rarity: 8,             // Ultra rare
+        scale: {min: 1.8, max: 2.5},
+        color: 0xFFB6C1,       // Light pink
+        shadowColor: 0xDB7093, // Pale violet red shadow
+        glowColor: 0xFF69B4,   // Hot pink glow
+        glowAlpha: 0.7,        // Strongest glow
+        description: 'Delicious cake slices are the ultimate feast for the colony!'
     }
 };
 
@@ -1367,6 +1463,28 @@ IdleAnts.Assets.Ants.EGG = {
         return foodGraphics;
     });
     
+    // Register apple food asset
+    AssetDefinition.register('appleFood', function(app) {
+        const appleGraphics = AssetDefinition.createGraphics();
+        
+        // Draw the apple slice shape
+        appleGraphics.beginFill(0xFF4500); // Red apple color
+        appleGraphics.drawEllipse(0, 0, 8, 10); // Slightly oval shape
+        appleGraphics.endFill();
+        
+        // Add apple skin highlight
+        appleGraphics.beginFill(0xFF6347); // Lighter red highlight
+        appleGraphics.drawEllipse(-2, -2, 4, 3);
+        appleGraphics.endFill();
+        
+        // Add apple seed
+        appleGraphics.beginFill(0x8B4513); // Brown seed
+        appleGraphics.drawEllipse(1, 1, 1, 2);
+        appleGraphics.endFill();
+        
+        return appleGraphics;
+    });
+    
     // Register cookie food asset
     AssetDefinition.register('cookieFood', function(app) {
         const cookieGraphics = AssetDefinition.createGraphics();
@@ -1382,6 +1500,170 @@ IdleAnts.Assets.Ants.EGG = {
         cookieGraphics.endFill();
         
         return cookieGraphics;
+    });
+    
+    // Register marshmallow food asset
+    AssetDefinition.register('marshmallowFood', function(app) {
+        const marshmallowGraphics = AssetDefinition.createGraphics();
+        
+        // Draw main marshmallow body
+        marshmallowGraphics.beginFill(0xFFF8DC); // Cornsilk white
+        marshmallowGraphics.drawRoundedRect(-6, -4, 12, 8, 3);
+        marshmallowGraphics.endFill();
+        
+        // Add marshmallow highlights
+        marshmallowGraphics.beginFill(0xFFFFFF); // Pure white highlights
+        marshmallowGraphics.drawRoundedRect(-4, -3, 3, 2, 1);
+        marshmallowGraphics.drawRoundedRect(1, 1, 2, 1, 0.5);
+        marshmallowGraphics.endFill();
+        
+        // Add subtle texture lines
+        marshmallowGraphics.lineStyle(0.5, 0xF0E68C, 0.5);
+        marshmallowGraphics.moveTo(-5, -1);
+        marshmallowGraphics.lineTo(5, -1);
+        marshmallowGraphics.moveTo(-5, 1);
+        marshmallowGraphics.lineTo(5, 1);
+        marshmallowGraphics.lineStyle(0);
+        
+        return marshmallowGraphics;
+    });
+    
+    // Register mango food asset
+    AssetDefinition.register('mangoFood', function(app) {
+        const mangoGraphics = AssetDefinition.createGraphics();
+        
+        // Draw mango base shape
+        mangoGraphics.beginFill(0xFF8C00); // Dark orange
+        mangoGraphics.drawEllipse(0, 0, 9, 12); // Oval mango shape
+        mangoGraphics.endFill();
+        
+        // Add mango gradient effect
+        mangoGraphics.beginFill(0xFFD700); // Golden yellow
+        mangoGraphics.drawEllipse(-2, -3, 6, 4);
+        mangoGraphics.endFill();
+        
+        // Add mango highlights
+        mangoGraphics.beginFill(0xFFA500); // Orange highlights
+        mangoGraphics.drawEllipse(2, 2, 3, 4);
+        mangoGraphics.endFill();
+        
+        // Add fibrous texture lines
+        mangoGraphics.lineStyle(0.5, 0xFF7F00, 0.6);
+        mangoGraphics.moveTo(-4, -2);
+        mangoGraphics.lineTo(4, 3);
+        mangoGraphics.moveTo(-3, 0);
+        mangoGraphics.lineTo(3, 5);
+        mangoGraphics.lineStyle(0);
+        
+        return mangoGraphics;
+    });
+    
+    // Register hot dog food asset
+    AssetDefinition.register('hotDogFood', function(app) {
+        const hotDogGraphics = AssetDefinition.createGraphics();
+        
+        // Draw hot dog sausage
+        hotDogGraphics.beginFill(0xDC143C); // Crimson red
+        hotDogGraphics.drawRoundedRect(-8, -3, 16, 6, 3);
+        hotDogGraphics.endFill();
+        
+        // Add hot dog highlights
+        hotDogGraphics.beginFill(0xFF69B4); // Hot pink highlights
+        hotDogGraphics.drawRoundedRect(-6, -2, 4, 2, 1);
+        hotDogGraphics.drawRoundedRect(2, 0, 3, 1, 0.5);
+        hotDogGraphics.endFill();
+        
+        // Add grill marks
+        hotDogGraphics.lineStyle(1, 0x8B0000, 0.8);
+        hotDogGraphics.moveTo(-6, -1);
+        hotDogGraphics.lineTo(6, -1);
+        hotDogGraphics.moveTo(-6, 1);
+        hotDogGraphics.lineTo(6, 1);
+        hotDogGraphics.lineStyle(0);
+        
+        // Add small bun pieces
+        hotDogGraphics.beginFill(0xF4A460); // Sandy brown bun
+        hotDogGraphics.drawRoundedRect(-9, -4, 3, 2, 1);
+        hotDogGraphics.drawRoundedRect(6, 2, 3, 2, 1);
+        hotDogGraphics.endFill();
+        
+        return hotDogGraphics;
+    });
+    
+    // Register donut food asset
+    AssetDefinition.register('donutFood', function(app) {
+        const donutGraphics = AssetDefinition.createGraphics();
+        
+        // Draw donut base
+        donutGraphics.beginFill(0xDDA0DD); // Plum color (glazed)
+        donutGraphics.drawCircle(0, 0, 10);
+        donutGraphics.endFill();
+        
+        // Cut out center hole
+        donutGraphics.beginHole();
+        donutGraphics.drawCircle(0, 0, 4);
+        donutGraphics.endHole();
+        
+        // Add glaze highlights
+        donutGraphics.beginFill(0xFFFFFF); // White glaze highlights
+        donutGraphics.drawEllipse(-3, -6, 4, 2);
+        donutGraphics.drawEllipse(2, -4, 2, 1);
+        donutGraphics.endFill();
+        
+        // Add colorful sprinkles
+        const sprinkleColors = [0xFF1493, 0x00FF00, 0x0000FF, 0xFFFF00, 0xFF4500];
+        sprinkleColors.forEach((color, index) => {
+            donutGraphics.beginFill(color);
+            const angle = (index * Math.PI * 2) / sprinkleColors.length;
+            const x = Math.cos(angle) * 6;
+            const y = Math.sin(angle) * 6;
+            donutGraphics.drawRect(x - 0.5, y - 2, 1, 4);
+            donutGraphics.endFill();
+        });
+        
+        return donutGraphics;
+    });
+    
+    // Register cake food asset
+    AssetDefinition.register('cakeFood', function(app) {
+        const cakeGraphics = AssetDefinition.createGraphics();
+        
+        // Draw cake base layer
+        cakeGraphics.beginFill(0xF5DEB3); // Wheat color cake base
+        cakeGraphics.drawRoundedRect(-8, -2, 16, 8, 1);
+        cakeGraphics.endFill();
+        
+        // Draw frosting layer
+        cakeGraphics.beginFill(0xFFB6C1); // Light pink frosting
+        cakeGraphics.drawRoundedRect(-8, -6, 16, 6, 2);
+        cakeGraphics.endFill();
+        
+        // Add frosting swirls
+        cakeGraphics.beginFill(0xFF69B4); // Hot pink swirls
+        cakeGraphics.drawEllipse(-4, -4, 3, 2);
+        cakeGraphics.drawEllipse(2, -5, 2, 1);
+        cakeGraphics.drawEllipse(0, -3, 2, 1);
+        cakeGraphics.endFill();
+        
+        // Add decorative elements
+        cakeGraphics.beginFill(0xFFFFFF); // White decorations
+        cakeGraphics.drawCircle(-5, -4, 1);
+        cakeGraphics.drawCircle(4, -3, 1);
+        cakeGraphics.drawCircle(-1, -5, 0.8);
+        cakeGraphics.endFill();
+        
+        // Add cherry on top
+        cakeGraphics.beginFill(0xFF0000); // Red cherry
+        cakeGraphics.drawCircle(0, -7, 1.5);
+        cakeGraphics.endFill();
+        
+        // Add cherry stem
+        cakeGraphics.lineStyle(1, 0x228B22, 1);
+        cakeGraphics.moveTo(0, -8);
+        cakeGraphics.lineTo(0, -9);
+        cakeGraphics.lineStyle(0);
+        
+        return cakeGraphics;
     });
     
     // Register watermelon food asset
@@ -1577,7 +1859,7 @@ IdleAnts.AudioAssets = {
 IdleAnts.Managers.ResourceManager = class {
     constructor() {
         // Log debug status for verification
-        console.log('ResourceManager initializing with debug mode:', IdleAnts.Config.debug);
+        // console.log('ResourceManager initializing with debug mode:', IdleAnts.Config.debug);
         
         // Game resources
         this.resources = {
@@ -1607,7 +1889,7 @@ IdleAnts.Managers.ResourceManager = class {
             strengthMultiplier: 1, // Now represents the actual carrying capacity
             // Food tier properties
             foodTier: 1,  // Start with basic food (tier 1)
-            maxFoodTier: 3, // Now includes watermelon (tier 3)
+            maxFoodTier: 9, // Now includes cake (tier 9)
             // Autofeeder properties
             autofeederUnlocked: false,
             autofeederLevel: 0,
@@ -1639,15 +1921,21 @@ IdleAnts.Managers.ResourceManager = class {
             maxFireAnts: 0,
             fireAntsUnlocked: false,
             fireAntUnlockCost: 20000,
-            fireAntCost: 5000,
+            fireAntCost: 700,
             fireAntFoodPerSecond: 8
         };
         
         // Map of food tier to food type
         this.foodTierMap = {
             1: IdleAnts.Data.FoodTypes.BASIC,
-            2: IdleAnts.Data.FoodTypes.COOKIE,
-            3: IdleAnts.Data.FoodTypes.WATERMELON
+            2: IdleAnts.Data.FoodTypes.APPLE,
+            3: IdleAnts.Data.FoodTypes.COOKIE,
+            4: IdleAnts.Data.FoodTypes.MARSHMALLOW,
+            5: IdleAnts.Data.FoodTypes.MANGO,
+            6: IdleAnts.Data.FoodTypes.HOT_DOG,
+            7: IdleAnts.Data.FoodTypes.WATERMELON,
+            8: IdleAnts.Data.FoodTypes.DONUT,
+            9: IdleAnts.Data.FoodTypes.CAKE
         };
         
         // Food collection rate tracking
@@ -1666,11 +1954,19 @@ IdleAnts.Managers.ResourceManager = class {
     }
     
     // Food resource methods
-    addFood(amount) {
+    addFood(amount, foodType = null) {
         this.resources.food += amount;
         
         // Track this food addition for rate calculation
         this.trackFoodCollection(amount);
+        
+        // If foodType is provided, notify daily challenge manager
+        if (foodType && typeof window !== 'undefined' && 
+            window.IdleAnts && window.IdleAnts.game && 
+            window.IdleAnts.game.dailyChallengeManager) {
+            // Note: The DailyChallengeManager will handle its own food collection tracking
+            // We don't need to duplicate the tracking here
+        }
     }
     
     // Track food collection for rate calculation
@@ -1790,7 +2086,7 @@ IdleAnts.Managers.ResourceManager = class {
         const oldCost = this.stats.antCost;
         // Gentle incremental increase (≈15 %)
         this.stats.antCost = Math.floor(this.stats.antCost * 1.15);
-        console.log(`Ant cost updated: ${oldCost} -> ${this.stats.antCost}`);
+        // console.log(`Ant cost updated: ${oldCost} -> ${this.stats.antCost}`);
     }
     
     updateFoodUpgradeCost() {
@@ -1912,7 +2208,7 @@ IdleAnts.Managers.ResourceManager = class {
             this.stats.flyingAnts++;
             const oldCost = this.stats.flyingAntCost;
             this.stats.flyingAntCost = Math.floor(this.stats.flyingAntCost * 1.25);
-            console.log(`Flying Ant cost updated: ${oldCost} -> ${this.stats.flyingAntCost}`);
+            // console.log(`Flying Ant cost updated: ${oldCost} -> ${this.stats.flyingAntCost}`);
             this.updateFoodPerSecond();
             return true;
         }
@@ -1998,7 +2294,7 @@ IdleAnts.Managers.ResourceManager = class {
     }
     
     updateQueenUpgradeCost() {
-        this.stats.queenUpgradeCost = Math.floor(this.stats.queenUpgradeCost * 1.4);
+        this.stats.queenUpgradeCost = Math.floor(this.stats.queenUpgradeCost * 1.15);
     }
     
     // Queen ant methods
@@ -2044,7 +2340,7 @@ IdleAnts.Managers.ResourceManager = class {
         // Increase larvae capacity by 1 each level
         this.stats.queenLarvaeCapacity += 1;
         // Queen HP will be implemented later
-        console.log(`Queen upgraded to level ${this.stats.queenUpgradeLevel}`);
+        // console.log(`Queen upgraded to level ${this.stats.queenUpgradeLevel}`);
         
         // Update upgrade cost
         this.updateQueenUpgradeCost();
@@ -2062,7 +2358,7 @@ IdleAnts.Managers.ResourceManager = class {
             this.spendFood(this.stats.carAntUnlockCost);
             this.stats.carAntsUnlocked = true;
             this.stats.maxCarAnts = 2; // Unlock a small initial capacity, e.g., 2
-            console.log("Car Ants Unlocked!");
+            // console.log("Car Ants Unlocked!");
             // Potentially update UI or trigger game event here
             return true;
         }
@@ -2081,7 +2377,7 @@ IdleAnts.Managers.ResourceManager = class {
             this.stats.carAnts++;
             this.updateFoodPerSecond(); // Recalculate food per second
             this.updateCarAntCost();    // Increase cost for the next one
-            console.log("Car Ant Purchased! Total Car Ants: " + this.stats.carAnts);
+            // console.log("Car Ant Purchased! Total Car Ants: " + this.stats.carAnts);
             return true;
         }
         return false;
@@ -2104,7 +2400,7 @@ IdleAnts.Managers.ResourceManager = class {
         if (this.canExpandCarAntCapacity()) {
             this.spendFood(expandCarAntCapacityCost);
             this.stats.maxCarAnts += 1; // Increase max by 1 or a fixed amount
-            console.log("Car Ant capacity expanded to: " + this.stats.maxCarAnts);
+            // console.log("Car Ant capacity expanded to: " + this.stats.maxCarAnts);
             return true;
         }
         return false;
@@ -2508,6 +2804,79 @@ IdleAnts.Managers.EffectManager = class {
         
         // Create the larvae effect
         return this.createEffect('larvae', x, y, color, scale);
+    }
+    
+    createFoodRewardEffect(x, y, amount) {
+        // Create multiple food collect effects to show reward
+        const numEffects = Math.min(8, Math.floor(amount / 20) + 1);
+        
+        for (let i = 0; i < numEffects; i++) {
+            const angle = (i / numEffects) * Math.PI * 2;
+            const radius = 10 + Math.random() * 15;
+            const effectX = x + Math.cos(angle) * radius;
+            const effectY = y + Math.sin(angle) * radius;
+            
+            // Use golden color for food rewards
+            const color = 0xFFD700;
+            
+            // Create the effect with a slight delay for each one
+            setTimeout(() => {
+                this.createFoodCollectEffect(effectX, effectY, color, 1.5);
+            }, i * 50);
+        }
+        
+        // Create a text effect showing the amount
+        this.createTextEffect(x, y - 20, `+${amount} Food`, 0xFFD700);
+    }
+    
+    createTextEffect(x, y, text, color) {
+        // Create a simple text effect that floats upward
+        const textEffect = new PIXI.Text(text, {
+            fontFamily: 'Arial',
+            fontSize: 16,
+            fill: color,
+            fontWeight: 'bold',
+            dropShadow: true,
+            dropShadowColor: 0x000000,
+            dropShadowBlur: 3,
+            dropShadowAngle: Math.PI / 2,
+            dropShadowDistance: 2
+        });
+        
+        textEffect.x = x;
+        textEffect.y = y;
+        textEffect.anchor.set(0.5);
+        textEffect.alpha = 1;
+        
+        // Add to the world container
+        if (this.app.worldContainer) {
+            this.app.worldContainer.addChild(textEffect);
+        }
+        
+        // Animate the text effect
+        let life = 0;
+        const maxLife = 2; // 2 seconds
+        
+        const animate = () => {
+            life += 0.016; // 60fps
+            
+            // Move upward
+            textEffect.y -= 30 * 0.016;
+            
+            // Fade out
+            textEffect.alpha = Math.max(0, 1 - (life / maxLife));
+            
+            if (life >= maxLife) {
+                if (textEffect.parent) {
+                    textEffect.parent.removeChild(textEffect);
+                }
+                return;
+            }
+            
+            requestAnimationFrame(animate);
+        };
+        
+        animate();
     }
 } 
 
@@ -3313,11 +3682,23 @@ IdleAnts.Managers.EntityManager = class {
             // Set the capacity directly to the strength value
             antEntities[i].capacity = currentStrength;
             
+            // Update HP based on strength
+            const baseHp = 50;
+            const newMaxHp = baseHp + (currentStrength - 1) * 25; // +25 HP per strength level
+            const hpRatio = antEntities[i].hp / antEntities[i].maxHp; // Preserve HP percentage
+            antEntities[i].maxHp = newMaxHp;
+            antEntities[i].hp = newMaxHp * hpRatio; // Scale current HP
+            
+            // Update health bar if it exists
+            if (antEntities[i].updateHealthBar) {
+                antEntities[i].updateHealthBar();
+            }
+            
             // Ensure the canStackFood config is updated based on capacity
             antEntities[i].config.canStackFood = antEntities[i].capacity > 1;
             
             // Log capacity and canStackFood status
-            console.log(`Updating ant strength: capacity=${antEntities[i].capacity}, canStackFood=${antEntities[i].config.canStackFood}`);
+            // console.log(`Updating ant strength: capacity=${antEntities[i].capacity}, canStackFood=${antEntities[i].config.canStackFood}`);
             
             // If the ant is already carrying food but not at full capacity with the new strength,
             // allow it to collect more food
@@ -4834,6 +5215,12 @@ IdleAnts.Managers.InputManager = class {
         
         const currentFoodType = this.resourceManager.getCurrentFoodType();
         this.entityManager.addFood({ x: worldX, y: worldY, clickPlaced: true }, currentFoodType);
+        
+        // Track daily challenge for food clicking
+        if (this.game.dailyChallengeManager) {
+            this.game.dailyChallengeManager.trackFoodClick();
+        }
+        
         if (this.game.uiManager) this.game.uiManager.updateUI();
     }
 
@@ -4996,6 +5383,12 @@ IdleAnts.Managers.InputManager = class {
                 // Apply tap delay for mobile
                 setTimeout(() => {
                     this.entityManager.addFood({ x: worldX, y: worldY, clickPlaced: true }, currentFoodType);
+                    
+                    // Track daily challenge for food clicking
+                    if (this.game.dailyChallengeManager) {
+                        this.game.dailyChallengeManager.trackFoodClick();
+                    }
+                    
                     if (this.game.uiManager) this.game.uiManager.updateUI();
                 }, this.mobileSettings.tapDelay);
             }
@@ -5154,8 +5547,11 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         // State initialization
         this.state = IdleAnts.Entities.AntBase.States.SPAWNING;
         
-        // Health properties
-        this.maxHp = 50;
+        // Health properties - base HP affected by strength
+        const baseHp = 50;
+        const strengthMultiplier = IdleAnts.app && IdleAnts.app.resourceManager ? 
+            IdleAnts.app.resourceManager.stats.strengthMultiplier : 1;
+        this.maxHp = baseHp + (strengthMultiplier - 1) * 25; // +25 HP per strength level
         this.hp = this.maxHp;
         this.createHealthBar();
         this.healthBarTimer = 0; // frames remaining to show health bar
@@ -6136,7 +6532,7 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
     transitionToState(newState) {
         // Debug logging for state transitions only when capacity is changing
         if (this.capacityWeight > 0) {
-            console.log(`Ant state transition: ${this.state} -> ${newState}, Capacity=${this.capacity}, CurrentWeight=${this.capacityWeight}, FoodCollected=${this.foodCollected}`);
+            // console.log(`Ant state transition: ${this.state} -> ${newState}, Capacity=${this.capacity}, CurrentWeight=${this.capacityWeight}, FoodCollected=${this.foodCollected}`);
         }
         
         // Exit actions for current state
@@ -6273,7 +6669,7 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         if(this._attackTimer>0){this._attackTimer--;}
         else{
             if(typeof this.targetEnemy.takeDamage==='function')
-                this.targetEnemy.takeDamage(this.attackDamage);
+                this.targetEnemy.takeDamage(this.attackDamage, this); // Pass the attacking ant
             this._attackTimer=this.attackCooldown;
         }
         return false;
@@ -6706,7 +7102,7 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
         this.larvaeProductionRate = Math.max(20 * 60, this.larvaeProductionRate); // Minimum 20 seconds
         
         // Log the next production time for debugging
-        console.log(`Queen will produce next larvae in ${this.larvaeProductionRate/60} seconds (${this.larvaeProductionRate/3600} minutes)`);
+        // console.log(`Queen will produce next larvae in ${this.larvaeProductionRate/60} seconds (${this.larvaeProductionRate/3600} minutes)`);
     }
     
     // Override base scale for queen ant
@@ -6878,7 +7274,7 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
             
             // If colony is at max capacity, don't produce larvae
             if (currentAnts + currentLarvae >= maxAnts) {
-                console.log("Cannot produce larvae: colony at maximum capacity");
+                // console.log("Cannot produce larvae: colony at maximum capacity");
                 return;
             }
         }
@@ -6890,7 +7286,7 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
                 const queenLevel = IdleAnts.app.resourceManager ? IdleAnts.app.resourceManager.stats.queenUpgradeLevel : 0;
                 const larvaeToSpawn = 1 + queenLevel; // 1 at level 0, 2 at level 1, etc.
                 
-                console.log(`Queen level ${queenLevel} spawning ${larvaeToSpawn} larvae`);
+                // console.log(`Queen level ${queenLevel} spawning ${larvaeToSpawn} larvae`);
                 
                 // Spawn multiple larvae based on queen level
                 for(let i = 0; i < larvaeToSpawn; i++){
@@ -6904,7 +7300,7 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
                     IdleAnts.app.entityManager.produceLarvae(this.x + offsetX, this.y + offsetY);
                     
                     // Log for debugging
-                    console.log(`Queen produced larvae ${i+1}/${larvaeToSpawn} at (${this.x + offsetX}, ${this.y + offsetY})`);
+                    // console.log(`Queen produced larvae ${i+1}/${larvaeToSpawn} at (${this.x + offsetX}, ${this.y + offsetY})`);
                 }
                 
                 // Also create a special effect at the queen's position
@@ -6914,7 +7310,7 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
                 
                 // Increment current larvae count by the number spawned
                 this.currentLarvae += larvaeToSpawn;
-                console.log(`Queen now has ${this.currentLarvae} larvae`);
+                // console.log(`Queen now has ${this.currentLarvae} larvae`);
             } catch (error) {
                 console.error('Error creating larvae:', error);
             }
@@ -7359,26 +7755,27 @@ IdleAnts.Entities.Food = class extends PIXI.Sprite {
         const foodType_ = foodType && typeof foodType === 'object' ? foodType : IdleAnts.Data.FoodTypes.BASIC;
         let textureToUse = texture;
         
-        // If this is a cookie, use the cookie texture if available
-        if (foodType_.id === 'cookie') {
+        // Try to load specific texture for each food type
+        const textureMap = {
+            'apple': 'appleFood',
+            'cookie': 'cookieFood',
+            'marshmallow': 'marshmallowFood',
+            'mango': 'mangoFood',
+            'hot_dog': 'hotDogFood',
+            'watermelon': 'watermelonFood',
+            'donut': 'donutFood',
+            'cake': 'cakeFood'
+        };
+        
+        const textureId = textureMap[foodType_.id];
+        if (textureId) {
             try {
-                const cookieTexture = IdleAnts.app.assetManager.getTexture('cookieFood');
-                if (cookieTexture) {
-                    textureToUse = cookieTexture;
+                const specificTexture = IdleAnts.app.assetManager.getTexture(textureId);
+                if (specificTexture) {
+                    textureToUse = specificTexture;
                 }
             } catch (error) {
-                console.warn("Cookie texture not available, using default texture");
-            }
-        }
-        // If this is a watermelon, use the watermelon texture if available
-        else if (foodType_.id === 'watermelon') {
-            try {
-                const watermelonTexture = IdleAnts.app.assetManager.getTexture('watermelonFood');
-                if (watermelonTexture) {
-                    textureToUse = watermelonTexture;
-                }
-            } catch (error) {
-                console.warn("Watermelon texture not available, using default texture");
+                console.warn(`${foodType_.id} texture not available, using default texture`);
             }
         }
         
@@ -8238,6 +8635,76 @@ IdleAnts.Entities.Enemy = class extends PIXI.Sprite {
         // Random start position
         this.x = Math.random()*mapBounds.width;
         this.y = Math.random()*mapBounds.height;
+        
+        // Track the last ant that damaged this enemy
+        this.lastAttacker = null;
+        
+        // Food value when defeated
+        this.foodValue = 100 + Math.random() * 50; // 100-150 food per enemy
+        
+        // Enemy type name for tooltip
+        this.enemyName = "Enemy";
+        
+        // Make enemy interactive for tooltips
+        this.interactive = true;
+        this.buttonMode = true;
+        this.setupTooltip();
+    }
+
+    setupTooltip() {
+        this.on('pointerover', () => {
+            this.showTooltip();
+        });
+        
+        this.on('pointerout', () => {
+            this.hideTooltip();
+        });
+    }
+    
+    showTooltip() {
+        // Create tooltip if it doesn't exist
+        if (!this.tooltip) {
+            this.tooltip = document.createElement('div');
+            this.tooltip.className = 'enemy-tooltip';
+            this.tooltip.style.cssText = `
+                position: fixed;
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 8px 12px;
+                border-radius: 4px;
+                font-size: 14px;
+                pointer-events: none;
+                z-index: 10000;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            `;
+            document.body.appendChild(this.tooltip);
+        }
+        
+        this.tooltip.innerHTML = `
+            <div style="font-weight: bold; margin-bottom: 4px;">${this.enemyName}</div>
+            <div style="font-size: 12px; color: #ccc;">HP: ${this.hp}/${this.maxHp}</div>
+            <div style="font-size: 12px; color: #ffeb3b;">Food Reward: ${Math.floor(this.foodValue)}</div>
+        `;
+        
+        this.tooltip.style.display = 'block';
+        this.updateTooltipPosition();
+    }
+    
+    hideTooltip() {
+        if (this.tooltip) {
+            this.tooltip.style.display = 'none';
+        }
+    }
+    
+    updateTooltipPosition() {
+        if (this.tooltip && this.tooltip.style.display === 'block') {
+            const bounds = this.getBounds();
+            const screenPos = this.toGlobal(new PIXI.Point(0, 0));
+            
+            this.tooltip.style.left = (screenPos.x + 20) + 'px';
+            this.tooltip.style.top = (screenPos.y - 40) + 'px';
+        }
     }
 
     createHealthBar() {
@@ -8273,13 +8740,35 @@ IdleAnts.Entities.Enemy = class extends PIXI.Sprite {
         this.healthBarContainer.rotation = 0;
     }
 
-    takeDamage(dmg){
+    takeDamage(dmg, attacker = null){
         this.hp -= dmg;
         this.updateHealthBar();
+        
+        // Track the last attacker (the ant that dealt the damage)
+        if (attacker) {
+            this.lastAttacker = attacker;
+        }
+        
         if(this.hp<=0) this.die();
     }
 
     die(){
+        // Reward food to the last attacker (the ant that dealt the killing blow)
+        if (this.lastAttacker && IdleAnts.app && IdleAnts.app.resourceManager) {
+            IdleAnts.app.resourceManager.addFood(this.foodValue);
+            
+            // Create a visual effect showing the food reward
+            if (IdleAnts.app.effectManager) {
+                IdleAnts.app.effectManager.createFoodRewardEffect(this.x, this.y, this.foodValue);
+            }
+        }
+        
+        // Clean up tooltip
+        if (this.tooltip) {
+            document.body.removeChild(this.tooltip);
+            this.tooltip = null;
+        }
+        
         if(this.parent) this.parent.removeChild(this);
         this.isDead=true;
         if(this.healthBarContainer && this.healthBarContainer.parent){
@@ -8345,6 +8834,9 @@ IdleAnts.Entities.Enemy = class extends PIXI.Sprite {
             this.healthBarContainer.y = this.y - 20;
             this.healthBarContainer.rotation = 0;
         }
+        
+        // Update tooltip position if visible
+        this.updateTooltipPosition();
     }
 }; 
 
@@ -8360,6 +8852,9 @@ IdleAnts.Entities.GrasshopperEnemy = class extends IdleAnts.Entities.Enemy {
         this.texture = PIXI.Texture.EMPTY;
         // Add custom body graphics
         this.createBody();
+
+        // Enemy name for tooltip
+        this.enemyName = "Grasshopper";
 
         this.scale.set(2.0); // big
         this.speed = 2.0; // faster crawl speed
@@ -9063,6 +9558,9 @@ IdleAnts.Entities.MantisEnemy = class extends IdleAnts.Entities.Enemy {
         this.createBody();
         this.scale.set(2.5); // Larger and more intimidating than grasshopper (which is 2.0)
 
+        // Enemy name for tooltip
+        this.enemyName = "Praying Mantis";
+
         // Stats – slow but deadly
         this.speed = 1.0;
         this.dashSpeed = 5;
@@ -9378,6 +9876,9 @@ IdleAnts.Entities.BeeEnemy = class extends IdleAnts.Entities.Enemy {
         this.createBody();
         this.createWings();
         this.scale.set(1.4);
+
+        // Enemy name for tooltip
+        this.enemyName = "Bee";
 
         // Stats
         this.speed = 2.0;
@@ -9831,6 +10332,9 @@ IdleAnts.Entities.FrogEnemy = class extends IdleAnts.Entities.Enemy {
         
         // Hide just the base texture, not the entire sprite
         this.texture = PIXI.Texture.EMPTY; // Use empty/transparent texture instead
+        
+        // Enemy name for tooltip
+        this.enemyName = "Frog";
         
         // Frog-specific properties
         this.scale.set(2.0); // Slightly bigger than cricket (1.5), smaller than grasshopper (2.0)
@@ -10290,6 +10794,15 @@ IdleAnts.Game = class {
             
             // Initialize audio manager
             IdleAnts.AudioManager.init();
+            
+            // Initialize achievement manager
+            this.achievementManager = new IdleAnts.Managers.AchievementManager(this.resourceManager, this.effectManager);
+            
+            // Initialize daily challenge manager
+            this.dailyChallengeManager = new IdleAnts.Managers.DailyChallengeManager(this.resourceManager, this.achievementManager);
+            
+            // Make it accessible globally for UI interactions
+            IdleAnts.game = this;
             
             // Set up effect manager reference
             this.entityManager.setEffectManager(this.effectManager);
@@ -10799,6 +11312,11 @@ IdleAnts.Game = class {
             // Delegate entity creation to EntityManager
             this.entityManager.createAnt();
             
+            // Track daily challenge
+            if (this.dailyChallengeManager) {
+                this.dailyChallengeManager.trackAntPurchase();
+            }
+            
             // Update UI
             this.uiManager.updateUI();
             this.uiManager.showUpgradeEffect('buy-ant', 'New ant added!');
@@ -10877,6 +11395,11 @@ IdleAnts.Game = class {
             // Try to upgrade the food tier
             const tierUpgraded = this.resourceManager.upgradeFoodTier();
             
+            // Track achievement
+            if (this.achievementManager) {
+                this.achievementManager.trackUpgrade();
+            }
+            
             // Update the UI
             this.uiManager.updateUI();
             
@@ -10901,6 +11424,12 @@ IdleAnts.Game = class {
             // Delegate nest expansion to EntityManager
             this.entityManager.expandNest();
             
+            // Track achievements
+            if (this.achievementManager) {
+                this.achievementManager.trackUpgrade();
+                this.achievementManager.checkAchievements(); // Check for expand colony achievement
+            }
+            
             // Update UI
             this.uiManager.updateUI();
             this.uiManager.showUpgradeEffect('expand-colony', 'Colony expanded!');
@@ -10918,6 +11447,17 @@ IdleAnts.Game = class {
             // Delegate entity updates to EntityManager
             this.entityManager.updateAntsSpeed();
             
+            // Track achievements
+            if (this.achievementManager) {
+                this.achievementManager.trackUpgrade();
+                this.achievementManager.trackSpeedUpgrade();
+            }
+            
+            // Track daily challenge
+            if (this.dailyChallengeManager) {
+                this.dailyChallengeManager.trackSpeedUpgrade();
+            }
+            
             // Update UI
             this.uiManager.updateUI();
             this.uiManager.showUpgradeEffect('upgrade-speed', 'Ants move faster!');
@@ -10934,6 +11474,12 @@ IdleAnts.Game = class {
             
             // Delegate entity updates to EntityManager
             this.entityManager.updateAntsCapacity();
+            
+            // Track achievements
+            if (this.achievementManager) {
+                this.achievementManager.trackUpgrade();
+                this.achievementManager.trackStrengthUpgrade();
+            }
             
             // Update UI
             this.uiManager.updateUI();
