@@ -17,16 +17,12 @@ IdleAnts.Effects = IdleAnts.Effects || {};
 // 5. src/effects/FoodCollectEffect.js
 // 6. src/effects/Trail.js
 // 7. src/effects/LarvaeEffect.js
-// 8. src/effects/CelebrationEffect.js
-// 9. src/effects/PowerUpEffect.js
-// 10. src/effects/index.js (this file)
+// 8. src/effects/index.js (this file)
 
 // Register all effect classes with the EffectManager
 if (IdleAnts.Managers && IdleAnts.Managers.EffectManager) {
     // This will be called when the EffectManager is initialized
     IdleAnts.Managers.EffectManager.registerEffects = function(manager) {
         manager.effectClasses['larvae'] = IdleAnts.Effects.LarvaeEffect;
-        manager.effectClasses['celebration'] = IdleAnts.Effects.CelebrationEffect;
-        manager.effectClasses['powerup'] = IdleAnts.Effects.PowerUpEffect;
     };
 } 

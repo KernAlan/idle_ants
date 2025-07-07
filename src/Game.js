@@ -80,16 +80,6 @@ IdleAnts.Game = class {
             // Initialize daily challenge manager
             this.dailyChallengeManager = new IdleAnts.Managers.DailyChallengeManager(this.resourceManager, this.achievementManager);
             
-            // Initialize kids notification manager for fun kid-friendly messages
-            this.kidsNotificationManager = new IdleAnts.Managers.KidsNotificationManager(this.effectManager);
-            
-            // Initialize power-up manager for exciting surprises
-            this.powerUpManager = new IdleAnts.Managers.PowerUpManager(this, this.effectManager, this.resourceManager);
-            this.powerUpManager.setKidsNotificationManager(this.kidsNotificationManager);
-            
-            // Initialize mini-game manager for fun interactive games
-            this.miniGameManager = new IdleAnts.Managers.MiniGameManager(this, this.kidsNotificationManager);
-            
             // Make it accessible globally for UI interactions
             IdleAnts.game = this;
             
@@ -112,10 +102,6 @@ IdleAnts.Game = class {
             
             this.setupAudioResumeOnInteraction();
             this.startBackgroundMusic();
-            
-            // Initialize kids notification manager
-            this.kidsNotificationManager.init();
-            
             this.transitionToState(IdleAnts.Game.States.PLAYING);
         });
     }
@@ -530,19 +516,10 @@ IdleAnts.Game = class {
         // Update effects
         this.effectManager.update();
         
-        // Update power-ups for exciting surprises
-        this.powerUpManager.update();
-        
-        // Update mini-games for fun interactive experiences
-        this.miniGameManager.update();
-        
         // Update UI every 60 frames (approximately once per second at 60fps)
         // This is frequent enough for smooth updates but not too frequent to cause performance issues
         if (this.frameCounter % 60 === 0) {
             this.uiManager.updateUI();
-            
-            // Check for milestones to keep kids engaged
-            this.kidsNotificationManager.checkMilestones(this.resourceManager.stats);
         }
         
         // Update minimap less frequently for better performance
@@ -623,12 +600,6 @@ IdleAnts.Game = class {
             this.uiManager.updateUI();
             this.uiManager.showUpgradeEffect('buy-ant', 'New ant added!');
 
-            // Show celebration effect for kids
-            if (this.effectManager) {
-                const nestPos = this.entityManager.nestPosition;
-                this.effectManager.addEffect('celebration', nestPos.x, nestPos.y, 'ant_unlock');
-            }
-
             // After successfully buying an ant, play the sound effect
             if (IdleAnts.AudioAssets.SFX.ANT_SPAWN) {
                 this.playSoundEffect(IdleAnts.AudioAssets.SFX.ANT_SPAWN.id);
@@ -650,13 +621,6 @@ IdleAnts.Game = class {
             
             // Show success effect
             this.uiManager.showUpgradeEffect('unlock-flying-ants', 'Flying ants unlocked!');
-            
-            // Show extra celebration for this major milestone
-            if (this.effectManager) {
-                const centerX = this.mapConfig.width / 2;
-                const centerY = this.mapConfig.height / 2;
-                this.effectManager.addEffect('celebration', centerX, centerY, 'achievement');
-            }
             
             // Show the previously hidden flying ant buttons
             const buyButton = document.getElementById('buy-flying-ant');
@@ -722,13 +686,6 @@ IdleAnts.Game = class {
             if (tierUpgraded) {
                 const newFoodType = this.resourceManager.getCurrentFoodType();
                 this.uiManager.showUpgradeEffect('upgrade-food', `Upgraded to ${newFoodType.name}s!`);
-                
-                // Show extra celebration for food tier upgrade
-                if (this.effectManager) {
-                    const centerX = this.game?.mapConfig?.width / 2 || 300;
-                    const centerY = this.game?.mapConfig?.height / 2 || 200;
-                    this.effectManager.addEffect('celebration', centerX, centerY, 'upgrade');
-                }
             } else {
                 this.uiManager.showUpgradeEffect('upgrade-food', 'Food collection upgraded!');
             }
