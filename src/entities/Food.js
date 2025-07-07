@@ -36,6 +36,17 @@ IdleAnts.Entities.Food = class extends PIXI.Sprite {
                 console.warn("Watermelon texture not available, using default texture");
             }
         }
+        else {
+            // Attempt to load a custom texture matching the food type id (e.g. 'cake' -> 'cakeFood')
+            try {
+                const dynamicTexture = IdleAnts.app.assetManager.getTexture(`${foodType_.id}Food`);
+                if (dynamicTexture) {
+                    textureToUse = dynamicTexture;
+                }
+            } catch (error) {
+                // No custom texture found; default will be used
+            }
+        }
         
         super(textureToUse);
         

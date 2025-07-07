@@ -105,4 +105,91 @@
         
         return watermelonGraphics;
     });
+
+    // Register apple food asset
+    AssetDefinition.register('appleFood', function(app) {
+        const g = AssetDefinition.createGraphics();
+        // Apple slice – simple red ellipse with a white inner highlight
+        g.beginFill(0xFF4500); // Apple red skin
+        g.drawEllipse(0, 0, 6, 8);
+        g.endFill();
+
+        // Inner flesh
+        g.beginFill(0xFFF5F5); // Off-white flesh
+        g.drawEllipse(0, 0, 4, 6);
+        g.endFill();
+
+        // Small seed hint
+        g.beginFill(0x4B3621);
+        g.drawCircle(0, 1, 0.6);
+        g.endFill();
+        return g;
+    });
+
+    // Register marshmallow food asset
+    AssetDefinition.register('marshmallowFood', function(app) {
+        const g = AssetDefinition.createGraphics();
+        g.beginFill(0xFFF8DC); // Marshmallow color
+        g.drawRoundedRect(-4, -4, 8, 8, 2);
+        g.endFill();
+        return g;
+    });
+
+    // Register mango food asset
+    AssetDefinition.register('mangoFood', function(app) {
+        const g = AssetDefinition.createGraphics();
+        g.beginFill(0xFF8C00); // Mango orange
+        g.drawEllipse(0, 0, 7, 9);
+        g.endFill();
+        return g;
+    });
+
+    // Register hot dog food asset
+    AssetDefinition.register('hot_dogFood', function(app) {
+        const g = AssetDefinition.createGraphics();
+        // Bun
+        g.beginFill(0xD2B48C); // Tan bun
+        g.drawRoundedRect(-7, -3, 14, 6, 3);
+        g.endFill();
+        // Sausage
+        g.beginFill(0xB22222); // Reddish sausage
+        g.drawRoundedRect(-6, -2, 12, 4, 2);
+        g.endFill();
+        return g;
+    });
+
+    // Register donut food asset
+    AssetDefinition.register('donutFood', function(app) {
+        const g = AssetDefinition.createGraphics();
+        // Outer ring (glaze)
+        g.beginFill(0xDDA0DD); // Plum glaze
+        g.drawCircle(0, 0, 8);
+        g.endFill();
+        // Inner hole
+        g.beginFill(0xFFFFFF);
+        g.drawCircle(0, 0, 3);
+        g.endFill();
+        return g;
+    });
+
+    // Register cake food asset
+    AssetDefinition.register('cakeFood', function(app) {
+        const g = AssetDefinition.createGraphics();
+        // Cake slice triangle
+        g.beginFill(0xFFB6C1); // Pink frosting
+        g.moveTo(-6, 6);
+        g.lineTo(6, 6);
+        g.lineTo(0, -6);
+        g.closePath();
+        g.endFill();
+        // Icing layer
+        g.beginFill(0xFFFFFF);
+        g.drawRect(-6, 3, 12, 1);
+        g.endFill();
+        // Cherry on top
+        g.beginFill(0xFF0000);
+        g.drawCircle(0, -4, 1.2);
+        g.endFill();
+        return g;
+    });
 })(); 
