@@ -19,6 +19,10 @@ IdleAnts.Managers.UIManager = class {
         
         // Show debug indicator if in debug mode
         this.updateDebugIndicator();
+
+        // Boss health bar & end screens
+        this.setupBossBar();
+        this.setupEndScreens();
     }
     
     cacheElements() {
@@ -556,4 +560,89 @@ IdleAnts.Managers.UIManager = class {
             console.error("Error in UIManager.showUpgradeEffect:", error);
         }
     }
+
+    /* ================= Boss UI ================= */
+
+    setupBossBar() {
+        this.bossBarContainer = document.createElement('div');
+        this.bossBarContainer.id = 'boss-bar-container';
+        Object.assign(this.bossBarContainer.style, {
+            position: 'fixed',
+            top: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '60%',
+            height: '26px',
+            background: 'rgba(0,0,0,0.6)',
+            border: '2px solid #fff',
+            zIndex: 9999,
+            display: 'none'
+        });
+        this.bossBarFill = document.createElement('div');
+        Object.assign(this.bossBarFill.style, {
+            background: '#f44336',
+            width: '100%',
+            height: '100%'
+        });
+        this.bossBarContainer.appendChild(this.bossBarFill);
+        document.body.appendChild(this.bossBarContainer);
+        this.bossMaxHp = 1;
+    }
+
+    showBossHealthBar(maxHp) {
+        this.bossMaxHp = maxHp;
+        this.updateBossHealth(maxHp, maxHp);
+        this.bossBarContainer.style.display = 'block';
+    }
+
+    updateBossHealth(hp, maxHp) {
+        const ratio = Math.max(0, hp) / (maxHp || this.bossMaxHp);
+        this.bossBarFill.style.width = (ratio * 100) + '%';
+    }
+
+    hideBossHealthBar() {
+        this.bossBarContainer.style.display = 'none';
+    }
+
+    /* ================= End Screens ================= */
+
+    setupEndScreens() {
+        // Victory
+        this.winScreen = document.createElement('div');
+        this.winScreen.id = 'win-screen';
+        this.applyEndScreenStyle(this.winScreen);
+        this.winScreen.innerHTML = '<h1>You Win!</h1><p>The anteater has been defeated.</p>';
+        document.body.appendChild(this.winScreen);
+
+        // Defeat
+        this.loseScreen = document.createElement('div');
+        this.loseScreen.id = 'lose-screen';
+        this.applyEndScreenStyle(this.loseScreen);
+        this.loseScreen.innerHTML = '<h1>Colony Destroyed</h1><p>Your ants have been eaten.</p>';
+        document.body.appendChild(this.loseScreen);
+    }
+
+    applyEndScreenStyle(screenDiv) {
+        Object.assign(screenDiv.style, {
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'rgba(0,0,0,0.8)',
+            color: '#fff',
+            display: 'none',
+            justifyContent: 'center',
+            alignItems: 'center',
+            flexDirection: 'column',
+            textAlign: 'center',
+            zIndex: 10000,
+            fontSize: '2em'
+        });
+        screenDiv.style.display = 'flex'; // for flexbox layout but hidden initially
+        screenDiv.style.display = 'none';
+    }
+
+    showWinScreen() { this.winScreen.style.display = 'flex'; }
+    showLoseScreen() { this.loseScreen.style.display = 'flex'; }
 } 
