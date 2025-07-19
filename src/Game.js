@@ -5,7 +5,11 @@ IdleAnts.Game = class {
         INITIALIZING: 'initializing', // Loading assets and setup
         PLAYING: 'playing',           // Main gameplay
         PAUSED: 'paused',             // Game paused
-        UPGRADING: 'upgrading'        // Player is viewing/selecting upgrades
+        UPGRADING: 'upgrading',       // Player is viewing/selecting upgrades
+        BOSS_INTRO: 'boss_intro',     // Cinematic intro sequence
+        BOSS_FIGHT: 'boss_fight',     // Active boss combat
+        WIN: 'win',                   // Player defeated the boss
+        LOSE: 'lose'                  // Colony wiped out
     };
     
     constructor() {
@@ -493,8 +497,9 @@ IdleAnts.Game = class {
     }
     
     gameLoop() {
-        // Only update game logic when in PLAYING state
-        if (this.state !== IdleAnts.Game.States.PLAYING) {
+        // Only update full game logic during active gameplay or boss fight
+        const gameplayActive = (this.state === IdleAnts.Game.States.PLAYING || this.state === IdleAnts.Game.States.BOSS_FIGHT);
+        if (!gameplayActive) {
             // Still update hover indicator if paused or upgrading, but not if initializing
             if (this.state !== IdleAnts.Game.States.INITIALIZING && this.lastMouseX !== undefined && this.lastMouseY !== undefined) {
                 this.updateHoverIndicator(this.lastMouseX, this.lastMouseY);
@@ -551,6 +556,47 @@ IdleAnts.Game = class {
         if (this.state !== IdleAnts.Game.States.INITIALIZING && this.lastMouseX !== undefined && this.lastMouseY !== undefined) {
             this.updateHoverIndicator(this.lastMouseX, this.lastMouseY);
         }
+    }
+
+    /* ================= Boss Encounter Helpers ================= */
+
+    // Triggered (manually for now) to begin the boss fight
+    startBossFight() {
+        // Skip if already in boss phases
+        if (this.state === IdleAnts.Game.States.BOSS_INTRO || this.state === IdleAnts.Game.States.BOSS_FIGHT) return;
+
+        // Clear existing enemies and spawn the boss
+        const boss = this.entityManager.spawnAnteaterBoss();
+        this.entityManager.clearEnemies();
+
+        // Simple camera focus – could be replaced with smooth pan
+        if (this.cameraManager) {
+            this.cameraManager.centerViewOnPosition(boss.x, boss.y);
+        }
+
+        // Show big HP bar
+        if (this.uiManager) {
+            this.uiManager.showBossHealthBar(boss.maxHp);
+        }
+
+        this.currentBoss = boss;
+        this.transitionToState(IdleAnts.Game.States.BOSS_FIGHT);
+    }
+
+    // Called by AnteaterBoss.die()
+    onBossDefeated() {
+        if (this.uiManager) {
+            this.uiManager.hideBossHealthBar();
+            this.uiManager.showWinScreen();
+        }
+        this.transitionToState(IdleAnts.Game.States.WIN);
+    }
+
+    onColonyWiped() {
+        if (this.uiManager) {
+            this.uiManager.showLoseScreen();
+        }
+        this.transitionToState(IdleAnts.Game.States.LOSE);
     }
     
     // Toggle pause state
