@@ -14,26 +14,27 @@ IdleAnts.Entities.Food = class extends PIXI.Sprite {
         const foodType_ = foodType && typeof foodType === 'object' ? foodType : IdleAnts.Data.FoodTypes.BASIC;
         let textureToUse = texture;
         
-        // If this is a cookie, use the cookie texture if available
-        if (foodType_.id === 'cookie') {
+        // Try to load specific texture for each food type
+        const textureMap = {
+            'apple': 'appleFood',
+            'cookie': 'cookieFood',
+            'marshmallow': 'marshmallowFood',
+            'mango': 'mangoFood',
+            'hot_dog': 'hotDogFood',
+            'watermelon': 'watermelonFood',
+            'donut': 'donutFood',
+            'cake': 'cakeFood'
+        };
+        
+        const textureId = textureMap[foodType_.id];
+        if (textureId) {
             try {
-                const cookieTexture = IdleAnts.app.assetManager.getTexture('cookieFood');
-                if (cookieTexture) {
-                    textureToUse = cookieTexture;
+                const specificTexture = IdleAnts.app.assetManager.getTexture(textureId);
+                if (specificTexture) {
+                    textureToUse = specificTexture;
                 }
             } catch (error) {
-                console.warn("Cookie texture not available, using default texture");
-            }
-        }
-        // If this is a watermelon, use the watermelon texture if available
-        else if (foodType_.id === 'watermelon') {
-            try {
-                const watermelonTexture = IdleAnts.app.assetManager.getTexture('watermelonFood');
-                if (watermelonTexture) {
-                    textureToUse = watermelonTexture;
-                }
-            } catch (error) {
-                console.warn("Watermelon texture not available, using default texture");
+                console.warn(`${foodType_.id} texture not available, using default texture`);
             }
         }
         
