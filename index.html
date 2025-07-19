@@ -2,47 +2,39 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Idle Ants - Colony Simulator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Idle Ants - Ant Colony Simulation Game</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Primary game entry point - works for both development and production -->
+    
+    <!-- Debug mode configuration -->
     <script>
-        // Clear console for debugging
-        console.clear();
-        console.log("Idle Ants - Starting...");
-    </script>
-    <!-- Core namespace must be loaded first -->
-    <script src="src/core/Namespace.js"></script>
-    <!-- Debug initialization script -->
-    <script>
-        // Set debug mode based on environment
+        // Set debug mode based on environment or query parameter
         (function() {
-            // Check if we're running from a file system (file: protocol)
-            const isFileProtocol = window.location.protocol === 'file:';
-            
-            // Check if we're running on localhost (as a fallback)
-            const isLocalhost = window.location.hostname === 'localhost' || 
-                                window.location.hostname === '127.0.0.1';
-            
-            // Enable debug mode automatically if running from file system or localhost
-            const isLocal = isFileProtocol || isLocalhost;
-            
-            // For development: still allow URL parameter to override
             const urlParams = new URLSearchParams(window.location.search);
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
             const debugParam = urlParams.get('debug');
             
-            // Set debug mode based on environment and parameters
-            IdleAnts.Config.debug = isLocal ? true : (debugParam === 'true');
+            // Pre-setup for namespace
+            window.debugMode = isLocalhost || debugParam === 'true';
             
-            // Log debug status
-            console.log('Protocol:', window.location.protocol);
-            console.log('Is local:', isLocal);
-            console.log('Debug mode:', IdleAnts.Config.debug);
-            
-            if (IdleAnts.Config.debug) {
+            if (window.debugMode) {
                 console.log('Debug mode enabled - running locally');
             }
         })();
+    </script>
+    
+    <!-- Core namespace must be loaded first -->
+    <script src="src/core/Namespace.js"></script>
+    <script>
+        // Set debug mode after namespace is loaded
+        if (window.IdleAnts && window.debugMode) {
+            window.IdleAnts.Config.debug = window.debugMode;
+        }
     </script>
 </head>
 <body>
@@ -52,7 +44,14 @@
         <audio id="bgm_main_theme" preload="auto" loop>
             <source src="assets/audio/main_theme.mp3" type="audio/mpeg">
         </audio>
-        
+        <!-- Boss Theme -->
+        <audio id="bgm_anteater_boss" preload="auto" loop>
+            <source src="assets/audio/anteater_boss_music.mp3" type="audio/mpeg">
+        </audio>
+        <!-- Victory Theme -->
+        <audio id="bgm_victory_theme" preload="auto">
+            <source src="assets/audio/victory_music.mp3" type="audio/mpeg">
+        </audio>
         <!-- Sound Effects -->
         <audio id="sfx_ant_spawn" preload="auto">
             <source src="assets/audio/ant_spawn.mp3" type="audio/mpeg">
@@ -164,6 +163,7 @@
     <!-- Asset Definitions -->
     <script src="assets/AssetDefinition.js"></script>
     <script src="assets/antAssets.js"></script>
+    <script src="assets/anteaterBossAsset.js"></script>
     <script src="assets/foodAssets.js"></script>
     <script src="assets/environmentAssets.js"></script>
     <script src="assets/audioAssets.js"></script>

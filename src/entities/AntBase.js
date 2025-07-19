@@ -38,7 +38,7 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         this.speed = this.baseSpeed * speedMultiplier * this.speedFactor;
         this.originalSpeed = this.speed;
         this.targetFood = null;
-        this.isAtFullCapacity = false; // Renamed from hasFood
+        this.isAtFullCapacity = false;
         
         // Simple capacity property - how many food items an ant can carry
         this.capacity = 1;
@@ -88,7 +88,7 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         // Configuration properties based on ant attributes
         this.config = {
             canStackFood: this.capacity > 1,
-            minDistanceToDepositFood: 15, // Reduced from 50 to 15 to allow ants to deposit food more easily
+            minDistanceToDepositFood: 15,
             foodCollectionRadius: 10,     // How close ant needs to be to collect food
             nestRadius: 10,               // How close ant needs to be to nest
             moveSpeedLoaded: this.speed * 0.8,

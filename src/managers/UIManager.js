@@ -611,7 +611,7 @@ IdleAnts.Managers.UIManager = class {
         this.winScreen = document.createElement('div');
         this.winScreen.id = 'win-screen';
         this.applyEndScreenStyle(this.winScreen);
-        this.winScreen.innerHTML = '<h1>You Win!</h1><p>The anteater has been defeated.</p>';
+        this.winScreen.innerHTML = '<h1>Victory!</h1><p>The Anteater has been defeated! Your colony has survived the ultimate test.</p>';
         document.body.appendChild(this.winScreen);
 
         // Defeat

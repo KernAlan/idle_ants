@@ -1,221 +1,71 @@
-# Idle Ants Game
+# Idle Ants - Ant Colony Simulation Game
 
-A 2D idle game inspired by Idle Ants by Madbox, built with Pixi.js. In this game, you manage a colony of ants that collect food to grow your colony.
+A fun idle game where you manage an ant colony, collect food, and grow your colony!
 
 ## Quick Start
 
-### Development Mode (with individual files for debugging):
 ```bash
+# Install dependencies
 npm install
-npm run start:dev
+
+# Start development server
+npm start
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
 ```
 
-### Production Mode (optimized bundle for better performance):
-```bash
-npm install
-npm run start:prod
-```
+## Development
 
-Or start a simple HTTP server in the project directory and open `index.html` in your browser.
+- **Development server**: `npm start` or `npm run dev`
+  - Runs on `http://localhost:5173`
+  - Hot reload enabled
+  - Debug mode automatically enabled
+  - All your changes appear instantly
 
-## Performance Optimizations
+- **Production build**: `npm run build`
+  - Creates optimized build in `dist/` folder
+  - Automatically bundles and minifies all files
+  - Ready for deployment
 
-This game has been optimized for mobile devices and slower hardware:
-
-- **Reduced UI updates** from 3x/second to 1x/second
-- **Optimized entity processing** with distance-squared calculations  
-- **Cached DOM elements** to avoid repeated queries
-- **JavaScript bundling** reduces 45 HTTP requests to 1
-- **Reduced enemy detection frequency** from every frame to every 3 frames
-
-For production use, always use `index-production.html` which loads the optimized bundle. See `PERFORMANCE_IMPROVEMENTS.md` for detailed technical information.
-
-## How to Play
-
-- **Collect Food**: Click on the game area to manually add food and earn food points
-- **Ants**: Ants will automatically move around, find food, and bring it back to the nest
-- **Upgrades**:
-  - **Buy Ant**: Purchase a new ant to increase your food collection rate (Cost increases by 50% each purchase)
-  - **Upgrade Food Collection**: Increase the amount of food you get per click and per ant (Cost doubles each upgrade)
-  - **Expand Colony**: Increase the maximum number of ants you can have (Cost doubles each expansion)
-  - **Upgrade Speed**: Increase ant movement speed (Cost increases by 80% each upgrade)
-  - **Upgrade Strength**: Improve ants' carrying capacity and collection speed (Cost increases by 80% each upgrade)
-
-## Game Features
-
-- Idle gameplay mechanics where resources accumulate over time
-- Visual representation of ants gathering food and returning to the nest
-- Progressive upgrade system with scaling costs and benefits
-- Food sources that appear randomly throughout the game area
-
-## Game Mechanics
-
-### Ant Attributes
-- **Strength**: Determines how much food ants can carry and affects collection speed
-  - Increases carrying capacity for multiple food items
-  - Provides collection speed bonus (up to 75% faster)
-  - Can be upgraded with food resources
-  - Each upgrade increases strength by 1 and costs 80% more than the previous
-- **Speed**: Affects ant movement rate and collection efficiency
-  - Upgradeable multiplier for faster resource gathering
-  - Applies to both regular and flying ants
-  - Each upgrade increases speed multiplier and costs 80% more than the previous
-
-### Ant Types
-- **Regular Ants**: Basic worker units that collect 0.5 food per second
-  - Initial cost: 10 food
-  - Cost increases by 50% per purchase
-  - Limited by colony size
-- **Flying Ants**: Premium units that:
-  - Must be unlocked with 500 food resources
-  - Collect 2 food per second (4x more efficient)
-  - Initial cost: 100 food
-  - Cost increases by 80% per purchase
-  - Have separate expansion mechanics (expand by 2 slots)
-  - Expansion costs 50% more than regular ant expansion
-
-### Food System
-- Two food tiers currently implemented:
-  - Basic Food (Tier 1)
-  - Cookie Food (Tier 2)
-- Food value scales with upgrades and multipliers
-- Collection speed varies based on:
-  - Ant strength
-  - Food weight
-  - Ant type (flying vs regular)
-- Food upgrades double in cost each tier
-- Food multiplier affects both manual collection and ant collection rates
-
-## Project Structure and Architecture
+## Project Structure
 
 ```
-idle_ants/
-├── index.html           # Main HTML entry point
-├── styles.css           # Global styles for the game
-├── package.json         # Project dependencies and metadata
-├── assets/              # Asset definitions for procedural graphics
-│   ├── AssetDefinition.js  # Base class for asset definitions
-│   ├── antAssets.js        # Ant graphics definitions
-│   ├── foodAssets.js       # Food graphics definitions
-│   └── environmentAssets.js # Environment graphics definitions
-├── src/                 # Source code directory
-│   ├── index.js         # JavaScript entry point
-│   ├── Game.js          # Main game controller
-│   ├── core/            # Core functionality
-│   │   └── Namespace.js # Global namespace definition
-│   ├── data/            # Game data and configurations
-│   │   └── FoodTypes.js # Food type definitions and properties
-│   ├── effects/         # Visual effects
-│   │   ├── Effect.js           # Base effect class
-│   │   ├── FoodCollectEffect.js # Food collection animation
-│   │   ├── FoodDropEffect.js   # Food dropping animation
-│   │   ├── FoodSpawnEffect.js  # Food spawning animation
-│   │   ├── SpawnEffect.js      # Entity spawning animation
-│   │   └── index.js            # Effects module exports
-│   ├── entities/        # Game entities
-│   │   ├── AntBase.js   # Base ant functionality
-│   │   ├── Ant.js       # Regular ant implementation
-│   │   ├── FlyingAnt.js # Flying ant variant
-│   │   ├── Food.js      # Food resource
-│   │   └── Nest.js      # Ant nest/colony
-│   └── managers/        # Game system managers
-│       ├── AssetManager.js      # Handles loading/managing assets
-│       ├── BackgroundManager.js # Manages the game background
-│       ├── EffectManager.js     # Controls visual effects
-│       ├── EntityManager.js     # Manages all game entities
-│       ├── ResourceManager.js   # Manages game resources
-│       └── UIManager.js         # Handles user interface elements
+src/
+├── core/           # Core game namespace
+├── data/           # Game data and configurations
+├── effects/        # Visual effects system
+├── entities/       # Game entities (ants, food, enemies, etc.)
+├── managers/       # Game systems management
+└── Game.js         # Main game class
+
+assets/             # Game assets and definitions
+styles.css          # Game styling
+index.html          # Main entry point
 ```
 
-## Code Architecture Overview
+## Features
 
-### Core Components
+- 🐜 Ant colony management
+- 🍎 Resource collection and upgrades
+- 👑 Special ant types (Queen, Flying, Car, Fire ants)
+- 🎯 Daily challenges and achievements
+- 🎵 Audio and visual effects
+- 📱 Mobile-friendly responsive design
+- 🦌 Boss battles (Anteater Boss)
 
-- **Game.js**: Central controller that initializes and coordinates all game systems and handles the main game loop.
-- **Namespace.js**: Establishes the global `IdleAnts` namespace to prevent pollution of the global scope.
+## Tech Stack
 
-### Entity System
+- **Vanilla JavaScript** - No frameworks, pure JS for performance
+- **PIXI.js** - 2D graphics rendering
+- **Vite** - Modern build tool and dev server
+- **CSS3** - Responsive styling with animations
 
-The game uses an entity-based architecture:
+## Legacy Commands
 
-- **AntBase.js**: Base class for all ant types that defines common ant behaviors like movement, pathfinding, food collection, and animation.
-- **Ant.js**: Standard ant implementation that extends AntBase.
-- **FlyingAnt.js**: A specialized ant type that flies and has unique movement patterns and animations.
-- **Food.js**: Represents food resources that ants can collect.
-- **Nest.js**: The central ant colony where ants return with collected food.
-
-### Manager System
-
-The game uses a manager pattern to organize different subsystems:
-
-- **AssetManager**: Handles loading, caching, and providing game assets (textures, sprites).
-- **BackgroundManager**: Controls the game's background visuals.
-- **EffectManager**: Manages visual effects like food collection animations.
-- **EntityManager**: Controls the creation, updating, and removal of all game entities.
-- **ResourceManager**: Tracks and updates game resources like food count and ant population.
-- **UIManager**: Handles all UI elements including buttons, counters, and tooltips.
-
-### Effect System
-
-Visual feedback is handled through the effect system:
-
-- **Effect.js**: Base class for all visual effects.
-- **FoodCollectEffect.js**: Animation shown when food is collected.
-- **FoodDropEffect.js**: Animation shown when food is dropped.
-- **FoodSpawnEffect.js**: Animation shown when new food spawns.
-- **SpawnEffect.js**: Animation shown when a new entity spawns.
-
-### Asset System
-
-The game uses a procedural asset generation system to create game graphics at runtime:
-
-- **AssetManager.js**: Central manager that loads, registers, and provides access to all game assets.
-  - Handles loading asset definition modules
-  - Converts graphics definitions to PIXI.Texture objects
-  - Provides a getTexture() method for retrieving textures by name
-
-- **AssetDefinition.js**: Base class for asset definitions that provides:
-  - Static register() method to register assets with the AssetManager
-  - Helper methods for creating graphics objects
-  - Utility functions for color variations and other common operations
-
-- **Asset Definition Files**:
-  - **antAssets.js**: Defines ant graphics using PIXI.Graphics
-  - **foodAssets.js**: Defines different food types (basic food, cookies, watermelon)
-  - **environmentAssets.js**: Defines environment elements like the nest and ground
-
-Assets are procedurally generated at runtime using PIXI.Graphics to draw shapes and apply colors, which are then converted to textures. This approach eliminates the need for external image files and allows for dynamic variations in appearance.
-
-### Data System
-
-Game configurations and constants:
-
-- **FoodTypes.js**: Defines the different types of food, their properties, and spawn rates.
-
-## Extending the Game
-
-### Adding a New Ant Type
-
-1. Create a new class in `src/entities/` that extends `AntBase.js`
-2. Override methods as needed to implement unique behaviors
-3. Register the new ant type in `EntityManager.js`
-4. Add UI elements in `UIManager.js` to allow purchasing the new ant type
-
-### Adding New Food Types
-
-1. Define new food properties in `src/data/FoodTypes.js`
-2. Update `Food.js` if necessary to handle special properties
-3. Add textures to `AssetManager.js`
-
-### Adding New Upgrades
-
-1. Define upgrade properties in `ResourceManager.js`
-2. Implement upgrade effects in the relevant system
-3. Add UI elements in `UIManager.js`
-
-## Technologies Used
-
-- HTML5
-- CSS3
-- JavaScript
-- Pixi.js for 2D rendering
+For compatibility with older setups:
+- `npm run legacy:bundle` - Create bundle.js (old method)
+- `npm run legacy:serve` - Serve with http-server (old method)

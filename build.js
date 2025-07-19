@@ -17,6 +17,7 @@ const scriptFiles = [
     // Asset Definitions
     'assets/AssetDefinition.js',
     'assets/antAssets.js',
+    'assets/anteaterBossAsset.js',
     'assets/foodAssets.js',
     'assets/environmentAssets.js',
     'assets/audioAssets.js',
@@ -30,6 +31,10 @@ const scriptFiles = [
     'src/managers/UIManager.js',
     // Notification Manager
     'src/managers/NotificationManager.js',
+    // Achievement Manager
+    'src/managers/AchievementManager.js',
+    // Daily Challenge Manager
+    'src/managers/DailyChallengeManager.js',
     'src/managers/camera/CameraManager.js',
     'src/managers/input/InputManager.js',
     'src/managers/CombatManager.js',
@@ -51,6 +56,7 @@ const scriptFiles = [
     'src/entities/BeeEnemy.js',
     'src/entities/HerculesBeetleEnemy.js',
     'src/entities/FrogEnemy.js',
+    'src/entities/AnteaterBoss.js',
     // Game Core
     'src/Game.js',
     'src/index.js'

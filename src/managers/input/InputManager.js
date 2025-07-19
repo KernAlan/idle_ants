@@ -116,7 +116,12 @@ IdleAnts.Managers.InputManager = class {
             return;
         }
         
-        if (this.game.state !== IdleAnts.Game.States.PLAYING) {
+        // Allow camera controls during PLAYING, BOSS_INTRO, and BOSS_FIGHT states
+        const allowCameraControls = this.game.state === IdleAnts.Game.States.PLAYING || 
+                                   this.game.state === IdleAnts.Game.States.BOSS_INTRO || 
+                                   this.game.state === IdleAnts.Game.States.BOSS_FIGHT;
+        
+        if (!allowCameraControls) {
             return;
         }
         
@@ -134,7 +139,12 @@ IdleAnts.Managers.InputManager = class {
     }
 
     handleWheel(e) {
-        if (this.game.state !== IdleAnts.Game.States.PLAYING || !this.cameraManager) {
+        // Allow zoom controls during PLAYING, BOSS_INTRO, and BOSS_FIGHT states
+        const allowCameraControls = this.game.state === IdleAnts.Game.States.PLAYING || 
+                                   this.game.state === IdleAnts.Game.States.BOSS_INTRO || 
+                                   this.game.state === IdleAnts.Game.States.BOSS_FIGHT;
+                                   
+        if (!allowCameraControls || !this.cameraManager) {
             return;
         }
         e.preventDefault();
@@ -149,7 +159,13 @@ IdleAnts.Managers.InputManager = class {
 
     handleTouchStart(e) {
         e.preventDefault();
-        if (this.game.state !== IdleAnts.Game.States.PLAYING) return;
+        
+        // Allow touch controls during PLAYING, BOSS_INTRO, and BOSS_FIGHT states
+        const allowCameraControls = this.game.state === IdleAnts.Game.States.PLAYING || 
+                                   this.game.state === IdleAnts.Game.States.BOSS_INTRO || 
+                                   this.game.state === IdleAnts.Game.States.BOSS_FIGHT;
+                                   
+        if (!allowCameraControls) return;
 
         this.isTouching = true;
         this.touchStartTime = Date.now();
@@ -182,7 +198,13 @@ IdleAnts.Managers.InputManager = class {
 
     handleTouchMove(e) {
         e.preventDefault();
-        if (this.game.state !== IdleAnts.Game.States.PLAYING || !this.isTouching) return;
+        
+        // Allow touch controls during PLAYING, BOSS_INTRO, and BOSS_FIGHT states
+        const allowCameraControls = this.game.state === IdleAnts.Game.States.PLAYING || 
+                                   this.game.state === IdleAnts.Game.States.BOSS_INTRO || 
+                                   this.game.state === IdleAnts.Game.States.BOSS_FIGHT;
+                                   
+        if (!allowCameraControls || !this.isTouching) return;
 
         this.touchMoved = true;
 
@@ -213,7 +235,7 @@ IdleAnts.Managers.InputManager = class {
             this.lastTouchX = currentX;
             this.lastTouchY = currentY;
 
-        } else if (e.touches.length === 2 && this.cameraManager) {
+        } else if (e.touches.length === 2) {
             const touch1 = e.touches[0];
             const touch2 = e.touches[1];
             const dx = touch1.clientX - touch2.clientX;
@@ -234,12 +256,19 @@ IdleAnts.Managers.InputManager = class {
 
     handleTouchEnd(e) {
         e.preventDefault();
-        if (this.game.state !== IdleAnts.Game.States.PLAYING) return;
+        
+        // Allow touch controls during PLAYING, BOSS_INTRO, and BOSS_FIGHT states
+        const allowCameraControls = this.game.state === IdleAnts.Game.States.PLAYING || 
+                                   this.game.state === IdleAnts.Game.States.BOSS_INTRO || 
+                                   this.game.state === IdleAnts.Game.States.BOSS_FIGHT;
+                                   
+        if (!allowCameraControls) return;
 
         const touchDuration = Date.now() - this.touchStartTime;
 
         if (e.touches.length === 0) { // All touches ended
-            if (!this.touchMoved && touchDuration < 300 && !this.isPanning) { // Tap
+            // Only allow food placement during PLAYING state
+            if (this.game.state === IdleAnts.Game.States.PLAYING && !this.touchMoved && touchDuration < 300 && !this.isPanning) { // Tap
                 // Use initial touch position for tap accuracy
                 const worldX = (this.touchStartX / this.mapConfig.zoom.level) + this.mapConfig.viewport.x;
                 const worldY = (this.touchStartY / this.mapConfig.zoom.level) + this.mapConfig.viewport.y;
@@ -280,7 +309,12 @@ IdleAnts.Managers.InputManager = class {
 
     // This method would be called from the Game's gameLoop
     update() {
-        if (this.game.state === IdleAnts.Game.States.PLAYING && this.cameraManager) {
+        // Allow camera controls during PLAYING, BOSS_INTRO, and BOSS_FIGHT states
+        const allowCameraControls = this.game.state === IdleAnts.Game.States.PLAYING || 
+                                   this.game.state === IdleAnts.Game.States.BOSS_INTRO || 
+                                   this.game.state === IdleAnts.Game.States.BOSS_FIGHT;
+                                   
+        if (allowCameraControls && this.cameraManager) {
             const cameraMoved = this.cameraManager.updateCamera(this.keysPressed); // Pass keysPressed
             if (cameraMoved && this.game.updateMinimap) { // If camera moved due to keys, update minimap
                 this.game.updateMinimap();

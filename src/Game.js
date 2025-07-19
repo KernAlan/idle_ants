@@ -64,7 +64,7 @@ IdleAnts.Game = class {
         this.minimapContainer = new PIXI.Container();
         this.app.stage.addChild(this.minimapContainer);
         
-        this.cameraManager = new IdleAnts.Managers.CameraManager(this.app, this.mapConfig, this.worldContainer, this);
+        this.cameraManager = new IdleAnts.Managers.CameraManager(this.app, this.worldContainer, this.mapConfig, this);
         
         // Run any registered initialization functions
         this.runInitHooks();
@@ -218,6 +218,22 @@ IdleAnts.Game = class {
                     this.uiManager.showUpgradeMenu();
                 }
                 break;
+                
+            case IdleAnts.Game.States.BOSS_INTRO:
+            case IdleAnts.Game.States.BOSS_FIGHT:
+                // Ensure all overlays are closed during boss sequences
+                if (this.dailyChallengeManager && this.dailyChallengeManager.closeModal) {
+                    this.dailyChallengeManager.closeModal();
+                }
+                // Hide any other potential overlays
+                const overlays = document.querySelectorAll('.challenge-modal-backdrop, #win-screen, #lose-screen');
+                overlays.forEach(overlay => {
+                    if (overlay.style) {
+                        overlay.style.display = 'none';
+                    }
+                    overlay.classList.remove('show');
+                });
+                break;
         }
         
         // Notify any listeners of state change
@@ -366,6 +382,27 @@ IdleAnts.Game = class {
         
         // Start the initialization process
         ensureDOMLoaded();
+        
+        // Expose boss trigger globally for testing
+        window.triggerBoss = () => {
+            if (this.triggerBoss) {
+                this.triggerBoss();
+            }
+        };
+        
+        // Expose ant count check for debugging
+        window.checkAnts = () => {
+            if (this.entityManager) {
+                const antTotal = this.entityManager.entities.ants.length + 
+                               this.entityManager.entities.flyingAnts.length + 
+                               this.entityManager.entities.carAnts.length + 
+                               this.entityManager.entities.fireAnts.length;
+                console.log(`Total ants: ${antTotal}`);
+                console.log(`Boss triggered: ${this.entityManager.bossTriggered}`);
+                console.log(`Boss exists: ${!!this.entityManager.boss}`);
+                return antTotal;
+            }
+        };
     }
     
     setupMinimap() {
@@ -515,6 +552,11 @@ IdleAnts.Game = class {
             this.inputManager.update(); 
         }
         
+        // Update cinematic camera pan if active
+        if (this.cameraManager) {
+            this.cameraManager.updateCinematicPan();
+        }
+        
         // Update entities
         this.entityManager.update();
         
@@ -562,25 +604,58 @@ IdleAnts.Game = class {
 
     // Triggered (manually for now) to begin the boss fight
     startBossFight() {
-        // Skip if already in boss phases
-        if (this.state === IdleAnts.Game.States.BOSS_INTRO || this.state === IdleAnts.Game.States.BOSS_FIGHT) return;
+        console.log('startBossFight called, current state:', this.state);
+        
+        if (this.state !== IdleAnts.Game.States.PLAYING) {
+            console.warn('Cannot start boss fight - not in playing state');
+            return;
+        }
 
+        console.log('Starting boss fight sequence...');
+        
+        // Pre-position camera to show boss entrance area BEFORE spawning boss
+        if (this.cameraManager) {
+            const bossSpawnX = this.mapConfig.width / 2;  // 1500 - center X
+            const bossSpawnY = 150;                       // Near top of map
+            
+            console.log(`[CINEMATIC] Pre-positioning camera to show boss entrance area at (${bossSpawnX}, ${bossSpawnY})`);
+            this.cameraManager.startCinematicPanTo(bossSpawnX, bossSpawnY, 1000); // 1 second to get into position
+            
+            // Delay boss spawn until camera is in position
+            setTimeout(() => {
+                this.spawnBossAfterCameraPan();
+            }, 1200); // Slight delay after camera pan completes
+            
+        } else {
+            // No camera manager, spawn immediately
+            this.spawnBossAfterCameraPan();
+        }
+    }
+    
+    spawnBossAfterCameraPan() {
+        // Ensure challenge modal is closed during boss fight to prevent overlay issues
+        if (this.dailyChallengeManager && this.dailyChallengeManager.closeModal) {
+            this.dailyChallengeManager.closeModal();
+        }
+        
         // Clear existing enemies and spawn the boss
         const boss = this.entityManager.spawnAnteaterBoss();
         this.entityManager.clearEnemies();
-
-        // Simple camera focus – could be replaced with smooth pan
-        if (this.cameraManager) {
-            this.cameraManager.centerViewOnPosition(boss.x, boss.y);
-        }
-
-        // Show big HP bar
-        if (this.uiManager) {
-            this.uiManager.showBossHealthBar(boss.maxHp);
-        }
-
+        
         this.currentBoss = boss;
-        this.transitionToState(IdleAnts.Game.States.BOSS_FIGHT);
+        console.log('Boss spawned at:', this.currentBoss.x, this.currentBoss.y);
+        console.log('Boss should be at top of map for invasion entrance');
+
+        // Begin dramatic invasion cinematic
+        this.playBossIntroCinematic(boss);
+    }
+    
+    // Manual boss trigger for testing (exposed globally)
+    triggerBoss() {
+        if (this.entityManager) {
+            this.entityManager.resetBossTrigger();
+            this.startBossFight();
+        }
     }
 
     // Called by AnteaterBoss.die()
@@ -588,6 +663,15 @@ IdleAnts.Game = class {
         if (this.uiManager) {
             this.uiManager.hideBossHealthBar();
             this.uiManager.showWinScreen();
+        }
+        if (this.entityManager) {
+            this.entityManager.bossDefeated = true;
+            this.entityManager.boss = null;
+            this.entityManager.bossTriggered = false;
+        }
+        // Play victory theme
+        if (IdleAnts.AudioManager && IdleAnts.AudioAssets && IdleAnts.AudioAssets.BGM && IdleAnts.AudioAssets.BGM.VICTORY_THEME) {
+            IdleAnts.AudioManager.playBGM(IdleAnts.AudioAssets.BGM.VICTORY_THEME.id);
         }
         this.transitionToState(IdleAnts.Game.States.WIN);
     }
@@ -1088,5 +1172,467 @@ IdleAnts.Game = class {
             return true;
         }
         return false;
+    }
+
+    /* ================= Cinematic Intro ================= */
+    /**
+     * Creates an improved Kingdom Rush-style boss entrance cinematic.
+     * Boss spawns at top of map and descends toward the center nest.
+     * Duration: ~6 seconds total
+     */
+    playBossIntroCinematic(boss) {
+        this.transitionToState(IdleAnts.Game.States.BOSS_INTRO);
+        console.log('%c[CINEMATIC] Epic Boss Invasion - Top to Center!', 'color: #FFD700; font-weight: bold; font-size: 16px;');
+
+        // === PHASE 1: DRAMATIC CAMERA SETUP (0.5 seconds) ===
+        
+        // Stop current music for dramatic pause
+        if (IdleAnts.AudioManager) {
+            IdleAnts.AudioManager.stopBGM();
+        }
+        
+        // Boss should be at the top of the map (where it was spawned)
+        const bossStartX = boss.x; // Should be mapWidth/2 = 1500
+        const bossStartY = boss.y; // Should be 100 (top of map)
+        
+        // FAILSAFE: Explicitly ensure boss is at the correct position
+        const expectedBossX = this.mapConfig.width / 2;  // 1500
+        const expectedBossY = 150; // Top of map for invasion
+
+        if (Math.abs(boss.x - expectedBossX) > 1 || Math.abs(boss.y - expectedBossY) > 1) {
+            console.warn(`[CINEMATIC] Boss position incorrect! Expected: (${expectedBossX}, ${expectedBossY}), Actual: (${boss.x}, ${boss.y})`);
+            console.warn(`[CINEMATIC] Correcting boss position...`);
+            boss.x = expectedBossX;
+            boss.y = expectedBossY;
+        }
+        
+        // Target is the nest at center of map where boss will move during cinematic
+        const nestX = this.mapConfig.width / 2;  // 1500
+        const nestY = this.mapConfig.height / 2; // 1000
+        
+        console.log(`[CINEMATIC] Boss starting position: ${boss.x}, ${boss.y}`);
+        console.log(`[CINEMATIC] Nest target position: ${nestX}, ${nestY}`);
+        console.log(`[CINEMATIC] Map dimensions: ${this.mapConfig.width}x${this.mapConfig.height}`);
+        
+        // Add a visual debug marker at boss position
+        if (this.effectManager) {
+            // Create a bright marker at boss position for debugging
+            for (let i = 0; i < 12; i++) {
+                const angle = (i / 12) * Math.PI * 2;
+                const radius = 50 + i * 10;
+                const x = boss.x + Math.cos(angle) * radius;
+                const y = boss.y + Math.sin(angle) * radius;
+                this.effectManager.createSpawnEffect(x, y, false, {R: 255, G: 0, B: 255}); // Bright magenta
+            }
+        }
+        
+        // Boss starts INVISIBLE - will become visible when fall animation begins
+        boss.alpha = 0; // Hide boss initially - no blinking in!
+        
+        // Camera should show the invasion area using safe pan method
+        if (this.cameraManager) {
+            console.log(`[CINEMATIC] Boss position: ${boss.x}, ${boss.y}`);
+            console.log(`[CINEMATIC] Camera should already be positioned to show boss entrance`);
+            
+            // Camera is already positioned from the pre-pan - no additional movement needed
+            // This prevents any coordinate system disruption during the cinematic
+            
+            console.log(`[CINEMATIC] Boss entrance area already visible - no camera adjustment needed`);
+        }
+
+        // === PHASE 2: WARNING BUILDUP (1.5 seconds) ===
+        setTimeout(() => {
+            // Subtle rumble
+            if (this.cameraManager) {
+                // DISABLE SHAKE - conflicts with worldContainer coordinate system
+                console.log('[CINEMATIC] Skipping subtle rumble shake to prevent coordinate corruption');
+                // this.cameraManager.shake(800, 5);
+            }
+            
+            this.showEpicWarningText("THE GREAT ANTEATER HAS ARRIVED");
+            
+            // Warning sound
+            if (IdleAnts.AudioManager) {
+                IdleAnts.AudioManager.playSFX('sfx_ant_spawn');
+            }
+        }, 500);
+
+        // === PHASE 3: BOSS BEGINS INVASION MARCH (3 seconds) ===
+        setTimeout(() => {
+            this.hideWarningText();
+            this.showEpicWarningText("PREPARING TO ATTACK", true);
+            
+            // Create warning effects at boss current position
+            if (this.effectManager) {
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i / 8) * Math.PI * 2;
+                    const radius = 80;
+                    const x = boss.x + Math.cos(angle) * radius;
+                    const y = boss.y + Math.sin(angle) * radius;
+                    this.effectManager.createSpawnEffect(x, y, false, {R: 255, G: 200, B: 0});
+                }
+            }
+            
+            // DRAMATIC KINGDOM RUSH STYLE ENTRANCE - Boss falls from sky and crashes down!
+            const entranceDuration = 2500; // 2.5 seconds of epic entrance
+            const startTime = Date.now();
+            const finalBossX = boss.x; // Where boss will land
+            const finalBossY = boss.y; // Final landing position
+            
+            // Boss starts WAY above the map for dramatic fall
+            const startHeight = -200; // Start 200 pixels above visible area
+            boss.y = startHeight;
+            // Boss stays invisible initially - will become visible when fall starts
+            
+            // Add dramatic shadow that grows as boss approaches
+            let shadowScale = 0;
+            
+            const epicEntranceAnimation = () => {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / entranceDuration, 1);
+                
+                // PRE-FALL BUILDUP: Create anticipation before boss becomes visible
+                if (progress < 0.15) {
+                    // Show warning signs in the sky before boss appears
+                    if (Math.random() < 0.4) {
+                        if (this.effectManager) {
+                            // Dark clouds/warning effects high above
+                            const warningX = finalBossX + (Math.random() - 0.5) * 150;
+                            const warningY = startHeight + (Math.random() * 100);
+                            this.effectManager.createSpawnEffect(warningX, warningY, false, {
+                                R: 80 + Math.random() * 50,
+                                G: 80 + Math.random() * 50,
+                                B: 80 + Math.random() * 50 // Dark warning clouds
+                            });
+                        }
+                    }
+                    return requestAnimationFrame(epicEntranceAnimation);
+                }
+                
+                // Boss becomes visible when fall animation actually starts
+                if (boss.alpha === 0) {
+                    boss.alpha = 1;
+                    console.log('[CINEMATIC] Boss now visible - beginning dramatic fall!');
+                }
+                
+                // Adjust progress for fall phase (starts after 0.15)
+                const fallProgress = Math.max(0, (progress - 0.15) / 0.85);
+                
+                // Eased falling motion - slow start, fast finish, bounce at end
+                let motionProgress;
+                if (fallProgress < 0.8) {
+                    // Accelerating fall (ease-in-cubic)
+                    const fallPhase = fallProgress / 0.8;
+                    motionProgress = fallPhase * fallPhase * fallPhase;
+                } else {
+                    // Slight bounce at impact
+                    const bouncePhase = (fallProgress - 0.8) / 0.2;
+                    const bounce = Math.sin(bouncePhase * Math.PI * 2) * 0.05; // Small bounce
+                    motionProgress = 1 + bounce;
+                }
+                
+                // Boss position during fall
+                boss.y = startHeight + (finalBossY - startHeight) * motionProgress;
+                
+                // Add slight horizontal sway during fall for realism
+                const swayAmount = 15 * (1 - fallProgress); // Less sway as it approaches ground
+                boss.x = finalBossX + Math.sin(elapsed * 0.01) * swayAmount;
+                
+                // Growing shadow effect
+                shadowScale = fallProgress * 1.2; // Shadow grows as boss approaches
+                
+                // Speed lines effect during fast fall phase
+                if (fallProgress > 0.3 && fallProgress < 0.9 && Math.random() < 0.3) {
+                    if (this.effectManager) {
+                        // Create speed lines above and to sides of falling boss
+                        for (let i = 0; i < 3; i++) {
+                            const lineX = boss.x + (Math.random() - 0.5) * 80;
+                            const lineY = boss.y - 40 - Math.random() * 60;
+                            this.effectManager.createSpawnEffect(lineX, lineY, false, {
+                                R: 200 + Math.random() * 55,
+                                G: 200 + Math.random() * 55, 
+                                B: 255 // White/blue speed lines
+                            });
+                        }
+                    }
+                }
+                
+                // Impact warning as boss approaches ground
+                if (fallProgress > 0.7 && Math.random() < 0.2) {
+                    if (this.effectManager) {
+                        // Warning dust at impact zone
+                        const impactX = finalBossX + (Math.random() - 0.5) * 100;
+                        const impactY = finalBossY + 20 + Math.random() * 30;
+                        this.effectManager.createSpawnEffect(impactX, impactY, false, {
+                            R: 255,
+                            G: 255 - Math.random() * 100,
+                            B: 100 + Math.random() * 100
+                        });
+                    }
+                }
+                
+                if (progress < 1) {
+                    requestAnimationFrame(epicEntranceAnimation);
+                } else {
+                    // MASSIVE IMPACT! Boss has landed!
+                    boss.x = finalBossX;
+                    boss.y = finalBossY;
+                    
+                    // Create huge impact effects
+                    if (this.effectManager) {
+                        // Massive dust explosion on impact
+                        for (let i = 0; i < 40; i++) {
+                            const angle = (i / 40) * Math.PI * 2;
+                            const distance = 60 + Math.random() * 120;
+                            const impactX = finalBossX + Math.cos(angle) * distance;
+                            const impactY = finalBossY + Math.sin(angle) * distance * 0.7; // Flatten explosion
+                            this.effectManager.createSpawnEffect(impactX, impactY, false, {
+                                R: 139 + Math.random() * 80,
+                                G: 115 + Math.random() * 60,
+                                B: 85 + Math.random() * 40
+                            });
+                        }
+                        
+                        // Secondary shockwave rings
+                        for (let ring = 0; ring < 3; ring++) {
+                            setTimeout(() => {
+                                for (let i = 0; i < 12; i++) {
+                                    const angle = (i / 12) * Math.PI * 2;
+                                    const distance = 80 + ring * 40;
+                                    const ringX = finalBossX + Math.cos(angle) * distance;
+                                    const ringY = finalBossY + Math.sin(angle) * distance * 0.6;
+                                    this.effectManager.createSpawnEffect(ringX, ringY, false, {
+                                        R: 255 - ring * 50,
+                                        G: 200 - ring * 40,
+                                        B: 100 + ring * 30
+                                    });
+                                }
+                            }, ring * 150);
+                        }
+                    }
+                    
+                    console.log(`[CINEMATIC] EPIC BOSS IMPACT! Boss crashed down at: ${boss.x}, ${boss.y}`);
+                    this.handleEpicBossInvasion(boss, boss.x, boss.y);
+                }
+            };
+            
+            requestAnimationFrame(epicEntranceAnimation);
+            
+        }, 2000);
+
+        // === PHASE 4: EPIC ARRIVAL & MUSIC ===
+        // This happens in handleEpicBossInvasion
+    }
+
+    showEpicWarningText(text, isBossName = false) {
+        // Remove existing warning text
+        this.hideWarningText();
+        
+        // Create epic warning text
+        this.warningText = document.createElement('div');
+        const fontSize = isBossName ? '64px' : '42px';
+        const color = isBossName ? '#FF4444' : '#FFD700';
+        
+        this.warningText.style.cssText = `
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Impact', 'Arial Black', sans-serif;
+            font-size: ${fontSize};
+            font-weight: bold;
+            color: ${color};
+            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.9);
+            text-align: center;
+            z-index: 6000;
+            opacity: 0;
+            animation: epicTextReveal 1.5s ease-out forwards;
+            pointer-events: none;
+        `;
+        this.warningText.textContent = text;
+        document.body.appendChild(this.warningText);
+        
+        // Add enhanced CSS animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes epicTextReveal {
+                0% { 
+                    opacity: 0; 
+                    transform: translate(-50%, -50%) scale(0.3) rotateX(90deg); 
+                }
+                30% { 
+                    opacity: 1; 
+                    transform: translate(-50%, -50%) scale(1.3) rotateX(0deg); 
+                }
+                100% { 
+                    opacity: 1; 
+                    transform: translate(-50%, -50%) scale(1.0) rotateX(0deg); 
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    hideWarningText() {
+        if (this.warningText) {
+            this.warningText.style.animation = 'none';
+            this.warningText.style.opacity = '0';
+            this.warningText.style.transform = 'translate(-50%, -50%) scale(0.8)';
+            this.warningText.style.transition = 'all 0.3s ease';
+            setTimeout(() => {
+                if (this.warningText && this.warningText.parentNode) {
+                    this.warningText.parentNode.removeChild(this.warningText);
+                }
+                this.warningText = null;
+            }, 300);
+        }
+    }
+
+    handleEpicBossInvasion(boss, landingX, landingY) {
+        console.log('%c[CINEMATIC] BOSS HAS INVADED THE NEST AREA!', 'color: #FF4444; font-weight: bold; font-size: 16px;');
+        
+        // === MASSIVE SCREEN SHAKE FOR ARRIVAL ===
+        if (this.cameraManager) {
+            // DISABLE SHAKE - it uses app.stage positioning which conflicts with worldContainer system
+            console.log('[CINEMATIC] Skipping camera shake to prevent coordinate system corruption');
+            // this.cameraManager.shake(1200, 40); // Strong arrival shake
+        }
+        
+        // === NEST AREA IMPACT EFFECTS ===
+        if (this.effectManager) {
+            // Large dust cloud around nest area
+            for (let i = 0; i < 30; i++) {
+                const angle = (i / 30) * Math.PI * 2;
+                const distance = 80 + Math.random() * 100;
+                const x = landingX + Math.cos(angle) * distance;
+                const y = landingY + Math.sin(angle) * distance;
+                
+                this.effectManager.createSpawnEffect(x, y, false, {
+                    R: 139 + Math.random() * 60,
+                    G: 115 + Math.random() * 40,
+                    B: 85 + Math.random() * 30
+                });
+            }
+            
+            // Warning effects around the nest to show danger
+            for (let wave = 0; wave < 3; wave++) {
+                setTimeout(() => {
+                    for (let i = 0; i < 8; i++) {
+                        const angle = (i / 8) * Math.PI * 2;
+                        const distance = 50 + wave * 30;
+                        const x = landingX + Math.cos(angle) * distance;
+                        const y = landingY + Math.sin(angle) * distance;
+                        
+                        this.effectManager.createSpawnEffect(x, y, false, {
+                            R: 255 - wave * 30,
+                            G: 100 + wave * 20,
+                            B: 100 + wave * 20
+                        });
+                    }
+                }, wave * 200);
+            }
+        }
+        
+        // === DRAMATIC BOSS NAME REVEAL ===
+        setTimeout(() => {
+            this.hideWarningText();
+            this.showFinalBossReveal();
+            
+            // Start EPIC boss music
+            if (IdleAnts.AudioManager && IdleAnts.AudioAssets && IdleAnts.AudioAssets.BGM && IdleAnts.AudioAssets.BGM.BOSS_THEME) {
+                IdleAnts.AudioManager.playBGM(IdleAnts.AudioAssets.BGM.BOSS_THEME.id);
+            }
+            
+            // NO ZOOM ANIMATION - keep camera exactly where it is to prevent coordinate corruption
+            // The camera is already properly positioned from the initial pan
+            console.log('[CINEMATIC] Skipping zoom animation to prevent coordinate system corruption');
+            
+        }, 600);
+        
+        // === END CINEMATIC ===
+        setTimeout(() => {
+            this.endEpicCinematic();
+        }, 2500);
+    }
+
+    showFinalBossReveal() {
+        // Create the ultimate boss name display
+        this.bossNameDisplay = document.createElement('div');
+        this.bossNameDisplay.style.cssText = `
+            position: fixed;
+            top: 25%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Impact', 'Arial Black', sans-serif;
+            font-size: 56px;
+            font-weight: bold;
+            color: #FF2222;
+            text-shadow: 6px 6px 12px rgba(0, 0, 0, 0.9);
+            text-align: center;
+            z-index: 6000;
+            opacity: 0;
+            animation: ultimateBossReveal 2s ease-out forwards;
+            pointer-events: none;
+        `;
+        this.bossNameDisplay.innerHTML = `
+            <div style="font-size: 28px; color: #FFD700; margin-bottom: 8px; text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.9);">◆ FINAL BOSS ◆</div>
+            <div style="letter-spacing: 3px;">THE GREAT ANTEATER</div>
+            <div style="font-size: 20px; color: #FFA500; margin-top: 8px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);">Destroyer of Colonies</div>
+        `;
+        document.body.appendChild(this.bossNameDisplay);
+        
+        // Add ultimate reveal animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ultimateBossReveal {
+                0% { 
+                    opacity: 0; 
+                    transform: translate(-50%, -50%) scale(2.5) rotateY(180deg); 
+                }
+                50% { 
+                    opacity: 1; 
+                    transform: translate(-50%, -50%) scale(1.2) rotateY(0deg); 
+                }
+                100% { 
+                    opacity: 1; 
+                    transform: translate(-50%, -50%) scale(1.0) rotateY(0deg); 
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    endEpicCinematic() {
+        console.log('%c[CINEMATIC] Epic boss invasion complete - DEFEND THE NEST!', 'color: #00FF00; font-weight: bold;');
+        
+        // Remove all cinematic text elements
+        this.hideWarningText();
+        
+        if (this.bossNameDisplay) {
+            this.bossNameDisplay.style.opacity = '0';
+            this.bossNameDisplay.style.transform = 'translate(-50%, -50%) scale(0.8)';
+            this.bossNameDisplay.style.transition = 'all 0.5s ease';
+            setTimeout(() => {
+                if (this.bossNameDisplay && this.bossNameDisplay.parentNode) {
+                    this.bossNameDisplay.parentNode.removeChild(this.bossNameDisplay);
+                }
+                this.bossNameDisplay = null;
+            }, 500);
+        }
+        
+        // Ensure proper camera position for combat
+        if (this.cameraManager && this.currentBoss) {
+            console.log(`[CINEMATIC] Camera was never moved - no restoration needed`);
+            console.log(`[CINEMATIC] Camera remains exactly where player positioned it`);
+        }
+        
+        // Show boss health bar
+        if (this.uiManager) {
+            this.uiManager.showBossHealthBar(this.currentBoss.maxHp);
+        }
+        
+        // IMPORTANT: Officially transition to boss fight state - camera controls should work normally now
+        this.transitionToState(IdleAnts.Game.States.BOSS_FIGHT);
+        console.log('[CINEMATIC] Camera controls restored - DEFEND THE COLONY!');
     }
 }; 

@@ -8,6 +8,19 @@ IdleAnts.AudioAssets = {
             loop: true,
             volume: 0.5
         },
+        // Boss fight theme
+        BOSS_THEME: {
+            id: 'bgm_anteater_boss',
+            path: 'assets/audio/anteater_boss_music.mp3',
+            loop: true,
+            volume: 0.6
+        },
+        VICTORY_THEME: {
+            id: 'bgm_victory_theme',
+            path: 'assets/audio/victory_music.mp3',
+            loop: false,
+            volume: 0.6
+        },
         // Add more BGM tracks as needed
     },
     

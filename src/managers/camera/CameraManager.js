@@ -8,12 +8,15 @@ if (typeof IdleAnts.Managers === 'undefined') {
 }
 
 IdleAnts.Managers.CameraManager = class {
-    constructor(app, mapConfig, worldContainer, gameInstance) {
+    constructor(app, worldContainer, mapConfig, game) {
         this.app = app;
-        this.mapConfig = mapConfig; // Contains .width, .height, .viewport, .zoom
         this.worldContainer = worldContainer;
-        this.game = gameInstance; // For callbacks like game.updateMinimap(), game.updateHoverIndicator()
+        this.mapConfig = mapConfig; // Contains .width, .height, .viewport, .zoom
+        this.game = game; // For callbacks like game.updateMinimap(), game.updateHoverIndicator()
 
+        // Camera state preservation for cinematics
+        this.preservedCameraState = null;
+        
         this.initializeZoomLevels();
     }
 
@@ -67,10 +70,14 @@ IdleAnts.Managers.CameraManager = class {
         }
         
         if (cameraMoved) {
-            this.worldContainer.position.set(
-                -this.mapConfig.viewport.x * this.mapConfig.zoom.level,
-                -this.mapConfig.viewport.y * this.mapConfig.zoom.level
-            );
+            if (this.worldContainer && this.worldContainer.position && typeof this.worldContainer.position.set === 'function') {
+                this.worldContainer.position.set(
+                    -this.mapConfig.viewport.x * this.mapConfig.zoom.level,
+                    -this.mapConfig.viewport.y * this.mapConfig.zoom.level
+                );
+            } else {
+                console.error('[CAMERA] worldContainer.position is undefined in updateCamera');
+            }
         }
         return cameraMoved;
     }
@@ -79,17 +86,89 @@ IdleAnts.Managers.CameraManager = class {
         const viewWidth = this.app.screen.width / this.mapConfig.zoom.level;
         const viewHeight = this.app.screen.height / this.mapConfig.zoom.level;
         
-        this.mapConfig.viewport.x = Math.max(0, Math.min(x - (viewWidth / 2), this.mapConfig.width - viewWidth));
-        this.mapConfig.viewport.y = Math.max(0, Math.min(y - (viewHeight / 2), this.mapConfig.height - viewHeight));
+        console.log(`[CAMERA] centerViewOnPosition called with center: (${x}, ${y})`);
+        console.log(`[CAMERA] Screen dimensions: ${this.app.screen.width}x${this.app.screen.height}, zoom: ${this.mapConfig.zoom.level}`);
+        console.log(`[CAMERA] View dimensions in world: ${viewWidth}x${viewHeight}`);
         
-        this.worldContainer.position.set(
-            -this.mapConfig.viewport.x * this.mapConfig.zoom.level,
-            -this.mapConfig.viewport.y * this.mapConfig.zoom.level
-        );
+        const viewportX = Math.max(0, Math.min(x - (viewWidth / 2), this.mapConfig.width - viewWidth));
+        const viewportY = Math.max(0, Math.min(y - (viewHeight / 2), this.mapConfig.height - viewHeight));
+        
+        console.log(`[CAMERA] Calculated viewport before assignment: (${viewportX}, ${viewportY})`);
+        console.log(`[CAMERA] Viewport calculation: Y = max(0, min(${y} - ${viewHeight/2}, ${this.mapConfig.height} - ${viewHeight}))`);
+        console.log(`[CAMERA] Viewport calculation: Y = max(0, min(${y - (viewHeight / 2)}, ${this.mapConfig.height - viewHeight}))`);
+        
+        this.mapConfig.viewport.x = viewportX;
+        this.mapConfig.viewport.y = viewportY;
+        
+        // Safety check for worldContainer and position
+        if (this.worldContainer && this.worldContainer.position && typeof this.worldContainer.position.set === 'function') {
+            this.worldContainer.position.set(
+                -this.mapConfig.viewport.x * this.mapConfig.zoom.level,
+                -this.mapConfig.viewport.y * this.mapConfig.zoom.level
+            );
+        } else {
+            console.error('[CAMERA] worldContainer or position is undefined:', {
+                worldContainer: !!this.worldContainer,
+                position: this.worldContainer ? !!this.worldContainer.position : 'N/A',
+                set: this.worldContainer && this.worldContainer.position ? typeof this.worldContainer.position.set : 'N/A'
+            });
+        }
         
         if (this.game && typeof this.game.updateMinimap === 'function') {
             this.game.updateMinimap();
         }
+    }
+
+    // Cinematic method: Position to show object in upper portion of screen
+    cinematicShowObjectInUpperScreen(objectX, objectY, percentageFromTop = 0.4, zoom = null) {
+        console.log(`[CAMERA] Cinematic: Showing object at (${objectX}, ${objectY}) in upper ${percentageFromTop * 100}% of screen`);
+        
+        // Set zoom if provided
+        if (zoom !== null) {
+            this.setZoom(zoom);
+        }
+        
+        // Calculate screen dimensions in world coordinates
+        const viewWidth = this.app.screen.width / this.mapConfig.zoom.level;
+        const viewHeight = this.app.screen.height / this.mapConfig.zoom.level;
+        
+        // Calculate the desired screen position for the object
+        const desiredScreenY = this.app.screen.height * percentageFromTop;
+        const desiredWorldOffsetFromTop = desiredScreenY / this.mapConfig.zoom.level;
+        
+        // Calculate camera center needed to show object at desired position
+        const cameraCenterX = objectX;
+        let cameraCenterY = objectY - desiredWorldOffsetFromTop + (viewHeight / 2);
+        
+        // Check if this camera center would create a valid viewport
+        const minValidCameraCenterY = viewHeight / 2; // Camera center minimum to avoid viewport Y = 0
+        const maxValidCameraCenterY = this.mapConfig.height - (viewHeight / 2); // Can't center camera below this
+        
+        // Add a small buffer to ensure we never hit viewport Y = 0
+        const safeMinCameraCenterY = minValidCameraCenterY + 10; // 10 pixel buffer from top edge
+        
+        if (cameraCenterY < safeMinCameraCenterY) {
+            // Object is too close to top edge - adjust to show as much as possible
+            cameraCenterY = safeMinCameraCenterY;
+            const actualScreenY = (objectY - (cameraCenterY - viewHeight / 2)) * this.mapConfig.zoom.level;
+            const actualPercentage = actualScreenY / this.app.screen.height;
+            console.log(`[CAMERA] Boss too close to top edge - adjusted to show at ${(actualPercentage * 100).toFixed(1)}% instead of ${(percentageFromTop * 100)}%`);
+            console.log(`[CAMERA] Used safe minimum camera Y: ${safeMinCameraCenterY} instead of ${minValidCameraCenterY}`);
+        } else if (cameraCenterY > maxValidCameraCenterY) {
+            // Object is too close to bottom edge - adjust to show as much as possible  
+            cameraCenterY = maxValidCameraCenterY;
+            const actualScreenY = (objectY - (cameraCenterY - viewHeight / 2)) * this.mapConfig.zoom.level;
+            const actualPercentage = actualScreenY / this.app.screen.height;
+            console.log(`[CAMERA] Boss too close to bottom edge - adjusted to show at ${(actualPercentage * 100).toFixed(1)}% instead of ${(percentageFromTop * 100)}%`);
+        }
+        
+        console.log(`[CAMERA] Calculated camera center: (${cameraCenterX}, ${cameraCenterY})`);
+        console.log(`[CAMERA] Valid camera Y range: ${minValidCameraCenterY} to ${maxValidCameraCenterY}`);
+        
+        // Use the existing centerViewOnPosition method (should not need clamping now)
+        this.centerViewOnPosition(cameraCenterX, cameraCenterY);
+        
+        console.log(`[CAMERA] Final viewport: (${this.mapConfig.viewport.x}, ${this.mapConfig.viewport.y})`);
     }
 
     centerCameraOnNest() {
@@ -97,7 +176,7 @@ IdleAnts.Managers.CameraManager = class {
         const nestY = this.mapConfig.height / 2;
         
         this.initializeZoomLevels(); 
-        this.worldContainer.scale.set(this.mapConfig.zoom.level, this.mapConfig.zoom.level);
+        this.setZoom(this.mapConfig.zoom.level); // Use proper zoom method instead of direct scale manipulation
 
         this.centerViewOnPosition(nestX, nestY);
     }
@@ -208,5 +287,222 @@ IdleAnts.Managers.CameraManager = class {
         if (this.game && this.game.uiManager && typeof this.game.uiManager.updateUI === 'function') {
             this.game.uiManager.updateUI();
         }
+    }
+
+    // Method to set the zoom level directly
+    setZoom(newZoom) {
+        // Use the same zoom constraints as updateZoom method
+        this.initializeZoomLevels(); // Ensure zoom limits are current
+        const effectiveMinZoom = this.mapConfig.zoom.min;
+        
+        newZoom = Math.max(effectiveMinZoom, Math.min(this.mapConfig.zoom.max, newZoom));
+        this.mapConfig.zoom.level = newZoom;
+
+        // Update world container scale with safety check
+        if (this.worldContainer && this.worldContainer.scale && typeof this.worldContainer.scale.set === 'function') {
+            this.worldContainer.scale.set(this.mapConfig.zoom.level, this.mapConfig.zoom.level);
+        } else {
+            console.error('[CAMERA] worldContainer.scale is undefined in setZoom');
+        }
+        
+        // Update viewport position to maintain current view
+        const newWorldWidth = this.app.view.width / this.mapConfig.zoom.level;
+        const newWorldHeight = this.app.view.height / this.mapConfig.zoom.level;
+        
+        this.mapConfig.viewport.x = Math.max(0, Math.min(
+            this.mapConfig.viewport.x,
+            this.mapConfig.width - newWorldWidth
+        ));
+        this.mapConfig.viewport.y = Math.max(0, Math.min(
+            this.mapConfig.viewport.y,
+            this.mapConfig.height - newWorldHeight
+        ));
+        
+        // Update world container position with safety check
+        if (this.worldContainer && this.worldContainer.position && typeof this.worldContainer.position.set === 'function') {
+            this.worldContainer.position.set(
+                -this.mapConfig.viewport.x * this.mapConfig.zoom.level,
+                -this.mapConfig.viewport.y * this.mapConfig.zoom.level
+            );
+        } else {
+            console.error('[CAMERA] worldContainer.position is undefined in setZoom');
+        }
+        
+        // Update minimap if available
+        if (this.game && typeof this.game.updateMinimap === 'function') {
+            this.game.updateMinimap();
+        }
+    }
+
+    // Camera state preservation for cinematics
+    preserveCameraState() {
+        this.preservedCameraState = {
+            viewport: {
+                x: this.mapConfig.viewport.x,
+                y: this.mapConfig.viewport.y
+            },
+            zoom: this.mapConfig.zoom.level,
+            worldPosition: {
+                x: this.worldContainer.position.x,
+                y: this.worldContainer.position.y
+            }
+        };
+        console.log('[CAMERA] State preserved:', this.preservedCameraState);
+    }
+    
+    restoreCameraState() {
+        if (this.preservedCameraState) {
+            // Restore exact state
+            this.mapConfig.viewport.x = this.preservedCameraState.viewport.x;
+            this.mapConfig.viewport.y = this.preservedCameraState.viewport.y;
+            this.mapConfig.zoom.level = this.preservedCameraState.zoom;
+            
+            // Apply proper viewport clamping to ensure we don't show beyond map boundaries
+            const viewWidth = this.app.screen.width / this.mapConfig.zoom.level;
+            const viewHeight = this.app.screen.height / this.mapConfig.zoom.level;
+            const maxViewportX = Math.max(0, this.mapConfig.width - viewWidth);
+            const maxViewportY = Math.max(0, this.mapConfig.height - viewHeight);
+            
+            this.mapConfig.viewport.x = Math.max(0, Math.min(this.mapConfig.viewport.x, maxViewportX));
+            this.mapConfig.viewport.y = Math.max(0, Math.min(this.mapConfig.viewport.y, maxViewportY));
+            
+            console.log(`[CAMERA] Viewport clamped to: (${this.mapConfig.viewport.x}, ${this.mapConfig.viewport.y}) within bounds (${maxViewportX}, ${maxViewportY})`);
+            
+            if (this.worldContainer && this.worldContainer.position && typeof this.worldContainer.position.set === 'function') {
+                this.worldContainer.position.set(
+                    -this.mapConfig.viewport.x * this.mapConfig.zoom.level,
+                    -this.mapConfig.viewport.y * this.mapConfig.zoom.level
+                );
+            } else {
+                console.error('[CAMERA] worldContainer.position is undefined in restoreCameraState');
+            }
+            
+            console.log('[CAMERA] State restored to:', this.preservedCameraState);
+            
+            // Update minimap if available
+            if (this.game && typeof this.game.updateMinimap === 'function') {
+                this.game.updateMinimap();
+            }
+            
+            // Clear preserved state
+            this.preservedCameraState = null;
+        }
+    }
+
+    // Safe cinematic camera pan that uses the same coordinate system as WASD controls
+    startCinematicPanTo(targetX, targetY, duration = 2000) {
+        // Calculate where we want the viewport to be to center on the target
+        const viewWidth = this.app.screen.width / this.mapConfig.zoom.level;
+        const viewHeight = this.app.screen.height / this.mapConfig.zoom.level;
+        
+        const targetViewportX = Math.max(0, Math.min(targetX - (viewWidth / 2), this.mapConfig.width - viewWidth));
+        const targetViewportY = Math.max(0, Math.min(targetY - (viewHeight / 2), this.mapConfig.height - viewHeight));
+        
+        // Store pan animation state
+        this.cinematicPan = {
+            startTime: Date.now(),
+            duration: duration,
+            startViewportX: this.mapConfig.viewport.x,
+            startViewportY: this.mapConfig.viewport.y,
+            targetViewportX: targetViewportX,
+            targetViewportY: targetViewportY,
+            active: true
+        };
+        
+        console.log(`[CAMERA] Starting safe cinematic pan from (${this.mapConfig.viewport.x}, ${this.mapConfig.viewport.y}) to (${targetViewportX}, ${targetViewportY})`);
+    }
+    
+    // Update cinematic pan animation - call this in game loop
+    updateCinematicPan() {
+        if (!this.cinematicPan || !this.cinematicPan.active) {
+            return false;
+        }
+        
+        const elapsed = Date.now() - this.cinematicPan.startTime;
+        const progress = Math.min(elapsed / this.cinematicPan.duration, 1.0);
+        
+        // Use easing for smooth movement
+        const easeProgress = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+        
+        // Interpolate viewport position
+        this.mapConfig.viewport.x = this.cinematicPan.startViewportX + 
+            (this.cinematicPan.targetViewportX - this.cinematicPan.startViewportX) * easeProgress;
+        this.mapConfig.viewport.y = this.cinematicPan.startViewportY + 
+            (this.cinematicPan.targetViewportY - this.cinematicPan.startViewportY) * easeProgress;
+        
+        // Update world container position using the same method as WASD controls
+        if (this.worldContainer && this.worldContainer.position && typeof this.worldContainer.position.set === 'function') {
+            this.worldContainer.position.set(
+                -this.mapConfig.viewport.x * this.mapConfig.zoom.level,
+                -this.mapConfig.viewport.y * this.mapConfig.zoom.level
+            );
+        }
+        
+        // Check if animation is complete
+        if (progress >= 1.0) {
+            this.cinematicPan.active = false;
+            console.log(`[CAMERA] Cinematic pan completed at viewport: (${this.mapConfig.viewport.x}, ${this.mapConfig.viewport.y})`);
+            return false; // Animation finished
+        }
+        
+        return true; // Animation continuing
+    }
+
+    // Adds a camera shake effect
+    shake(duration = 400, strength = 20) {
+        // --- Diagnostic guard to identify undefined chain ---
+        if (!this.app || !this.app.stage) {
+            console.error('[Camera-shake] this.app or this.app.stage missing', this.app);
+            return;
+        }
+        if (!this.app.stage.scale) {
+            console.error('[Camera-shake] this.app.stage.scale missing – stage:', this.app.stage);
+            requestAnimationFrame(() => this.shake(duration, strength));
+            return;
+        }
+
+        // If stage or scale not yet initialised, defer shake to next frame
+        if (!this.app || !this.app.stage || !this.app.stage.scale) {
+            requestAnimationFrame(() => this.shake(duration, strength));
+            return;
+        }
+
+        const originalViewportX = this.mapConfig.viewport.x;
+        const originalViewportY = this.mapConfig.viewport.y;
+        let elapsed = 0;
+
+        const shakeFn = (delta) => {
+            if (!this.app || !this.app.stage || !this.app.stage.scale) return; // Defensive check
+
+            elapsed += PIXI.Ticker.shared.elapsedMS;
+            const progress = elapsed / duration;
+            const currentStrength = strength * (1 - progress);
+
+            this.mapConfig.viewport.x = originalViewportX + (Math.random() - 0.5) * currentStrength * 2;
+            this.mapConfig.viewport.y = originalViewportY + (Math.random() - 0.5) * currentStrength * 2;
+
+            // Update stage position to apply shake (use safe fallback scale 1)
+            const scaleX = (this.app && this.app.stage && this.app.stage.scale) ? this.app.stage.scale.x : 1;
+            const scaleY = (this.app && this.app.stage && this.app.stage.scale) ? this.app.stage.scale.y : 1;
+            if (this.app && this.app.stage) {
+                this.app.stage.x = -this.mapConfig.viewport.x * scaleX + this.app.screen.width / 2;
+                this.app.stage.y = -this.mapConfig.viewport.y * scaleY + this.app.screen.height / 2;
+            }
+
+            if (elapsed >= duration) {
+                // End shake: reset to original position and remove ticker listener
+                this.mapConfig.viewport.x = originalViewportX;
+                this.mapConfig.viewport.y = originalViewportY;
+                if (this.app && this.app.stage) {
+                    const sX = (this.app.stage.scale) ? this.app.stage.scale.x : 1;
+                    const sY = (this.app.stage.scale) ? this.app.stage.scale.y : 1;
+                    this.app.stage.x = -this.mapConfig.viewport.x * sX + this.app.screen.width / 2;
+                    this.app.stage.y = -this.mapConfig.viewport.y * sY + this.app.screen.height / 2;
+                }
+
+                PIXI.Ticker.shared.remove(shakeFn);
+            }
+        };
+        PIXI.Ticker.shared.add(shakeFn);
     }
 };

@@ -506,19 +506,4 @@ IdleAnts.Assets.Ants = {
         isSpriteSheet: false, // Correct, it's a single generated graphic
         frames: 1 // Correct
     }
-};
-
-// Function to generate ant egg texture if needed (example, might not be used if queen produces live ants)
-IdleAnts.Assets.Ants.EGG = {
-    id: 'ant_egg',
-    type: 'graphic', // Special type to indicate procedurally generated graphic
-    generator: (app) => {
-        const eggGraphics = new PIXI.Graphics();
-        eggGraphics.beginFill(0xFFFFE0); // Light yellow
-        eggGraphics.drawEllipse(0, 0, 8, 12); // Egg shape
-        eggGraphics.endFill();
-        // You might want to render this to a texture once for performance if many eggs are shown
-        // return app.renderer.generateTexture(eggGraphics); // AssetManager will handle texture generation
-        return eggGraphics; // Return the PIXI.Graphics object directly
-    }
 }; 

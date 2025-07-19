@@ -5,4 +5,7 @@ const IdleAnts = {
     Config: {
         debug: false // Global debug flag, set to false by default
     }
-}; 
+};
+
+// Expose to global scope
+window.IdleAnts = IdleAnts; 

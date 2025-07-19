@@ -89,6 +89,8 @@ IdleAnts.Managers.EntityManager = class {
 
         // Boss reference (null until spawned)
         this.boss = null;
+        this.bossTriggered = false; // Prevent multiple boss triggers
+        this.bossDefeated = false; // Track if boss defeated to avoid respawn
     }
     
     setEffectManager(effectManager) {
@@ -547,10 +549,6 @@ IdleAnts.Managers.EntityManager = class {
                     if (isFlying && this.effectManager) {
                         this.effectManager.createFoodCollectEffect(ant.x, ant.y, 0xFFD700);
                     }
-                    
-                    // Log when food is collected
-                    console.log(`Ant collected food: Capacity=${ant.capacity}, CurrentWeight=${ant.capacityWeight}`);
-                    
                 } else if (ant.state === IdleAnts.Entities.AntBase.States.DELIVERING_FOOD || 
                            ant.state === IdleAnts.Entities.AntBase.States.RETURNING_TO_NEST) {
                     // Ant has returned to nest with food
@@ -588,8 +586,6 @@ IdleAnts.Managers.EntityManager = class {
             return;
         }
         
-        console.log(`=== Ant collecting food, BEFORE: Capacity=${ant.capacity}, CurrentWeight=${ant.capacityWeight}, FoodCollected=${ant.foodCollected} ===`);
-        
         // Get the target food
         if (!ant.collectionTarget) return;
         
@@ -602,8 +598,6 @@ IdleAnts.Managers.EntityManager = class {
         let foodValue = foodItem.foodType ? foodItem.foodType.value : 1;
         // Food weight is tracked but not used for capacity checks
         let foodWeight = 1; // Always count as 1 regardless of type
-        
-        console.log(`Food item: Type=${foodItem.foodType ? foodItem.foodType.id : 'unknown'}, Value=${foodValue}, Weight=${foodWeight}`);
         
         // Check if this is the last ant collecting or if the food should be completely consumed
         const shouldRemoveFood = collectingAntCount <= 1 || Math.random() < 0.95;
@@ -670,8 +664,6 @@ IdleAnts.Managers.EntityManager = class {
         
         // Call pickUpFood to update the ant's food state
         ant.pickUpFood(foodItem.foodType, foodValue);
-        
-        console.log(`=== Ant collecting food, AFTER: Capacity=${ant.capacity}, CurrentWeight=${ant.capacityWeight}, FoodCollected=${ant.foodCollected}, State=${ant.state} ===`);
     }
     
     deliverFood(ant) {
@@ -1126,6 +1118,22 @@ IdleAnts.Managers.EntityManager = class {
                 IdleAnts.notify(`Level ${lvl} unlocked! New creatures are appearing…`, 'warning');
             }
         }
+        
+        // ---------- BOSS TRIGGER: Spawn boss when colony reaches 2+ ants (for testing) ----------
+        if (antTotal >= 2 && !this.boss && !this.bossTriggered && !this.bossDefeated) {
+            this.bossTriggered = true;
+            // Notify player about the boss
+            if(typeof IdleAnts.notify === 'function'){
+                IdleAnts.notify(`The Anteater Boss has been awakened! Prepare for the ultimate challenge!`, 'danger');
+            }
+            // Trigger boss fight after a short delay to let the notification show
+            setTimeout(() => {
+                if (IdleAnts.game && typeof IdleAnts.game.startBossFight === 'function') {
+                    IdleAnts.game.startBossFight();
+                }
+            }, 2000);
+            return; // Skip regular enemy spawning during boss intro
+        }
         // ------------------------------------------------------------------
 
         // Update existing enemies
@@ -1185,19 +1193,37 @@ IdleAnts.Managers.EntityManager = class {
     // Spawn the anteater boss and return reference
     spawnAnteaterBoss() {
         if (this.boss && !this.boss.isDead) return this.boss;
-        const tex = this.assetManager.getTexture('ant'); // TODO: replace with anteater-specific texture
-        this.boss = new IdleAnts.Entities.AnteaterBoss(tex, { width: this.mapBounds.width, height: this.mapBounds.height });
+        console.log('Creating new Anteater Boss...');
+        const textures = {
+            body: this.assetManager.getTexture('anteater_boss_body'),
+            front_leg: this.assetManager.getTexture('anteater_boss_leg_front'),
+            back_leg: this.assetManager.getTexture('anteater_boss_leg_back')
+        };
+        console.log("Retrieved boss textures:", textures);
+        this.boss = new IdleAnts.Entities.AnteaterBoss(textures, { width: this.mapBounds.width, height: this.mapBounds.height });
+        this.bossDefeated = false;
         this.entitiesContainers.enemies.addChild(this.boss);
         this.entities.enemies.push(this.boss);
         return this.boss;
     }
 
-    // Remove all current enemies (used before boss intro)
+    // Remove all current enemies except the boss (used before boss intro)
     clearEnemies() {
         for (let i = this.entities.enemies.length - 1; i >= 0; i--) {
             const e = this.entities.enemies[i];
+            
+            if (e === this.boss) {
+                continue;
+            }
+
             if (e.parent) e.parent.removeChild(e);
+            this.entities.enemies.splice(i, 1);
         }
-        this.entities.enemies = [];
+    }
+    
+    // Reset boss trigger for testing or replay
+    resetBossTrigger() {
+        this.bossTriggered = false;
+        this.boss = null;
     }
 } 

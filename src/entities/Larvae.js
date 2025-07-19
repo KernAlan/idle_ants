@@ -20,8 +20,6 @@ IdleAnts.Entities.Larvae = class {
         
         // Create the visual representation
         this.createVisuals();
-        
-        console.log(`Created larvae at (${x}, ${y}) with hatching time ${this.hatchingTime} seconds`);
     }
     
     createVisuals() {
@@ -107,7 +105,6 @@ IdleAnts.Entities.Larvae = class {
     update(delta = 1/60) {
         // If already hatched and ant created, return false to indicate this larvae should be removed
         if (this.isHatched && this.antCreated) {
-            console.log(`Larvae at (${this.x}, ${this.y}) is being removed after ant creation`);
             return false;
         }
         
@@ -115,11 +112,6 @@ IdleAnts.Entities.Larvae = class {
         // PIXI's ticker.deltaTime is in frames, so we convert to seconds
         // For a 60fps game, delta is typically 1, which means 1/60 of a second has passed
         this.age += delta / 60; // Convert delta to seconds
-        
-        // Log age every 5 seconds for debugging
-        if (Math.floor(this.age * 10) % 50 === 0) { // Every ~5 seconds
-            console.log(`Larvae at (${this.x}, ${this.y}) age: ${this.age.toFixed(2)} seconds, delta: ${delta}`);
-        }
         
         // Update pulsing animation - keep it simple and subtle
         this.pulseTime += delta * 2;
@@ -160,21 +152,8 @@ IdleAnts.Entities.Larvae = class {
             }
         }
         
-        // Log progress at key percentages
-        if (
-            (Math.abs(hatchProgress - 0.25) < 0.01) ||
-            (Math.abs(hatchProgress - 0.50) < 0.01) ||
-            (Math.abs(hatchProgress - 0.75) < 0.01) ||
-            (Math.abs(hatchProgress - 0.90) < 0.01) ||
-            (Math.abs(hatchProgress - 0.95) < 0.01) ||
-            (Math.abs(hatchProgress - 0.99) < 0.01)
-        ) {
-            console.log(`Larvae at (${this.x}, ${this.y}) is ${Math.floor(hatchProgress * 100)}% ready to hatch (age: ${this.age.toFixed(2)} seconds)`);
-        }
-        
         // Check if it's time to hatch
         if (!this.isHatched && this.age >= this.hatchingTime) {
-            console.log(`Larvae at (${this.x}, ${this.y}) reached hatching time: ${this.age.toFixed(2)} seconds`);
             this.hatch();
         }
         
@@ -184,7 +163,6 @@ IdleAnts.Entities.Larvae = class {
     
     hatch() {
         this.isHatched = true;
-        console.log(`Larvae at (${this.x}, ${this.y}) is hatching after ${this.age.toFixed(2)} seconds`);
         
         // Check if the colony is at max capacity
         if (IdleAnts.app && IdleAnts.app.entityManager && 
@@ -233,9 +211,7 @@ IdleAnts.Entities.Larvae = class {
                     // Create the ant after the effect completes, but only if one hasn't been created yet
                     if (!this.antCreated && IdleAnts.app && IdleAnts.app.entityManager) {
                         this.antCreated = true; // Mark that we've created an ant
-                        console.log(`Larvae at (${this.x}, ${this.y}) is creating an ant after effect completed`);
                         IdleAnts.app.entityManager.createAntFromLarvae(larvaeX, larvaeY);
-                        console.log(`Creating ant from larvae at (${larvaeX}, ${larvaeY}) after effect completed`);
                         
                         // Remove the larvae container after the ant is created
                         if (this.container && this.container.parent) {
