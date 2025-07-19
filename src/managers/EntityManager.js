@@ -86,6 +86,9 @@ IdleAnts.Managers.EntityManager = class {
             HerculesBeetleEnemy: IdleAnts.Entities.HerculesBeetleEnemy,
             FrogEnemy: IdleAnts.Entities.FrogEnemy
         };
+
+        // Boss reference (null until spawned)
+        this.boss = null;
     }
     
     setEffectManager(effectManager) {
@@ -1103,6 +1106,12 @@ IdleAnts.Managers.EntityManager = class {
     }
     
     updateEnemies(){
+        // If the boss is active, skip regular spawning and just update the boss.
+        if (this.boss && !this.boss.isDead) {
+            const ants = [...this.entities.ants, ...this.entities.flyingAnts, ...this.entities.carAnts, ...this.entities.fireAnts];
+            this.boss.update(ants);
+            return;
+        }
         // Calculate total ants in colony
         const antTotal = this.entities.ants.length + this.entities.flyingAnts.length + this.entities.carAnts.length + this.entities.fireAnts.length;
 
@@ -1171,5 +1180,24 @@ IdleAnts.Managers.EntityManager = class {
             
             console.log(`Created initial larvae at (${larvaeX}, ${larvaeY}) near nest`);
         }
+    }
+
+    // Spawn the anteater boss and return reference
+    spawnAnteaterBoss() {
+        if (this.boss && !this.boss.isDead) return this.boss;
+        const tex = this.assetManager.getTexture('ant'); // TODO: replace with anteater-specific texture
+        this.boss = new IdleAnts.Entities.AnteaterBoss(tex, { width: this.mapBounds.width, height: this.mapBounds.height });
+        this.entitiesContainers.enemies.addChild(this.boss);
+        this.entities.enemies.push(this.boss);
+        return this.boss;
+    }
+
+    // Remove all current enemies (used before boss intro)
+    clearEnemies() {
+        for (let i = this.entities.enemies.length - 1; i >= 0; i--) {
+            const e = this.entities.enemies[i];
+            if (e.parent) e.parent.removeChild(e);
+        }
+        this.entities.enemies = [];
     }
 } 
