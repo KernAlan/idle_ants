@@ -1,3 +1,6 @@
+// Logger setup
+const logger = IdleAnts.Logger?.create('CameraManager') || console;
+
 // src/managers/camera/CameraManager.js
 // Ensure IdleAnts and IdleAnts.Managers namespaces exist
 if (typeof IdleAnts === 'undefined') {
@@ -86,16 +89,16 @@ IdleAnts.Managers.CameraManager = class {
         const viewWidth = this.app.screen.width / this.mapConfig.zoom.level;
         const viewHeight = this.app.screen.height / this.mapConfig.zoom.level;
         
-        console.log(`[CAMERA] centerViewOnPosition called with center: (${x}, ${y})`);
-        console.log(`[CAMERA] Screen dimensions: ${this.app.screen.width}x${this.app.screen.height}, zoom: ${this.mapConfig.zoom.level}`);
-        console.log(`[CAMERA] View dimensions in world: ${viewWidth}x${viewHeight}`);
+        logger.debug(`[CAMERA] centerViewOnPosition called with center: (${x}, ${y})`);
+        logger.debug(`[CAMERA] Screen dimensions: ${this.app.screen.width}x${this.app.screen.height}, zoom: ${this.mapConfig.zoom.level}`);
+        logger.debug(`[CAMERA] View dimensions in world: ${viewWidth}x${viewHeight}`);
         
         const viewportX = Math.max(0, Math.min(x - (viewWidth / 2), this.mapConfig.width - viewWidth));
         const viewportY = Math.max(0, Math.min(y - (viewHeight / 2), this.mapConfig.height - viewHeight));
         
-        console.log(`[CAMERA] Calculated viewport before assignment: (${viewportX}, ${viewportY})`);
-        console.log(`[CAMERA] Viewport calculation: Y = max(0, min(${y} - ${viewHeight/2}, ${this.mapConfig.height} - ${viewHeight}))`);
-        console.log(`[CAMERA] Viewport calculation: Y = max(0, min(${y - (viewHeight / 2)}, ${this.mapConfig.height - viewHeight}))`);
+        logger.debug(`[CAMERA] Calculated viewport before assignment: (${viewportX}, ${viewportY})`);
+        logger.debug(`[CAMERA] Viewport calculation: Y = max(0, min(${y} - ${viewHeight/2}, ${this.mapConfig.height} - ${viewHeight}))`);
+        logger.debug(`[CAMERA] Viewport calculation: Y = max(0, min(${y - (viewHeight / 2)}, ${this.mapConfig.height - viewHeight}))`);
         
         this.mapConfig.viewport.x = viewportX;
         this.mapConfig.viewport.y = viewportY;
@@ -121,7 +124,7 @@ IdleAnts.Managers.CameraManager = class {
 
     // Cinematic method: Position to show object in upper portion of screen
     cinematicShowObjectInUpperScreen(objectX, objectY, percentageFromTop = 0.4, zoom = null) {
-        console.log(`[CAMERA] Cinematic: Showing object at (${objectX}, ${objectY}) in upper ${percentageFromTop * 100}% of screen`);
+        logger.debug(`[CAMERA] Cinematic: Showing object at (${objectX}, ${objectY}) in upper ${percentageFromTop * 100}% of screen`);
         
         // Set zoom if provided
         if (zoom !== null) {
@@ -152,23 +155,23 @@ IdleAnts.Managers.CameraManager = class {
             cameraCenterY = safeMinCameraCenterY;
             const actualScreenY = (objectY - (cameraCenterY - viewHeight / 2)) * this.mapConfig.zoom.level;
             const actualPercentage = actualScreenY / this.app.screen.height;
-            console.log(`[CAMERA] Boss too close to top edge - adjusted to show at ${(actualPercentage * 100).toFixed(1)}% instead of ${(percentageFromTop * 100)}%`);
-            console.log(`[CAMERA] Used safe minimum camera Y: ${safeMinCameraCenterY} instead of ${minValidCameraCenterY}`);
+            logger.debug(`[CAMERA] Boss too close to top edge - adjusted to show at ${(actualPercentage * 100).toFixed(1)}% instead of ${(percentageFromTop * 100)}%`);
+            logger.debug(`[CAMERA] Used safe minimum camera Y: ${safeMinCameraCenterY} instead of ${minValidCameraCenterY}`);
         } else if (cameraCenterY > maxValidCameraCenterY) {
             // Object is too close to bottom edge - adjust to show as much as possible  
             cameraCenterY = maxValidCameraCenterY;
             const actualScreenY = (objectY - (cameraCenterY - viewHeight / 2)) * this.mapConfig.zoom.level;
             const actualPercentage = actualScreenY / this.app.screen.height;
-            console.log(`[CAMERA] Boss too close to bottom edge - adjusted to show at ${(actualPercentage * 100).toFixed(1)}% instead of ${(percentageFromTop * 100)}%`);
+            logger.debug(`[CAMERA] Boss too close to bottom edge - adjusted to show at ${(actualPercentage * 100).toFixed(1)}% instead of ${(percentageFromTop * 100)}%`);
         }
         
-        console.log(`[CAMERA] Calculated camera center: (${cameraCenterX}, ${cameraCenterY})`);
-        console.log(`[CAMERA] Valid camera Y range: ${minValidCameraCenterY} to ${maxValidCameraCenterY}`);
+        logger.debug(`[CAMERA] Calculated camera center: (${cameraCenterX}, ${cameraCenterY})`);
+        logger.debug(`[CAMERA] Valid camera Y range: ${minValidCameraCenterY} to ${maxValidCameraCenterY}`);
         
         // Use the existing centerViewOnPosition method (should not need clamping now)
         this.centerViewOnPosition(cameraCenterX, cameraCenterY);
         
-        console.log(`[CAMERA] Final viewport: (${this.mapConfig.viewport.x}, ${this.mapConfig.viewport.y})`);
+        logger.debug(`[CAMERA] Final viewport: (${this.mapConfig.viewport.x}, ${this.mapConfig.viewport.y})`);
     }
 
     centerCameraOnNest() {
@@ -347,7 +350,7 @@ IdleAnts.Managers.CameraManager = class {
                 y: this.worldContainer.position.y
             }
         };
-        console.log('[CAMERA] State preserved:', this.preservedCameraState);
+        logger.debug('[CAMERA] State preserved:', this.preservedCameraState);
     }
     
     restoreCameraState() {
@@ -366,7 +369,7 @@ IdleAnts.Managers.CameraManager = class {
             this.mapConfig.viewport.x = Math.max(0, Math.min(this.mapConfig.viewport.x, maxViewportX));
             this.mapConfig.viewport.y = Math.max(0, Math.min(this.mapConfig.viewport.y, maxViewportY));
             
-            console.log(`[CAMERA] Viewport clamped to: (${this.mapConfig.viewport.x}, ${this.mapConfig.viewport.y}) within bounds (${maxViewportX}, ${maxViewportY})`);
+            logger.debug(`[CAMERA] Viewport clamped to: (${this.mapConfig.viewport.x}, ${this.mapConfig.viewport.y}) within bounds (${maxViewportX}, ${maxViewportY})`);
             
             if (this.worldContainer && this.worldContainer.position && typeof this.worldContainer.position.set === 'function') {
                 this.worldContainer.position.set(
@@ -377,7 +380,7 @@ IdleAnts.Managers.CameraManager = class {
                 console.error('[CAMERA] worldContainer.position is undefined in restoreCameraState');
             }
             
-            console.log('[CAMERA] State restored to:', this.preservedCameraState);
+            logger.debug('[CAMERA] State restored to:', this.preservedCameraState);
             
             // Update minimap if available
             if (this.game && typeof this.game.updateMinimap === 'function') {
@@ -409,7 +412,7 @@ IdleAnts.Managers.CameraManager = class {
             active: true
         };
         
-        console.log(`[CAMERA] Starting safe cinematic pan from (${this.mapConfig.viewport.x}, ${this.mapConfig.viewport.y}) to (${targetViewportX}, ${targetViewportY})`);
+        logger.debug(`[CAMERA] Starting safe cinematic pan from (${this.mapConfig.viewport.x}, ${this.mapConfig.viewport.y}) to (${targetViewportX}, ${targetViewportY})`);
     }
     
     // Update cinematic pan animation - call this in game loop
@@ -441,7 +444,7 @@ IdleAnts.Managers.CameraManager = class {
         // Check if animation is complete
         if (progress >= 1.0) {
             this.cinematicPan.active = false;
-            console.log(`[CAMERA] Cinematic pan completed at viewport: (${this.mapConfig.viewport.x}, ${this.mapConfig.viewport.y})`);
+            logger.debug(`[CAMERA] Cinematic pan completed at viewport: (${this.mapConfig.viewport.x}, ${this.mapConfig.viewport.y})`);
             return false; // Animation finished
         }
         

@@ -1,3 +1,6 @@
+// Logger setup
+const logger = IdleAnts.Logger?.create('Larvae') || console;
+
 // src/entities/Larvae.js
 IdleAnts.Entities = IdleAnts.Entities || {};
 
@@ -51,11 +54,11 @@ IdleAnts.Entities.Larvae = class {
         if (IdleAnts.app && IdleAnts.app.entityManager && IdleAnts.app.entityManager.entitiesContainers.larvae) {
             // Add to the dedicated larvae container
             IdleAnts.app.entityManager.entitiesContainers.larvae.addChild(this.container);
-            console.log(`Added larvae to dedicated larvae container (z-index already set correctly in EntityManager)`);
+            logger.debug(`Added larvae to dedicated larvae container (z-index already set correctly in EntityManager)`);
         } else if (IdleAnts.app && IdleAnts.app.worldContainer) {
             // Fallback: add directly to world container
             IdleAnts.app.worldContainer.addChild(this.container);
-            console.log(`Warning: Added larvae directly to world container (z-index may not be correct)`);
+            logger.debug(`Warning: Added larvae directly to world container (z-index may not be correct)`);
         }
     }
     
@@ -173,7 +176,7 @@ IdleAnts.Entities.Larvae = class {
             
             // If colony is at max capacity, postpone hatching and retry later
             if (currentAnts >= maxAnts) {
-                console.log("Cannot hatch larvae now: colony at maximum capacity. Will retry in 10 seconds.");
+                logger.debug("Cannot hatch larvae now: colony at maximum capacity. Will retry in 10 seconds.");
 
                 // Visual cue: small shake or pulse to indicate pending hatch
                 if (IdleAnts.app.effectManager) {
@@ -216,7 +219,7 @@ IdleAnts.Entities.Larvae = class {
                         // Remove the larvae container after the ant is created
                         if (this.container && this.container.parent) {
                             this.container.parent.removeChild(this.container);
-                            console.log(`Larvae container at (${this.x}, ${this.y}) removed after ant creation`);
+                            logger.debug(`Larvae container at (${this.x}, ${this.y}) removed after ant creation`);
                         }
                     }
                 }, 7000); // Match the 7-second duration of the LarvaeEffect (extended from 2 seconds)
@@ -230,7 +233,7 @@ IdleAnts.Entities.Larvae = class {
                     // Remove the larvae container after the ant is created
                     if (this.container && this.container.parent) {
                         this.container.parent.removeChild(this.container);
-                        console.log(`Larvae container at (${this.x}, ${this.y}) removed after ant creation (fallback)`);
+                        logger.debug(`Larvae container at (${this.x}, ${this.y}) removed after ant creation (fallback)`);
                     }
                 }
             }
@@ -243,7 +246,7 @@ IdleAnts.Entities.Larvae = class {
                 // Remove the larvae container after the ant is created
                 if (this.container && this.container.parent) {
                     this.container.parent.removeChild(this.container);
-                    console.log(`Larvae container at (${this.x}, ${this.y}) removed after ant creation (no effect manager)`);
+                    logger.debug(`Larvae container at (${this.x}, ${this.y}) removed after ant creation (no effect manager)`);
                 }
             }
         }

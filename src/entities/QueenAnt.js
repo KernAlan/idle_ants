@@ -1,3 +1,6 @@
+// Logger setup
+const logger = IdleAnts.Logger?.create('QueenAnt') || console;
+
 // src/entities/QueenAnt.js
 IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
     constructor(texture, nestPosition, speedMultiplier = 1) {
@@ -43,7 +46,7 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
         this.larvaeProductionRate = Math.max(20 * 60, this.larvaeProductionRate); // Minimum 20 seconds
         
         // Log the next production time for debugging
-        // console.log(`Queen will produce next larvae in ${this.larvaeProductionRate/60} seconds (${this.larvaeProductionRate/3600} minutes)`);
+        // logger.debug(`Queen will produce next larvae in ${this.larvaeProductionRate/60} seconds (${this.larvaeProductionRate/3600} minutes)`);
     }
     
     // Override base scale for queen ant
@@ -215,7 +218,7 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
             
             // If colony is at max capacity, don't produce larvae
             if (currentAnts + currentLarvae >= maxAnts) {
-                // console.log("Cannot produce larvae: colony at maximum capacity");
+                // logger.debug("Cannot produce larvae: colony at maximum capacity");
                 return;
             }
         }
@@ -227,7 +230,7 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
                 const queenLevel = IdleAnts.app.resourceManager ? IdleAnts.app.resourceManager.stats.queenUpgradeLevel : 0;
                 const larvaeToSpawn = 1 + queenLevel; // 1 at level 0, 2 at level 1, etc.
                 
-                // console.log(`Queen level ${queenLevel} spawning ${larvaeToSpawn} larvae`);
+                // logger.debug(`Queen level ${queenLevel} spawning ${larvaeToSpawn} larvae`);
                 
                 // Spawn multiple larvae based on queen level
                 for(let i = 0; i < larvaeToSpawn; i++){
@@ -241,7 +244,7 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
                     IdleAnts.app.entityManager.produceLarvae(this.x + offsetX, this.y + offsetY);
                     
                     // Log for debugging
-                    // console.log(`Queen produced larvae ${i+1}/${larvaeToSpawn} at (${this.x + offsetX}, ${this.y + offsetY})`);
+                    // logger.debug(`Queen produced larvae ${i+1}/${larvaeToSpawn} at (${this.x + offsetX}, ${this.y + offsetY})`);
                 }
                 
                 // Also create a special effect at the queen's position
@@ -251,7 +254,7 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
                 
                 // Increment current larvae count by the number spawned
                 this.currentLarvae += larvaeToSpawn;
-                // console.log(`Queen now has ${this.currentLarvae} larvae`);
+                // logger.debug(`Queen now has ${this.currentLarvae} larvae`);
             } catch (error) {
                 console.error('Error creating larvae:', error);
             }

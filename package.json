@@ -14,5 +14,8 @@
   "devDependencies": {
     "http-server": "^14.1.1",
     "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "loglevel": "^1.9.2"
   }
-} 
+}

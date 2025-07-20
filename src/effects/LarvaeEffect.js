@@ -1,3 +1,6 @@
+// Logger setup
+const logger = IdleAnts.Logger?.create('LarvaeEffect') || console;
+
 // src/effects/LarvaeEffect.js
 IdleAnts.Effects = IdleAnts.Effects || {};
 
@@ -7,11 +10,11 @@ IdleAnts.Effects.LarvaeEffect = class extends IdleAnts.Effects.Effect {
         this.duration = 7.0; // 7 seconds duration - extended from 2 seconds to 7 seconds
         this.color = color;
         this.scale = scale;
-        console.log(`LarvaeEffect constructor at (${x}, ${y}) with scale ${scale}`);
+        logger.debug(`LarvaeEffect constructor at (${x}, ${y}) with scale ${scale}`);
     }
     
     create() {
-        console.log(`Creating larvae effect at (${this.x}, ${this.y})`);
+        logger.debug(`Creating larvae effect at (${this.x}, ${this.y})`);
         
         // Create a container for the larvae effect
         this.container = new PIXI.Container();
@@ -30,7 +33,7 @@ IdleAnts.Effects.LarvaeEffect = class extends IdleAnts.Effects.Effect {
                     this.egg = new PIXI.Sprite(eggTexture);
                     this.egg.anchor.set(0.5);
                     this.container.addChild(this.egg);
-                    console.log("Using egg texture from assets");
+                    logger.debug("Using egg texture from assets");
                 } else {
                     this.createEggGraphic();
                 }
@@ -42,7 +45,7 @@ IdleAnts.Effects.LarvaeEffect = class extends IdleAnts.Effects.Effect {
                     this.larvae.anchor.set(0.5);
                     this.larvae.alpha = 0; // Start invisible
                     this.container.addChild(this.larvae);
-                    console.log("Using larvae texture from assets");
+                    logger.debug("Using larvae texture from assets");
                 } else {
                     this.createLarvaeGraphic();
                 }
@@ -62,7 +65,7 @@ IdleAnts.Effects.LarvaeEffect = class extends IdleAnts.Effects.Effect {
         
         // Make sure we're adding to the world container if possible
         if (IdleAnts.app && IdleAnts.app.worldContainer) {
-            console.log("Adding larvae effect to world container");
+            logger.debug("Adding larvae effect to world container");
             IdleAnts.app.worldContainer.addChild(this.container);
             
             // Bring to front
@@ -71,7 +74,7 @@ IdleAnts.Effects.LarvaeEffect = class extends IdleAnts.Effects.Effect {
                 IdleAnts.app.worldContainer.children.length - 1
             );
         } else {
-            console.log("Adding larvae effect to app stage");
+            logger.debug("Adding larvae effect to app stage");
             this.app.stage.addChild(this.container);
         }
     }
@@ -266,7 +269,7 @@ IdleAnts.Effects.LarvaeEffect = class extends IdleAnts.Effects.Effect {
         // Remove the effect from the stage
         if (this.container && this.container.parent) {
             this.container.parent.removeChild(this.container);
-            console.log("Larvae effect removed from stage");
+            logger.debug("Larvae effect removed from stage");
         }
         this.active = false;
     }

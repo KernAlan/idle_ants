@@ -1,3 +1,6 @@
+// Logger setup
+const logger = IdleAnts.Logger?.create('Game') || console;
+
 // src/Game.js
 IdleAnts.Game = class {
     // Define game state constants
@@ -130,7 +133,7 @@ IdleAnts.Game = class {
                     document.removeEventListener(event, resumeAudio);
                 });
                 
-                console.log('Audio resumed after user interaction');
+                logger.debug('Audio resumed after user interaction');
             }
         };
         
@@ -248,7 +251,7 @@ IdleAnts.Game = class {
         }
         
         // Log state change for debugging
-        console.log(`Game state changed to: ${this.state}`);
+        logger.debug(`Game state changed to: ${this.state}`);
     }
     
     setupGame() {
@@ -351,12 +354,12 @@ IdleAnts.Game = class {
             if (document.readyState === 'loading') {
                 // If the document is still loading, wait for it to finish
                 document.addEventListener('DOMContentLoaded', () => {
-                    console.log("DOM fully loaded, initializing game UI");
+                    logger.debug("DOM fully loaded, initializing game UI");
                     this.initializeGameUI();
                 });
             } else {
                 // DOM is already loaded, initialize UI immediately
-                console.log("DOM already loaded, initializing game UI");
+                logger.debug("DOM already loaded, initializing game UI");
                 this.initializeGameUI();
             }
         };
@@ -397,9 +400,9 @@ IdleAnts.Game = class {
                                this.entityManager.entities.flyingAnts.length + 
                                this.entityManager.entities.carAnts.length + 
                                this.entityManager.entities.fireAnts.length;
-                console.log(`Total ants: ${antTotal}`);
-                console.log(`Boss triggered: ${this.entityManager.bossTriggered}`);
-                console.log(`Boss exists: ${!!this.entityManager.boss}`);
+                logger.debug(`Total ants: ${antTotal}`);
+                logger.debug(`Boss triggered: ${this.entityManager.bossTriggered}`);
+                logger.debug(`Boss exists: ${!!this.entityManager.boss}`);
                 return antTotal;
             }
         };
@@ -604,21 +607,21 @@ IdleAnts.Game = class {
 
     // Triggered (manually for now) to begin the boss fight
     startBossFight() {
-        console.log('startBossFight called, current state:', this.state);
+        logger.debug('startBossFight called, current state:', this.state);
         
         if (this.state !== IdleAnts.Game.States.PLAYING) {
             console.warn('Cannot start boss fight - not in playing state');
             return;
         }
 
-        console.log('Starting boss fight sequence...');
+        logger.debug('Starting boss fight sequence...');
         
         // Pre-position camera to show boss entrance area BEFORE spawning boss
         if (this.cameraManager) {
             const bossSpawnX = this.mapConfig.width / 2;  // 1500 - center X
             const bossSpawnY = 150;                       // Near top of map
             
-            console.log(`[CINEMATIC] Pre-positioning camera to show boss entrance area at (${bossSpawnX}, ${bossSpawnY})`);
+            logger.debug(`[CINEMATIC] Pre-positioning camera to show boss entrance area at (${bossSpawnX}, ${bossSpawnY})`);
             this.cameraManager.startCinematicPanTo(bossSpawnX, bossSpawnY, 1000); // 1 second to get into position
             
             // Delay boss spawn until camera is in position
@@ -643,8 +646,8 @@ IdleAnts.Game = class {
         this.entityManager.clearEnemies();
         
         this.currentBoss = boss;
-        console.log('Boss spawned at:', this.currentBoss.x, this.currentBoss.y);
-        console.log('Boss should be at top of map for invasion entrance');
+        logger.debug('Boss spawned at:', this.currentBoss.x, this.currentBoss.y);
+        logger.debug('Boss should be at top of map for invasion entrance');
 
         // Begin dramatic invasion cinematic
         this.playBossIntroCinematic(boss);
@@ -738,13 +741,13 @@ IdleAnts.Game = class {
     }
     
     unlockFlyingAnts() {
-        console.log("Game: unlockFlyingAnts called");
+        logger.debug("Game: unlockFlyingAnts called");
         
         // Try to unlock flying ants through the resource manager
         const success = this.resourceManager.unlockFlyingAnts();
         
         if (success) {
-            console.log("Game: Flying ants unlocked successfully");
+            logger.debug("Game: Flying ants unlocked successfully");
             
             // Update the UI
             this.uiManager.updateUI();
@@ -757,7 +760,7 @@ IdleAnts.Game = class {
             const statsDisplay = document.getElementById('flying-ant-stats');
             const expandButton = document.getElementById('expand-flying-ants');
             
-            console.log("UI Elements:", { 
+            logger.debug("UI Elements:", { 
                 buyButton: buyButton, 
                 statsDisplay: statsDisplay, 
                 expandButton: expandButton 
@@ -767,7 +770,7 @@ IdleAnts.Game = class {
             if (statsDisplay) statsDisplay.classList.remove('hidden');
             if (expandButton) expandButton.classList.remove('hidden');
         } else {
-            console.log("Game: Failed to unlock flying ants");
+            logger.debug("Game: Failed to unlock flying ants");
         }
         
         return success;
@@ -921,7 +924,7 @@ IdleAnts.Game = class {
         // Return true if user agent matches mobile pattern or has touch events
         const isMobile = mobileRegex.test(userAgent) || hasTouchEvents;
         
-        console.log('Mobile device detected:', isMobile);
+        logger.debug('Mobile device detected:', isMobile);
         
         // Apply mobile-specific settings if on mobile
         if (isMobile) {
@@ -1022,7 +1025,7 @@ IdleAnts.Game = class {
     runInitHooks() {
         // Check if there are any registered initialization functions
         if (Array.isArray(IdleAnts.onInit)) {
-            console.log(`Running ${IdleAnts.onInit.length} initialization hooks`);
+            logger.debug(`Running ${IdleAnts.onInit.length} initialization hooks`);
             // Run each initialization function with this game instance as the argument
             IdleAnts.onInit.forEach(initFn => {
                 try {
@@ -1182,7 +1185,7 @@ IdleAnts.Game = class {
      */
     playBossIntroCinematic(boss) {
         this.transitionToState(IdleAnts.Game.States.BOSS_INTRO);
-        console.log('%c[CINEMATIC] Epic Boss Invasion - Top to Center!', 'color: #FFD700; font-weight: bold; font-size: 16px;');
+        logger.debug('%c[CINEMATIC] Epic Boss Invasion - Top to Center!', 'color: #FFD700; font-weight: bold; font-size: 16px;');
 
         // === PHASE 1: DRAMATIC CAMERA SETUP (0.5 seconds) ===
         
@@ -1210,9 +1213,9 @@ IdleAnts.Game = class {
         const nestX = this.mapConfig.width / 2;  // 1500
         const nestY = this.mapConfig.height / 2; // 1000
         
-        console.log(`[CINEMATIC] Boss starting position: ${boss.x}, ${boss.y}`);
-        console.log(`[CINEMATIC] Nest target position: ${nestX}, ${nestY}`);
-        console.log(`[CINEMATIC] Map dimensions: ${this.mapConfig.width}x${this.mapConfig.height}`);
+        logger.debug(`[CINEMATIC] Boss starting position: ${boss.x}, ${boss.y}`);
+        logger.debug(`[CINEMATIC] Nest target position: ${nestX}, ${nestY}`);
+        logger.debug(`[CINEMATIC] Map dimensions: ${this.mapConfig.width}x${this.mapConfig.height}`);
         
         // Add a visual debug marker at boss position
         if (this.effectManager) {
@@ -1231,13 +1234,13 @@ IdleAnts.Game = class {
         
         // Camera should show the invasion area using safe pan method
         if (this.cameraManager) {
-            console.log(`[CINEMATIC] Boss position: ${boss.x}, ${boss.y}`);
-            console.log(`[CINEMATIC] Camera should already be positioned to show boss entrance`);
+            logger.debug(`[CINEMATIC] Boss position: ${boss.x}, ${boss.y}`);
+            logger.debug(`[CINEMATIC] Camera should already be positioned to show boss entrance`);
             
             // Camera is already positioned from the pre-pan - no additional movement needed
             // This prevents any coordinate system disruption during the cinematic
             
-            console.log(`[CINEMATIC] Boss entrance area already visible - no camera adjustment needed`);
+            logger.debug(`[CINEMATIC] Boss entrance area already visible - no camera adjustment needed`);
         }
 
         // === PHASE 2: WARNING BUILDUP (1.5 seconds) ===
@@ -1245,7 +1248,7 @@ IdleAnts.Game = class {
             // Subtle rumble
             if (this.cameraManager) {
                 // DISABLE SHAKE - conflicts with worldContainer coordinate system
-                console.log('[CINEMATIC] Skipping subtle rumble shake to prevent coordinate corruption');
+                logger.debug('[CINEMATIC] Skipping subtle rumble shake to prevent coordinate corruption');
                 // this.cameraManager.shake(800, 5);
             }
             
@@ -1312,7 +1315,7 @@ IdleAnts.Game = class {
                 // Boss becomes visible when fall animation actually starts
                 if (boss.alpha === 0) {
                     boss.alpha = 1;
-                    console.log('[CINEMATIC] Boss now visible - beginning dramatic fall!');
+                    logger.debug('[CINEMATIC] Boss now visible - beginning dramatic fall!');
                 }
                 
                 // Adjust progress for fall phase (starts after 0.15)
@@ -1411,7 +1414,7 @@ IdleAnts.Game = class {
                         }
                     }
                     
-                    console.log(`[CINEMATIC] EPIC BOSS IMPACT! Boss crashed down at: ${boss.x}, ${boss.y}`);
+                    logger.debug(`[CINEMATIC] EPIC BOSS IMPACT! Boss crashed down at: ${boss.x}, ${boss.y}`);
                     this.handleEpicBossInvasion(boss, boss.x, boss.y);
                 }
             };
@@ -1489,12 +1492,12 @@ IdleAnts.Game = class {
     }
 
     handleEpicBossInvasion(boss, landingX, landingY) {
-        console.log('%c[CINEMATIC] BOSS HAS INVADED THE NEST AREA!', 'color: #FF4444; font-weight: bold; font-size: 16px;');
+        logger.debug('%c[CINEMATIC] BOSS HAS INVADED THE NEST AREA!', 'color: #FF4444; font-weight: bold; font-size: 16px;');
         
         // === MASSIVE SCREEN SHAKE FOR ARRIVAL ===
         if (this.cameraManager) {
             // DISABLE SHAKE - it uses app.stage positioning which conflicts with worldContainer system
-            console.log('[CINEMATIC] Skipping camera shake to prevent coordinate system corruption');
+            logger.debug('[CINEMATIC] Skipping camera shake to prevent coordinate system corruption');
             // this.cameraManager.shake(1200, 40); // Strong arrival shake
         }
         
@@ -1545,7 +1548,7 @@ IdleAnts.Game = class {
             
             // NO ZOOM ANIMATION - keep camera exactly where it is to prevent coordinate corruption
             // The camera is already properly positioned from the initial pan
-            console.log('[CINEMATIC] Skipping zoom animation to prevent coordinate system corruption');
+            logger.debug('[CINEMATIC] Skipping zoom animation to prevent coordinate system corruption');
             
         }, 600);
         
@@ -1603,7 +1606,7 @@ IdleAnts.Game = class {
     }
 
     endEpicCinematic() {
-        console.log('%c[CINEMATIC] Epic boss invasion complete - DEFEND THE NEST!', 'color: #00FF00; font-weight: bold;');
+        logger.debug('%c[CINEMATIC] Epic boss invasion complete - DEFEND THE NEST!', 'color: #00FF00; font-weight: bold;');
         
         // Remove all cinematic text elements
         this.hideWarningText();
@@ -1622,8 +1625,8 @@ IdleAnts.Game = class {
         
         // Ensure proper camera position for combat
         if (this.cameraManager && this.currentBoss) {
-            console.log(`[CINEMATIC] Camera was never moved - no restoration needed`);
-            console.log(`[CINEMATIC] Camera remains exactly where player positioned it`);
+            logger.debug(`[CINEMATIC] Camera was never moved - no restoration needed`);
+            logger.debug(`[CINEMATIC] Camera remains exactly where player positioned it`);
         }
         
         // Show boss health bar
@@ -1633,6 +1636,6 @@ IdleAnts.Game = class {
         
         // IMPORTANT: Officially transition to boss fight state - camera controls should work normally now
         this.transitionToState(IdleAnts.Game.States.BOSS_FIGHT);
-        console.log('[CINEMATIC] Camera controls restored - DEFEND THE COLONY!');
+        logger.debug('[CINEMATIC] Camera controls restored - DEFEND THE COLONY!');
     }
 }; 

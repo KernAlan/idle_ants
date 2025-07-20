@@ -1,3 +1,6 @@
+// Logger setup
+const logger = IdleAnts.Logger?.create('AudioManager') || console;
+
 IdleAnts.AudioManager = (function() {
     // Private audio context and sounds storage
     let audioContext = null;
@@ -17,7 +20,7 @@ IdleAnts.AudioManager = (function() {
             // Load all audio assets from HTML elements
             loadAudioAssets();
             
-            console.log('Audio Manager initialized');
+            logger.debug('Audio Manager initialized');
             return true;
         } catch (e) {
             console.error('Web Audio API is not supported in this browser', e);
@@ -58,7 +61,7 @@ IdleAnts.AudioManager = (function() {
                         audioElement.loop = true;
                         audioElement.volume = asset.volume || 0.5;
                         
-                        console.log(`Audio loaded from HTML: ${asset.id}`);
+                        logger.debug(`Audio loaded from HTML: ${asset.id}`);
                         loadedSounds++;
                     } else {
                         console.warn(`Audio element with ID ${asset.id} not found in HTML`);
@@ -87,7 +90,7 @@ IdleAnts.AudioManager = (function() {
                         // Set volume
                         audioElement.volume = asset.volume || 0.3;
                         
-                        console.log(`Audio loaded from HTML: ${asset.id}`);
+                        logger.debug(`Audio loaded from HTML: ${asset.id}`);
                         loadedSounds++;
                     } else {
                         console.warn(`Audio element with ID ${asset.id} not found in HTML`);
@@ -95,7 +98,7 @@ IdleAnts.AudioManager = (function() {
                 }
             }
             
-            console.log(`Loaded ${loadedSounds}/${totalSounds} audio files from HTML`);
+            logger.debug(`Loaded ${loadedSounds}/${totalSounds} audio files from HTML`);
         } catch (error) {
             console.error('Error loading audio assets:', error);
         }

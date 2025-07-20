@@ -9,6 +9,9 @@ import './core/Logger.js';
 import './core/ErrorHandler.js';
 import './core/RecoveryManager.js';
 
+// Logger setup
+const logger = IdleAnts.Logger?.create('Modules') || console;
+
 // Load all module groups using barrel exports
 import './data/index.js';
 import './assets/index.js';
@@ -27,8 +30,8 @@ setTimeout(() => {
     const missingNamespaces = requiredNamespaces.filter(ns => !IdleAnts[ns]);
 
     if (missingNamespaces.length > 0) {
-        console.warn('[Modules] Missing required namespaces:', missingNamespaces);
-        console.warn('[Modules] Available namespaces:', Object.keys(IdleAnts));
+        logger.warn('Missing required namespaces:', missingNamespaces);
+        logger.warn('Available namespaces:', Object.keys(IdleAnts));
     }
 
     // Verify critical managers are loaded
@@ -37,8 +40,8 @@ setTimeout(() => {
         const missingManagers = requiredManagers.filter(mgr => !IdleAnts.Managers[mgr]);
         
         if (missingManagers.length > 0) {
-            console.warn('[Modules] Missing required managers:', missingManagers);
-            console.warn('[Modules] Available managers:', Object.keys(IdleAnts.Managers));
+            logger.warn('Missing required managers:', missingManagers);
+            logger.warn('Available managers:', Object.keys(IdleAnts.Managers));
         }
     }
 
@@ -48,8 +51,8 @@ setTimeout(() => {
         const missingGameManagers = requiredGameManagers.filter(mgr => !IdleAnts.Game[mgr]);
         
         if (missingGameManagers.length > 0) {
-            console.warn('[Modules] Missing required game managers:', missingGameManagers);
-            console.warn('[Modules] Available game managers:', Object.keys(IdleAnts.Game));
+            logger.warn('Missing required game managers:', missingGameManagers);
+            logger.warn('Available game managers:', Object.keys(IdleAnts.Game));
         }
     }
 
@@ -59,8 +62,8 @@ setTimeout(() => {
         const missingEntities = requiredEntities.filter(ent => !IdleAnts.Entities[ent]);
         
         if (missingEntities.length > 0) {
-            console.warn('[Modules] Missing required entities:', missingEntities);
-            console.warn('[Modules] Available entities:', Object.keys(IdleAnts.Entities));
+            logger.warn('Missing required entities:', missingEntities);
+            logger.warn('Available entities:', Object.keys(IdleAnts.Entities));
         }
     }
 }, 0);

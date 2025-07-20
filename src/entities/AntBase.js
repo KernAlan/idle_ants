@@ -1,3 +1,6 @@
+// Logger setup
+const logger = IdleAnts.Logger?.create('AntBase') || console;
+
 // src/entities/AntBase.js
 IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
     // Define state constants
@@ -1085,7 +1088,7 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
     transitionToState(newState) {
         // Debug logging for state transitions only when capacity is changing
         if (this.capacityWeight > 0) {
-            // console.log(`Ant state transition: ${this.state} -> ${newState}, Capacity=${this.capacity}, CurrentWeight=${this.capacityWeight}, FoodCollected=${this.foodCollected}`);
+            // logger.debug(`Ant state transition: ${this.state} -> ${newState}, Capacity=${this.capacity}, CurrentWeight=${this.capacityWeight}, FoodCollected=${this.foodCollected}`);
         }
         
         // Exit actions for current state
