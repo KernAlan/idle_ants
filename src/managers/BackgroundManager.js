@@ -77,4 +77,11 @@ IdleAnts.Managers.BackgroundManager = class {
         
         this.worldContainer.addChild(border);
     }
+    
+    // Main update method called from game loop
+    update() {
+        // Background typically doesn't need updates per frame
+        // This method is here to satisfy the game loop requirements
+        // Future features like animated backgrounds could be added here
+    }
 }; 

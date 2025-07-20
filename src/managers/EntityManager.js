@@ -1,1229 +1,461 @@
-// src/managers/EntityManager.js
+// src/managers/EntityManager.js - Refactored with Specialized Entity Managers
+// Delegates responsibilities to focused entity managers for better SRP adherence
+
 IdleAnts.Managers.EntityManager = class {
     constructor(app, assetManager, resourceManager, worldContainer) {
         this.app = app;
         this.assetManager = assetManager;
         this.resourceManager = resourceManager;
         this.worldContainer = worldContainer;
-        this.effectManager = null; // Will be set after initialization
+        this.effectManager = null;
         
-        // Create containers for game objects
-        this.entitiesContainers = {
-            ants: new PIXI.Container(),
-            flyingAnts: new PIXI.Container(),
-            food: new PIXI.Container(),
-            nest: new PIXI.Container(),
-            queen: new PIXI.Container(), // Container for queen ant
-            larvae: new PIXI.Container(), // New container for larvae
-            carAnts: new PIXI.Container(), // New container for Car Ants
-            fireAnts: new PIXI.Container(), // Container for Fire Ants
-            enemies: new PIXI.Container() // Container for Enemies
-        };
+        // Initialize specialized entity managers
+        this.initializeEntityManagers();
         
-        // Add containers to the world container instead of directly to the stage
-        this.worldContainer.addChild(this.entitiesContainers.nest);
-        this.worldContainer.addChild(this.entitiesContainers.food);
-        this.worldContainer.addChild(this.entitiesContainers.larvae); // Add larvae container
-        this.worldContainer.addChild(this.entitiesContainers.ants);
-        this.worldContainer.addChild(this.entitiesContainers.flyingAnts);
-        this.worldContainer.addChild(this.entitiesContainers.queen); // Add queen container
-        this.worldContainer.addChild(this.entitiesContainers.carAnts); // Add Car Ants container
-        this.worldContainer.addChild(this.entitiesContainers.fireAnts); // Add Fire Ants container
-        this.worldContainer.addChild(this.entitiesContainers.enemies); // Enemies container
+        // Backward compatibility - create unified entity collections
+        this.setupBackwardCompatibility();
         
-        // Entity collections
-        this.entities = {
-            ants: [],
-            flyingAnts: [],
-            foods: [],
-            queen: null, // Reference to the queen ant
-            larvae: [], // Array for larvae entities
-            carAnts: [], // Array for Car Ant entities
-            fireAnts: [], // Array for Fire Ant entities
-            enemies: [] // Array for enemies
-        };
-        
-        this.nest = null;
-        this.nestPosition = null;
-        
-        // Trail settings
-        this.trailInterval = 10;
-        this.frameCounter = 0;
-        
-        // Food spawn timer settings
-        this.foodSpawnCounter = 0;
-        this.foodSpawnInterval = 180; // Spawn food every 180 frames (about 3 seconds at 60fps)
-        
-        // Autofeeder timer settings
-        this.autofeederCounter = 0;
-        
-        // Map bounds - will be set during setup
-        this.mapBounds = {
-            width: 0,
-            height: 0
-        };
-        
-        this.enemySpawnCounter = 0;
-        this.enemySpawnInterval = 600; // spawn every 10s
-        
-        // Enemy spawn level tracking for tiered spawning
-        this.enemySpawnLevel = 0; // 0-based level (initial waves)
-        this.enemyTiers = [
-            ['WoollyBearEnemy', 'CricketEnemy'],                   // Level 0 – basic
-            ['BeeEnemy'],                                  // Level 1 – after 10 ants
-            ['GrasshopperEnemy'],                                       // Level 2 – 20 ants
-            ['FrogEnemy'],                                          // Level 3 – 30 ants
-            ['HerculesBeetleEnemy'],                               // Level 4 – 40 ants
-            ['MantisEnemy'],                                          // Level 5 – 50 ants
-        ];
-        // Map enemy string names to classes for easy instantiation
-        this.enemyClassMap = {
-            CricketEnemy: IdleAnts.Entities.CricketEnemy,
-            WoollyBearEnemy: IdleAnts.Entities.WoollyBearEnemy,
-            GrasshopperEnemy: IdleAnts.Entities.GrasshopperEnemy,
-            MantisEnemy: IdleAnts.Entities.MantisEnemy,
-            BeeEnemy: IdleAnts.Entities.BeeEnemy,
-            HerculesBeetleEnemy: IdleAnts.Entities.HerculesBeetleEnemy,
-            FrogEnemy: IdleAnts.Entities.FrogEnemy
-        };
-
-        // Boss reference (null until spawned)
-        this.boss = null;
-        this.bossTriggered = false; // Prevent multiple boss triggers
-        this.bossDefeated = false; // Track if boss defeated to avoid respawn
+        // Setup entities after managers are initialized
+        this.setupEntities();
     }
-    
+
+    /**
+     * Initialize all specialized entity managers
+     */
+    initializeEntityManagers() {
+        try {
+            // Initialize nest manager first (others depend on nest position)
+            if (IdleAnts.Managers.Entities.NestEntityManager) {
+                this.nestManager = new IdleAnts.Managers.Entities.NestEntityManager(
+                    this.app, this.assetManager, this.resourceManager, this.worldContainer
+                );
+            } else {
+                console.warn('[EntityManager] NestEntityManager not available - using fallback');
+                this.nestManager = this.createFallbackNestManager();
+            }
+            
+            if (IdleAnts.Managers.Entities.AntEntityManager) {
+                this.antManager = new IdleAnts.Managers.Entities.AntEntityManager(
+                    this.app, this.assetManager, this.resourceManager, this.worldContainer
+                );
+            } else {
+                console.warn('[EntityManager] AntEntityManager not available - using fallback');
+                this.antManager = this.createFallbackAntManager();
+            }
+            
+            if (IdleAnts.Managers.Entities.FoodEntityManager) {
+                this.foodManager = new IdleAnts.Managers.Entities.FoodEntityManager(
+                    this.app, this.assetManager, this.resourceManager, this.worldContainer
+                );
+            } else {
+                console.warn('[EntityManager] FoodEntityManager not available - using fallback');
+                this.foodManager = this.createFallbackFoodManager();
+            }
+            
+            if (IdleAnts.Managers.Entities.EnemyEntityManager) {
+                this.enemyManager = new IdleAnts.Managers.Entities.EnemyEntityManager(
+                    this.app, this.assetManager, this.resourceManager, this.worldContainer
+                );
+            } else {
+                console.warn('[EntityManager] EnemyEntityManager not available - using fallback');
+                this.enemyManager = this.createFallbackEnemyManager();
+            }
+            
+            // Share nest position with other managers
+            const nestPosition = this.nestManager.getNestPosition();
+            if (this.antManager.setNestPosition) {
+                this.antManager.setNestPosition(nestPosition);
+            }
+            if (this.enemyManager.setNestPosition) {
+                this.enemyManager.setNestPosition(nestPosition);
+            }
+            
+            // Set map configuration if available
+            if (IdleAnts.app && IdleAnts.app.mapConfig) {
+                if (this.nestManager.setMapConfig) this.nestManager.setMapConfig(IdleAnts.app.mapConfig);
+                if (this.foodManager.setMapConfig) this.foodManager.setMapConfig(IdleAnts.app.mapConfig);
+                if (this.enemyManager.setMapConfig) this.enemyManager.setMapConfig(IdleAnts.app.mapConfig);
+            }
+        } catch (error) {
+            console.error('[EntityManager] Failed to initialize entity managers:', error);
+            // Create minimal fallback managers
+            this.nestManager = this.createFallbackNestManager();
+            this.antManager = this.createFallbackAntManager();
+            this.foodManager = this.createFallbackFoodManager();
+            this.enemyManager = this.createFallbackEnemyManager();
+        }
+    }
+
+    /**
+     * Setup backward compatibility with unified entity collections
+     */
+    setupBackwardCompatibility() {
+        // Create unified entities object for backward compatibility
+        const self = this;
+        this.entities = {
+            get ants() { return self.antManager.entities.ants; },
+            get flyingAnts() { return self.antManager.entities.flyingAnts; },
+            get carAnts() { return self.antManager.entities.carAnts; },
+            get fireAnts() { return self.antManager.entities.fireAnts; },
+            get queen() { return self.antManager.entities.queen; },
+            get larvae() { return self.antManager.entities.larvae; },
+            get foods() { return self.foodManager.entities; },
+            get enemies() { return self.enemyManager.entities; }
+        };
+        
+        // Backward compatibility properties
+        this.nest = this.nestManager.getNest();
+        this.nestPosition = this.nestManager.getNestPosition();
+    }
+
+    /**
+     * Set effect manager for all entity managers
+     * @param {Object} effectManager - Effect manager instance
+     */
     setEffectManager(effectManager) {
         this.effectManager = effectManager;
+        
+        this.nestManager.setEffectManager(effectManager);
+        this.antManager.setEffectManager(effectManager);
+        this.foodManager.setEffectManager(effectManager);
+        this.enemyManager.setEffectManager(effectManager);
     }
-    
+
+    /**
+     * Setup initial entities
+     */
     setupEntities() {
-        // Get map bounds from game
-        if (IdleAnts.app && IdleAnts.app.mapConfig) {
-            this.mapBounds.width = IdleAnts.app.mapConfig.width;
-            this.mapBounds.height = IdleAnts.app.mapConfig.height;
-        } else {
-            // Fallback to screen size if mapConfig not available
-            this.mapBounds.width = this.app.screen.width;
-            this.mapBounds.height = this.app.screen.height;
+        // Create initial food
+        this.foodManager.createFood(5);
+        
+        // Create initial ant if stats indicate there should be one
+        const initialAnts = this.resourceManager.stats.ants;
+        for (let i = 0; i < initialAnts; i++) {
+            this.createAnt();
         }
         
-        // Create nest
-        this.createNest();
-        
-        // Create queen ant (every player starts with one)
-        this.createQueenAnt();
-        
-        // Create initial ants
-        this.createAnt();
-        
-        // Create food sources
-        this.createFood(20); // More food for a larger map
-        
-        // Create one of each enemy type at start
-        this.spawnInitialEnemies();
-        
-        // Create initial larvae so the player sees one immediately
-        this.createInitialLarvae();
+        console.log(`[EntityManager] Entity managers initialized with ${initialAnts} initial ants`);
     }
-    
+
+    // ===== DELEGATED METHODS TO SPECIALIZED MANAGERS =====
+
+    // Nest methods delegated to NestManager
     createNest() {
-        // Place nest at the center of the world map
-        const nest = new IdleAnts.Entities.Nest(
-            this.assetManager.getTexture('nest'),
-            this.mapBounds.width / 2,
-            this.mapBounds.height / 2
-        );
-        
-        this.entitiesContainers.nest.addChild(nest);
-        this.nest = nest;
-        this.nestPosition = nest.getPosition();
+        return this.nestManager.createNest();
     }
-    
+
+    getNestPosition() {
+        return this.nestManager.getNestPosition();
+    }
+
+    moveNest(x, y) {
+        this.nestManager.moveNest(x, y);
+        
+        // Update nest position for other managers
+        const newPosition = this.nestManager.getNestPosition();
+        this.antManager.setNestPosition(newPosition);
+        this.enemyManager.setNestPosition(newPosition);
+        
+        // Update backward compatibility
+        this.nestPosition = newPosition;
+    }
+
+    // Ant methods delegated to AntManager
     createAnt() {
-        // Create the ant with nestPosition as object reference
-        const ant = new IdleAnts.Entities.Ant(
-            this.assetManager.getTexture('ant'), 
-            this.nestPosition,
-            this.resourceManager.stats.speedMultiplier
-        );
-        
-        // CRITICAL: Force position to be exactly at the nest
-        ant.x = this.nestPosition.x;
-        ant.y = this.nestPosition.y;
-        
-        // Initialize capacity directly based on strength multiplier
-        // strengthMultiplier now directly represents capacity
-        ant.capacity = this.resourceManager.stats.strengthMultiplier;
-        
-        this.entitiesContainers.ants.addChild(ant);
-        this.entities.ants.push(ant);
-        
-        // Add a spawning effect
-        if (this.effectManager) {
-            this.effectManager.createSpawnEffect(ant.x, ant.y);
-        }
+        return this.antManager.createAnt();
     }
-    
+
     createFlyingAnt() {
-        // Create the flying ant with nestPosition as object reference
-        const flyingAnt = new IdleAnts.Entities.FlyingAnt(
-            this.assetManager.getTexture('ant'),
-            this.nestPosition,
-            this.resourceManager.stats.speedMultiplier
-        );
-        
-        // CRITICAL: Force position to be exactly at the nest
-        flyingAnt.x = this.nestPosition.x;
-        flyingAnt.y = this.nestPosition.y;
-        
-        // Initialize capacity directly based on strength multiplier
-        // strengthMultiplier now directly represents capacity
-        flyingAnt.capacity = this.resourceManager.stats.strengthMultiplier;
-        
-        this.entitiesContainers.flyingAnts.addChild(flyingAnt);
-        this.entities.flyingAnts.push(flyingAnt);
-        
-        // Add a sparkly spawning effect for flying ants
-        if (this.effectManager) {
-            // Pass true as the isFlying parameter to create a special effect for flying ants
-            this.effectManager.createSpawnEffect(flyingAnt.x, flyingAnt.y, true);
-        }
+        return this.antManager.createFlyingAnt();
     }
-    
+
     createCarAnt() {
-        if (!this.nestPosition) {
-            console.error("EntityManager: Nest position not available to create Car Ant. Nest may not have been initialized yet.");
-            return null; // Return null or handle appropriately
-        }
-        const carAntTexture = this.assetManager.getTexture(IdleAnts.Assets.Ants.CAR_ANT.id);
-        if (!carAntTexture) {
-            console.error("EntityManager: Car Ant texture not found!");
-            // Potentially use a fallback or skip creation
-            return;
-        }
-
-        const carAnt = new IdleAnts.Entities.CarAnt(
-            carAntTexture,
-            this.nestPosition,
-            this.resourceManager.stats.speedMultiplier // Assuming car ants also benefit from global speed upgrades
-        );
-
-        carAnt.x = this.nestPosition.x;
-        carAnt.y = this.nestPosition.y;
-        
-        // Car Ants could have a fixed high capacity or scale with strength.
-        // For now, let them scale with strength like other ants.
-        carAnt.capacity = this.resourceManager.stats.strengthMultiplier; 
-
-        this.entitiesContainers.carAnts.addChild(carAnt);
-        this.entities.carAnts.push(carAnt);
-
-        if (this.effectManager) {
-            // Using a generic spawn effect for now, could be customized for cars (e.g., tire screech, engine rev)
-            this.effectManager.createSpawnEffect(carAnt.x, carAnt.y, false, { R: 255, G: 0, B: 0 }); // Red spawn effect
-        }
-        console.log("Car Ant created at:", carAnt.x, carAnt.y);
+        return this.antManager.createCarAnt();
     }
-    
+
     createFireAnt() {
-        if (!this.nestPosition) {
-            console.error("EntityManager: Nest position not available to create Fire Ant.");
-            return;
-        }
-        const fireAntTexture = this.assetManager.getTexture('ant'); // reuse regular ant texture
-        const fireAnt = new IdleAnts.Entities.FireAnt(
-            fireAntTexture,
-            this.nestPosition,
-            this.resourceManager.stats.speedMultiplier
-        );
-        fireAnt.x = this.nestPosition.x;
-        fireAnt.y = this.nestPosition.y;
-
-        this.entitiesContainers.fireAnts.addChild(fireAnt);
-        this.entities.fireAnts.push(fireAnt);
-
-        if (this.effectManager) {
-            this.effectManager.createSpawnEffect(fireAnt.x, fireAnt.y, false, { R: 255, G: 69, B: 0 });
-        }
+        return this.antManager.createFireAnt();
     }
-    
+
+    createQueen() {
+        return this.antManager.createQueen();
+    }
+
+    createLarvae(count = 1) {
+        return this.antManager.createLarvae(count);
+    }
+
+    getAntCount() {
+        return this.antManager.getAntCount();
+    }
+
+    // Food methods delegated to FoodManager
     createFood(count = 1) {
-        for (let i = 0; i < count; i++) {
-            // Create food at random positions across the map
-            const position = {
-                x: Math.random() * this.mapBounds.width,
-                y: Math.random() * this.mapBounds.height
-            };
-            
-            // Always use BASIC food type for random spawns
-            let foodType;
-            try {
-                // Use the basic food type for random spawns
-                foodType = IdleAnts.Data.FoodTypes.BASIC;
-                
-                // Verify that the food type has all required properties
-                if (!foodType || !foodType.scale || typeof foodType.scale.min === 'undefined') {
-                    console.warn("Invalid food type detected, falling back to basic food type");
-                    foodType = IdleAnts.Data.FoodTypes.BASIC;
-                }
-            } catch (error) {
-                console.error("Error getting food type:", error);
-                foodType = IdleAnts.Data.FoodTypes.BASIC;
-            }
-            
-            this.addFood(position, foodType);
-        }
+        return this.foodManager.createFood(count);
     }
-    
+
     addFood(position, foodType) {
-        // Ensure position is within map bounds
-        const x = Math.max(20, Math.min(position.x, this.mapBounds.width - 20));
-        const y = Math.max(20, Math.min(position.y, this.mapBounds.height - 20));
-        
-        // Ensure we have a valid food type with required properties
-        const validFoodType = foodType && foodType.scale && typeof foodType.scale.min !== 'undefined' 
-            ? foodType 
-            : IdleAnts.Data.FoodTypes.BASIC;
-        
-        try {
-            const food = new IdleAnts.Entities.Food(
-                this.assetManager.getTexture('food'),
-                { x, y, clickPlaced: position.clickPlaced || false },
-                validFoodType
-            );
-            
-            // Check if this food was placed by the player's click
-            if (position.clickPlaced && this.effectManager) {
-                this.effectManager.createFoodSpawnEffect(x, y, validFoodType.glowColor);
-            }
-            
-            this.entitiesContainers.food.addChild(food);
-            this.entities.foods.push(food);
-        } catch (error) {
-            console.error("Error creating food:", error);
-        }
+        return this.foodManager.addFood(position, foodType);
     }
-    
+
+    addFoodAtPosition(x, y, foodType = null) {
+        return this.foodManager.addFoodAtPosition(x, y, foodType);
+    }
+
+    // Enemy methods delegated to EnemyManager
+    createBoss(x, y) {
+        return this.enemyManager.createBoss(x, y);
+    }
+
+    spawnRandomEnemy() {
+        return this.enemyManager.spawnRandomEnemy();
+    }
+
+    // ===== CORE UPDATE METHOD =====
+
+    /**
+     * Update all entity managers
+     */
     update() {
-        // Increment frame counter
-        this.frameCounter++;
+        // Update nest first
+        this.nestManager.update();
         
-        // Update nest
-        if (this.nest) {
-            this.nest.update();
-        }
+        // Get current food for ant updates
+        const availableFood = this.foodManager.getAvailableFood();
         
-        // Update queen ant
-        if (this.entities.queen) {
-            this.entities.queen.update(this.nestPosition, this.entities.foods);
-        }
+        // Get all ants for enemy targeting
+        const allAnts = [
+            ...this.antManager.entities.ants,
+            ...this.antManager.entities.flyingAnts,
+            ...this.antManager.entities.carAnts,
+            ...this.antManager.entities.fireAnts
+        ];
         
-        // Update larvae
-        this.updateLarvae();
+        // Update entity managers
+        this.antManager.update(availableFood);
+        this.foodManager.update();
+        this.enemyManager.update(allAnts);
         
-        // Update ants
-        this.updateAnts();
-        
-        // Update flying ants
-        this.updateFlyingAnts();
-        
-        // Update Car Ants
-        this.updateCarAnts();
-        
-        // Update Fire Ants
-        this.updateFireAnts();
-        
-        // Update food
-        this.updateFood();
-        
-        // Handle food spawning
-        this.handleFoodSpawning();
-        
-        // Handle autofeeder
-        this.handleAutofeeder();
-        
-        // Update Enemies
-        this.updateEnemies();
+        // Update backward compatibility references
+        this.nest = this.nestManager.getNest();
+        this.nestPosition = this.nestManager.getNestPosition();
     }
-    
-    // New method to update larvae
-    updateLarvae() {
-        // Update each larvae and remove hatched ones
-        for (let i = this.entities.larvae.length - 1; i >= 0; i--) {
-            const larvae = this.entities.larvae[i];
-            
-            // Update the larvae and check if it's still active
-            const isActive = larvae.update(this.app.ticker.deltaTime);
-            
-            // If the larvae is no longer active (hatched), remove it
-            if (!isActive) {
-                console.log(`EntityManager: Removing larvae at (${larvae.x}, ${larvae.y})`);
-                this.entities.larvae.splice(i, 1);
-            }
-        }
-    }
-    
-    // Method to detect and resolve clustering of ants at the nest
-    resolveNestClustering() {
-        // Only check every 30 frames to save performance (reduced frequency for better performance)
-        if (this.frameCounter % 30 !== 0) return;
-        
-        const nestX = this.nestPosition.x;
-        const nestY = this.nestPosition.y;
-        const checkRadiusSq = 8 * 8; // Use squared radius for faster comparison
-        const stuckThreshold = 3; // How many ants within radius is considered a cluster
-        
-        // First identify ants with food that need to deposit
-        const antsWithFood = [];
-        const antsWithoutFood = [];
-        
-        // Helper function to process both ant types
-        const processAntType = (ants) => {
-            for (const ant of ants) {
-                const dx = ant.x - nestX;
-                const dy = ant.y - nestY;
-                const distSq = dx * dx + dy * dy; // Squared distance (faster than sqrt)
-                
-                if (distSq < checkRadiusSq) {
-                    if (ant.foodCollected > 0) {
-                        antsWithFood.push(ant);
-                    } else {
-                        antsWithoutFood.push(ant);
-                    }
-                }
-            }
-        };
-        
-        // Process both regular and flying ants
-        processAntType(this.entities.ants);
-        processAntType(this.entities.flyingAnts);
-        
-        // First priority: Give space to ants with food to deposit
-        if (antsWithFood.length > 0) {
-            // Prioritize ants with food - make ants without food move away
-            for (const emptyAnt of antsWithoutFood) {
-                // Move empty ants away from the nest to make room
-                const angle = Math.random() * Math.PI * 2;
-                const pushForce = emptyAnt.speed * 2; // Strong push
-                emptyAnt.vx = Math.cos(angle) * pushForce;
-                emptyAnt.vy = Math.sin(angle) * pushForce;
-                
-                // Offset position so they don't all gather at the same spot
-                emptyAnt.x += Math.cos(angle) * 10;
-                emptyAnt.y += Math.sin(angle) * 10;
-            }
-            
-            // If too many ants with food are clustered, distribute them in a ring pattern
-            if (antsWithFood.length >= stuckThreshold) {
-                const nestRadius = 10; // Radius for forming a ring around nest
-                const angleDelta = (2 * Math.PI) / antsWithFood.length;
-                
-                antsWithFood.forEach((ant, index) => {
-                    // Place ants in a ring pattern around the nest
-                    const angle = index * angleDelta;
-                    const targetX = nestX + Math.cos(angle) * nestRadius;
-                    const targetY = nestY + Math.sin(angle) * nestRadius;
-                    
-                    // Move ant to position on the ring
-                    if (Math.random() < 0.5) { // Only adjust position 50% of the time
-                        ant.x = targetX;
-                        ant.y = targetY;
-                        
-                        // Adjust velocity to point toward nest for deposit
-                        const dx = nestX - ant.x;
-                        const dy = nestY - ant.y;
-                        const dist = Math.sqrt(dx * dx + dy * dy);
-                        ant.vx = (dx / dist) * ant.speed * 0.5;
-                        ant.vy = (dy / dist) * ant.speed * 0.5;
-                    }
-                });
-            }
-        } else if (antsWithoutFood.length >= stuckThreshold * 2) {
-            // If only ants without food are clustered, spread them out evenly
-            // Use a wider spread pattern since they're leaving to look for food
-            for (let i = 0; i < antsWithoutFood.length; i++) {
-                const ant = antsWithoutFood[i];
-                const angle = (i / antsWithoutFood.length) * Math.PI * 2;
-                const pushForce = ant.speed * 1.5;
-                
-                ant.vx = Math.cos(angle) * pushForce;
-                ant.vy = Math.sin(angle) * pushForce;
-                
-                // Offset position more dramatically
-                ant.x += Math.cos(angle) * 12;
-                ant.y += Math.sin(angle) * 12;
-            }
-        }
-    }
-    
-    // Generic method to update any type of ant entities
-    updateAntEntities(antEntities, shouldCreateTrail, isFlying = false) {
-        // Only process enemy detection every 3 frames for performance
-        const shouldCheckEnemies = this.frameCounter % 3 === 0;
-        
-        for (let i = 0; i < antEntities.length; i++) {
-            const ant = antEntities[i];
-            
-            // Skip enemy detection if not needed this frame, unless ant is already targeting
-            if (shouldCheckEnemies || ant.targetEnemy) {
-                const perceptionSq = 250 * 250; // 250-px perception radius (squared)
-                const engageDistSq = 20 * 20; // 20-px engage radius (squared)
 
-                // Locate closest living enemy using squared distances
-                let closestE = null,
-                    closestESq = Infinity;
-                for (const enemy of this.entities.enemies) {
-                    if (enemy.isDead) continue;
-                    const dx = enemy.x - ant.x,
-                          dy = enemy.y - ant.y,
-                          distSq = dx * dx + dy * dy;
-                    if (distSq < closestESq) { closestESq = distSq; closestE = enemy; }
-                }
+    // ===== LEGACY METHODS FOR BACKWARD COMPATIBILITY =====
 
-                if (closestE && closestESq <= perceptionSq) {
-                    ant.targetEnemy = closestE;
-
-                    // Force ant into aggressive pursuit unless already in combat
-                    if (ant.state !== IdleAnts.Entities.AntBase.States.FIGHTING) {
-                        // Ensure we're in a movable state while chasing
-                        if (ant.state !== IdleAnts.Entities.AntBase.States.SEEKING_FOOD) {
-                            ant.transitionToState(IdleAnts.Entities.AntBase.States.SEEKING_FOOD);
-                        }
-                    }
-
-                    if (closestESq > engageDistSq) {
-                        // Move toward the enemy using squared distance comparison
-                        const dist = Math.sqrt(closestESq); // Only calculate sqrt when needed
-                        ant.vx = (closestE.x - ant.x) / dist * ant.speed;
-                        ant.vy = (closestE.y - ant.y) / dist * ant.speed;
-                    } else {
-                        // Engage – freeze and switch to fighting if not already
-                        ant.vx = ant.vy = 0;
-                        if (ant.state !== IdleAnts.Entities.AntBase.States.FIGHTING) {
-                            ant.transitionToState(IdleAnts.Entities.AntBase.States.FIGHTING);
-                        }
-                    }
-                } else {
-                    // No enemy in perception – clear any previous lock
-                    ant.targetEnemy = null;
-                }
-            }
-            
-            // Update the ant with nest position and available foods
-            const actionResult = ant.update(this.nestPosition, this.entities.foods);
-            
-            // Skip boundary checks for ants at the nest - allows ants to overlap at nest (optimized)
-            const dx = ant.x - this.nestPosition.x;
-            const dy = ant.y - this.nestPosition.y;
-            const distToNestSq = dx * dx + dy * dy;
-            
-            const atNest = distToNestSq < 15 * 15; // Compare with squared distance
-            
-            // Only apply boundary handling if not at the nest
-            if (!atNest) {
-                ant.handleBoundaries(this.mapBounds.width, this.mapBounds.height);
-            }
-            
-            // Create trail behind the ant if needed
-            if (shouldCreateTrail && this.effectManager) {
-                const trailChance = isFlying ? 0.3 : 1.0; // Flying ants leave fewer trails
-                
-                if (Math.random() < trailChance) {
-                    if (isFlying) {
-                        this.effectManager.createFlyingAntTrail(ant);
-                    } else {
-                        this.effectManager.createAntTrail(ant);
-                    }
-                }
-            }
-            
-            // Check for food collection or delivery based on action result and state
-            if (actionResult === true) {
-                // Handle action based on ant's current state
-                if (ant.state === IdleAnts.Entities.AntBase.States.COLLECTING_FOOD) {
-                    // Ant has completed food collection
-                    this.collectFood(ant);
-                    
-                    // Special effect for flying ants
-                    if (isFlying && this.effectManager) {
-                        this.effectManager.createFoodCollectEffect(ant.x, ant.y, 0xFFD700);
-                    }
-                } else if (ant.state === IdleAnts.Entities.AntBase.States.DELIVERING_FOOD || 
-                           ant.state === IdleAnts.Entities.AntBase.States.RETURNING_TO_NEST) {
-                    // Ant has returned to nest with food
-                    this.deliverFood(ant);
-                }
-            }
-            
-            // Remove dead ants
-            if(ant.isDead){
-                // Update resource manager stats based on ant type
-                if(this.resourceManager){
-                    if(antEntities === this.entities.ants && typeof this.resourceManager.decreaseAntCount === 'function'){
-                        this.resourceManager.decreaseAntCount();
-                    } else if(antEntities === this.entities.flyingAnts){
-                        this.resourceManager.stats.flyingAnts = Math.max(0, this.resourceManager.stats.flyingAnts - 1);
-                    } else if(antEntities === this.entities.carAnts){
-                        this.resourceManager.stats.carAnts = Math.max(0, this.resourceManager.stats.carAnts - 1);
-                    } else if(antEntities === this.entities.fireAnts){
-                        this.resourceManager.stats.fireAnts = Math.max(0, this.resourceManager.stats.fireAnts - 1);
-                    }
-                    // Recompute food per second since ant counts changed
-                    this.resourceManager.updateFoodPerSecond();
-                }
-                // Remove from array and continue iteration
-                antEntities.splice(i,1);
-                i--;
-                continue;
-            }
-        }
-    }
-    
-    collectFood(ant) {
-        // If the ant is still in the collecting state but hasn't finished the timer, just return
-        if (ant.state === IdleAnts.Entities.AntBase.States.COLLECTING_FOOD && ant.collectionTimer < ant.collectionTarget.getCollectionTimeForAnt(ant)) {
-            return;
-        }
-        
-        // Get the target food
-        if (!ant.collectionTarget) return;
-        
-        const foodItem = ant.collectionTarget;
-        const isFlyingAnt = ant.constructor.name.includes('Flying');
-        const isCookie = foodItem.foodType && foodItem.foodType.id === 'cookie';
-        
-        // Handle collection based on how many ants are collecting this food
-        const collectingAntCount = foodItem.getCollectingAntCount();
-        let foodValue = foodItem.foodType ? foodItem.foodType.value : 1;
-        // Food weight is tracked but not used for capacity checks
-        let foodWeight = 1; // Always count as 1 regardless of type
-        
-        // Check if this is the last ant collecting or if the food should be completely consumed
-        const shouldRemoveFood = collectingAntCount <= 1 || Math.random() < 0.95;
-        
-        if (shouldRemoveFood) {
-            // This ant gets the full value of the food item
-            
-            // Create a particle effect
-            if (this.effectManager) {
-                // For cookies, create a special particle effect
-                if (isCookie) {
-                    // Use the existing createFoodCollectEffect with a gold color for cookies
-                    const cookieColor = 0xFFD700; // Gold color for cookies
-                    this.effectManager.createFoodCollectEffect(foodItem.x, foodItem.y, cookieColor, 1.5); // Larger effect for cookies
-                    
-                    // Add multiple particles for a more dramatic cookie effect
-                    for (let i = 0; i < 5; i++) {
-                        const angle = Math.random() * Math.PI * 2;
-                        const distance = 5 + Math.random() * 8;
-                        const x = foodItem.x + Math.cos(angle) * distance;
-                        const y = foodItem.y + Math.sin(angle) * distance;
-                        this.effectManager.createFoodCollectEffect(x, y, cookieColor, 0.8);
-                    }
-                } else {
-                    // For normal food, use the food type's glow color
-                    const color = foodItem.foodType ? foodItem.foodType.glowColor : 0xFFFF99;
-                    this.effectManager.createFoodCollectEffect(foodItem.x, foodItem.y, color);
-                }
-            }
-            
-            // Remove the food entity
-            this.entitiesContainers.food.removeChild(foodItem);
-            const foodIndex = this.entities.foods.indexOf(foodItem);
-            if (foodIndex !== -1) {
-                this.entities.foods.splice(foodIndex, 1);
-            }
-            
-            // Add a new food source at a certain chance on harvest
-            if (Math.random() < 0.8) {
-                this.createFood();
-            }
-        } else {
-            // Food is not being removed - this ant's share is determined proportionally
-            // Get the ant's contribution percentage from the food item
-            const valueDistribution = foodItem.distributeValue();
-            
-            // If this ant has a share, use a percentage of the total value
-            if (valueDistribution[ant.id]) {
-                foodValue = valueDistribution[ant.id];
-            } else {
-                // If somehow the ant isn't in the distribution, use a fallback value
-                foodValue = Math.max(1, Math.floor(foodItem.foodType.value / collectingAntCount));
-            }
-            
-            // Create a smaller particle effect for partial collection
-            if (this.effectManager) {
-                this.effectManager.createFoodCollectEffect(
-                    ant.x, ant.y, 
-                    foodItem.foodType.glowColor,
-                    0.7  // Smaller effect for partial collection
-                );
-            }
-        }
-        
-        // Call pickUpFood to update the ant's food state
-        ant.pickUpFood(foodItem.foodType, foodValue);
-    }
-    
-    deliverFood(ant) {
-        // Drop food and add to resources based on ant's strength and food value
-        const foodResult = ant.dropFood();
-        const foodAmount = foodResult.totalValue * this.resourceManager.stats.foodMultiplier;
-        
-        // Add food to resources and track it for food rate calculation
-        this.resourceManager.addFood(foodAmount);
-        
-        // For more responsive UI updates, also update the displayFood value directly
-        // This makes the counter animation start from a value closer to the actual food amount
-        this.resourceManager.resources.displayFood = this.resourceManager.resources.food;
-        
-        // Add food drop effect at nest
-        if (this.effectManager) {
-            // Use the last food type color for the effect, or default if none
-            const effectColor = foodResult.lastFoodType ? foodResult.lastFoodType.glowColor : 0xFFFF99;
-            this.effectManager.createFoodDropEffect(this.nestPosition.x, this.nestPosition.y, effectColor);
-        }
-        
-        // Apply a random velocity to move away from nest and start searching for food
-        const pushAngle = Math.random() * Math.PI * 2;
-        const pushStrength = ant.speed * 0.8; // Strong enough push to leave nest area
-        ant.vx = Math.cos(pushAngle) * pushStrength;
-        ant.vy = Math.sin(pushAngle) * pushStrength;
-        
-        // Update the UI to reflect the new food amount
-        if (IdleAnts.app && IdleAnts.app.uiManager) {
-            IdleAnts.app.uiManager.updateUI();
-        }
-    }
-    
-    // Helper to find ants near a specific point or ant
-    findNearbyAnts(targetAnt, radius) {
-        const nearbyAnts = [];
-        const checkAntType = (ants) => {
-            for (const ant of ants) {
-                if (ant !== targetAnt) { // Skip the target ant itself
-                    const dx = ant.x - targetAnt.x;
-                    const dy = ant.y - targetAnt.y;
-                    const distSq = dx * dx + dy * dy;
-                    
-                    if (distSq < radius * radius) {
-                        nearbyAnts.push(ant);
-                    }
-                }
-            }
-        };
-        
-        checkAntType(this.entities.ants);
-        checkAntType(this.entities.flyingAnts);
-        
-        return nearbyAnts;
-    }
-    
-    // Helper to gently spread apart crowded ants
-    spreadAntsApart(ants) {
-        if (ants.length <= 1) return;
-        
-        // Calculate center of the group
-        let centerX = 0;
-        let centerY = 0;
-        
-        for (const ant of ants) {
-            centerX += ant.x;
-            centerY += ant.y;
-        }
-        
-        centerX /= ants.length;
-        centerY /= ants.length;
-        
-        // Gently push ants away from center
-        for (const ant of ants) {
-            const dx = ant.x - centerX;
-            const dy = ant.y - centerY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance < 0.1) {
-                // If ants are perfectly stacked, choose random directions
-                const angle = Math.random() * Math.PI * 2;
-                ant.vx += Math.cos(angle) * ant.speed * 0.3;
-                ant.vy += Math.sin(angle) * ant.speed * 0.3;
-            } else {
-                // Push away from center
-                const normalizedDx = dx / distance;
-                const normalizedDy = dy / distance;
-                
-                ant.vx += normalizedDx * ant.speed * 0.3;
-                ant.vy += normalizedDy * ant.speed * 0.3;
-            }
-        }
-    }
-    
-    expandNest() {
-        if (this.nest) {
-            this.nest.expand();
-        }
-    }
-    
-    // Update all ants' speed when speed multiplier changes
-    updateAntsSpeed() {
-        const multiplier = this.resourceManager.stats.speedMultiplier;
-        this.updateAntEntitiesSpeed(this.entities.ants, multiplier);
-        this.updateAntEntitiesSpeed(this.entities.flyingAnts, multiplier);
-        this.updateAntEntitiesSpeed(this.entities.carAnts, multiplier);
-        this.updateAntEntitiesSpeed(this.entities.fireAnts, multiplier);
-    }
-    
-    // Generic method to update speed for any ant type
-    updateAntEntitiesSpeed(antEntities, multiplier) {
-        antEntities.forEach(ant => {
-            ant.updateSpeedMultiplier(multiplier);
-        });
-    }
-    
-    // Method to increase all ants' strength
-    updateAntsCapacity() {
-        this.updateAntEntitiesStrength(this.entities.ants);
-        this.updateAntEntitiesStrength(this.entities.flyingAnts);
-        this.updateAntEntitiesStrength(this.entities.carAnts);
-        this.updateAntEntitiesStrength(this.entities.fireAnts);
-    }
-    
-    updateAntEntitiesStrength(antEntities) {
-        const currentStrength = this.resourceManager.stats.strengthMultiplier;
-        for (let i = 0; i < antEntities.length; i++) {
-            // Set the capacity directly to the strength value
-            antEntities[i].capacity = currentStrength;
-            
-            // Update HP based on strength
-            const baseHp = 50;
-            const newMaxHp = baseHp + (currentStrength - 1) * 25; // +25 HP per strength level
-            const hpRatio = antEntities[i].hp / antEntities[i].maxHp; // Preserve HP percentage
-            antEntities[i].maxHp = newMaxHp;
-            antEntities[i].hp = newMaxHp * hpRatio; // Scale current HP
-            
-            // Update health bar if it exists
-            if (antEntities[i].updateHealthBar) {
-                antEntities[i].updateHealthBar();
-            }
-            
-            // Ensure the canStackFood config is updated based on capacity
-            antEntities[i].config.canStackFood = antEntities[i].capacity > 1;
-            
-            // Log capacity and canStackFood status
-            // console.log(`Updating ant strength: capacity=${antEntities[i].capacity}, canStackFood=${antEntities[i].config.canStackFood}`);
-            
-            // If the ant is already carrying food but not at full capacity with the new strength,
-            // allow it to collect more food
-            if (antEntities[i].foodCollected > 0 && antEntities[i].capacityWeight < currentStrength) {
-                antEntities[i].isAtFullCapacity = false;
-            }
-        }
-    }
-    
+    /**
+     * Activate autofeeder (legacy method)
+     */
     activateAutofeeder() {
-        // Get the current food type based on the food tier
-        const foodType = this.resourceManager.getCurrentFoodType();
-        
-        // Get the amount of food to sprinkle based on autofeeder level
-        const foodAmount = this.resourceManager.getAutofeederFoodAmount();
-        
-        // Calculate a random position near the nest
-        const nestRadius = 300; // Distance from nest to sprinkle food
-        const randomAngle = Math.random() * Math.PI * 2; // Random angle around the nest
-        
-        // Calculate the center position for the food cluster
-        const centerX = this.nestPosition.x + Math.cos(randomAngle) * nestRadius;
-        const centerY = this.nestPosition.y + Math.sin(randomAngle) * nestRadius;
-        
-        // Sprinkle food in a cluster around the center position
-        for (let i = 0; i < foodAmount; i++) {
-            // Random offset from the center position (within a small radius)
-            const offsetRadius = Math.random() * 100; // 100px radius for the food cluster
-            const offsetAngle = Math.random() * Math.PI * 2;
-            
-            const foodX = centerX + Math.cos(offsetAngle) * offsetRadius;
-            const foodY = centerY + Math.sin(offsetAngle) * offsetRadius;
-            
-            // Add the food with the current food type
-            this.addFood({
-                x: foodX,
-                y: foodY,
-                clickPlaced: true // Treat as click-placed to show spawn effect
-            }, foodType);
-        }
+        // Boost food spawning
+        this.foodManager.boostSpawning(3, 1800); // 3x rate for 30 seconds
+        console.log('[EntityManager] Autofeeder activated');
     }
-    
-    // New method to update the queen ant
-    updateQueenAnt() {
-        const queen = this.entities.queen;
-        if (!queen) return;
-        
-        // Update queen with nest position and foods
-        queen.update(this.nestPosition, this.entities.foods);
-        
-        // Handle boundaries
-        queen.handleBoundaries(this.mapBounds.width, this.mapBounds.height);
+
+    /**
+     * Update larvae (legacy method - now handled by AntManager)
+     */
+    updateLarvae() {
+        // This is now handled internally by antManager.update()
+        // Kept for backward compatibility
     }
-    
-    // New method to create a queen ant
-    createQueenAnt() {
-        // Check if queen already exists
-        if (this.entities.queen) {
-            console.warn('Queen ant already exists');
-            return;
-        }
-        
-        // Create the queen ant with the queen ant texture
-        const queen = new IdleAnts.Entities.QueenAnt(
-            this.assetManager.getTexture('queenAnt'), // Use queen ant texture
-            this.nestPosition,
-            this.resourceManager.stats.speedMultiplier
-        );
-        
-        // CRITICAL: Force position to be exactly at the nest
-        queen.x = this.nestPosition.x;
-        queen.y = this.nestPosition.y;
-        
-        // Add to container and store reference
-        this.entitiesContainers.queen.addChild(queen);
-        this.entities.queen = queen;
-        
-        // Create spawn effect
-        if (this.effectManager) {
-            this.effectManager.createSpawnEffect(queen.x, queen.y);
-        }
-        
-        // Update resource manager stats
-        this.resourceManager.stats.hasQueen = true;
-        
-        return queen;
+
+    /**
+     * Resolve nest clustering (legacy method - now handled by AntManager)
+     */
+    resolveNestClustering() {
+        // This is now handled internally by antManager.update()
+        // Kept for backward compatibility
     }
-    
-    // New method to create an ant from larvae (without cost)
-    createAntFromLarvae(x, y) {
-        // Check if we can add more ants
-        if (this.entities.ants.length >= this.resourceManager.stats.maxAnts) {
-            console.log(`Cannot create more ants, colony at capacity (${this.entities.ants.length}/${this.resourceManager.stats.maxAnts})`);
-            return;
-        }
-        
-        console.log(`Creating ant from larvae. Colony size: ${this.entities.ants.length}/${this.resourceManager.stats.maxAnts}`);
-        
-        // Create the ant
-        const ant = new IdleAnts.Entities.Ant(
-            this.assetManager.getTexture('ant'),
-            this.nestPosition,
-            this.resourceManager.stats.speedMultiplier
-        );
-        
-        // Use the larvae position if provided, otherwise use nest position
-        if (x !== undefined && y !== undefined) {
-            ant.x = x;
-            ant.y = y;
-            console.log(`Creating ant from larvae at position (${x}, ${y})`);
-        } else {
-            ant.x = this.nestPosition.x;
-            ant.y = this.nestPosition.y;
-            console.log('Creating ant from larvae at nest position');
-        }
-        
-        // Add to container and array
-        this.entitiesContainers.ants.addChild(ant);
-        this.entities.ants.push(ant);
-        
-        // Create spawn effect
-        if (this.effectManager) {
-            this.effectManager.createSpawnEffect(ant.x, ant.y);
-        }
-        
-        // Update resource manager stats
-        this.resourceManager.increaseAntCount();
-        
-        // Decrement larvae count on queen
-        if (this.entities.queen) {
-            this.entities.queen.currentLarvae--;
-            console.log(`Queen now has ${this.entities.queen.currentLarvae} larvae after ant creation`);
-        }
-        
-        return ant;
-    }
-    
-    // New method to create larvae
-    createLarvae(x, y) {
-        // Create a new larvae entity
-        const larvae = new IdleAnts.Entities.Larvae(x, y);
-        
-        // Add to the larvae array
-        this.entities.larvae.push(larvae);
-        
-        return larvae;
-    }
-    
-    // Modified method to handle larvae production from queen
-    produceLarvae(x, y) {
-        // Create a larvae production effect for visual feedback
-        if (this.effectManager) {
-            this.effectManager.createSpawnEffect(x, y);
-        }
-        
-        // Create the actual larvae entity that will hatch after ~30 seconds
-        this.createLarvae(x, y);
-    }
-    
-    // Method to handle queen ant producing larvae
-    produceQueenLarvae(capacity) {
-        // Check if we have a queen
-        if (!this.entities.queen) {
-            console.log('No queen ant found to produce larvae');
-            return;
-        }
-        
-        // Get the queen's position
-        const queenX = this.entities.queen.x;
-        const queenY = this.entities.queen.y;
-        
-        // Create larvae effect around the queen
-        if (this.effectManager) {
-            this.effectManager.createLarvaeEffect(queenX, queenY);
-        }
-        
-        // Determine larvae to produce – one per allowed capacity that is free
-        const availableSlots = capacity - this.entities.queen.currentLarvae;
-        if (availableSlots <= 0) return;
-        const larvaeCount = 1; // always produce a single egg per cycle
-        
-        // Create larvae entity around the queen
-        for (let i = 0; i < larvaeCount; i++) {
-            // Calculate a random position near the queen
-            const angle = Math.random() * Math.PI * 2;
-            const distance = 20 + Math.random() * 30; // 20-50 pixels from queen
-            const larvaeX = queenX + Math.cos(angle) * distance;
-            const larvaeY = queenY + Math.sin(angle) * distance;
-            
-            // Create the larvae
-            this.produceLarvae(larvaeX, larvaeY);
-        }
-        
-        // Update the queen's larvae count
-        if (this.entities.queen) {
-            this.entities.queen.currentLarvae += larvaeCount;
-        }
-    }
-    
-    // Method to update ants
-    updateAnts() {
-        // Update frame counter for trails
-        const shouldCreateTrail = this.frameCounter % this.trailInterval === 0;
-        
-        // Check for and resolve any ant clustering at the nest
-        this.resolveNestClustering();
-        
-        // Update each ant
-        this.updateAntEntities(this.entities.ants, shouldCreateTrail);
-    }
-    
-    // Method to update flying ants
-    updateFlyingAnts() {
-        // Update frame counter for trails
-        const shouldCreateTrail = this.frameCounter % this.trailInterval === 0;
-        
-        // Update each flying ant
-        this.updateAntEntities(this.entities.flyingAnts, shouldCreateTrail, true);
-    }
-    
-    // New method to update Car Ants
-    updateCarAnts() {
-        // For CarAnts, trail might be different (e.g. tire tracks) or disabled.
-        // Let's disable default ant trail for now.
-        this.updateAntEntities(this.entities.carAnts, false, false); // No trail, not strictly flying for pathing
-    }
-    
-    // Update Fire Ants
-    updateFireAnts() {
-        const shouldCreateTrail = this.frameCounter % this.trailInterval === 0;
-        this.updateAntEntities(this.entities.fireAnts, shouldCreateTrail, false);
-    }
-    
-    // Method to update food
-    updateFood() {
-        // Update food items
-        this.entities.foods.forEach(food => {
-            if (typeof food.update === 'function') {
-                food.update();
+
+    // ===== UTILITY METHODS =====
+
+    /**
+     * Get comprehensive entity statistics
+     * @returns {Object} Entity statistics
+     */
+    getEntityStatistics() {
+        return {
+            nest: this.nestManager.getStatistics(),
+            ants: this.antManager.getAntCounts(),
+            food: this.foodManager.getStatistics(),
+            enemies: this.enemyManager.getStatistics(),
+            totals: {
+                entities: this.antManager.getAntCount() + 
+                         this.foodManager.getFoodCount() + 
+                         this.enemyManager.getEnemyCount() + 
+                         (this.nest ? 1 : 0)
             }
-        });
-    }
-    
-    // Method to handle food spawning
-    handleFoodSpawning() {
-        // Spawn food periodically
-        this.foodSpawnCounter++;
-        if (this.foodSpawnCounter >= this.foodSpawnInterval) {
-            this.foodSpawnCounter = 0;
-            
-            // Spawn 1-3 food items at random
-            const foodCount = 1 + Math.floor(Math.random() * 3);
-            this.createFood(foodCount);
-        }
-    }
-    
-    // Method to handle autofeeder
-    handleAutofeeder() {
-        // Handle autofeeder if unlocked
-        if (this.resourceManager.stats.autofeederUnlocked && this.resourceManager.stats.autofeederLevel > 0) {
-            this.autofeederCounter++;
-            
-            // Activate autofeeder when counter reaches interval
-            if (this.autofeederCounter >= this.resourceManager.stats.autofeederInterval) {
-                this.activateAutofeeder();
-                this.autofeederCounter = 0;
-            }
-        }
-    }
-    
-    createEnemy(count = 1){
-        const unlockedTypes = this.enemyTiers.slice(0, this.enemySpawnLevel + 1).flat();
-        if(unlockedTypes.length === 0) return;
-
-        for(let i = 0; i < count; i++){
-            const tex = this.assetManager.getTexture('ant'); // placeholder texture
-            // Randomly pick an unlocked enemy type
-            const typeName = unlockedTypes[Math.floor(Math.random() * unlockedTypes.length)];
-            const EnemyClass = this.enemyClassMap[typeName];
-            if(!EnemyClass){ continue; }
-            const enemy = new EnemyClass(tex, {width: this.mapBounds.width, height: this.mapBounds.height});
-            this.entitiesContainers.enemies.addChild(enemy);
-            this.entities.enemies.push(enemy);
-        }
-    }
-    
-    updateEnemies(){
-        // If the boss is active, skip regular spawning and just update the boss.
-        if (this.boss && !this.boss.isDead) {
-            const ants = [...this.entities.ants, ...this.entities.flyingAnts, ...this.entities.carAnts, ...this.entities.fireAnts];
-            this.boss.update(ants);
-            return;
-        }
-        // Calculate total ants in colony
-        const antTotal = this.entities.ants.length + this.entities.flyingAnts.length + this.entities.carAnts.length + this.entities.fireAnts.length;
-
-        // ---------- NEW: Update spawn level based on colony size ----------
-        const maxLevel = this.enemyTiers.length - 1;
-        const newLevel = Math.min(Math.floor(antTotal / 10), maxLevel);
-        if(newLevel > this.enemySpawnLevel){
-            this.enemySpawnLevel = newLevel;
-            // Notify player about new enemy tier
-            if(typeof IdleAnts.notify === 'function'){
-                const lvl = newLevel; // 1-based for players
-                IdleAnts.notify(`Level ${lvl} unlocked! New creatures are appearing…`, 'warning');
-            }
-        }
-        
-        // ---------- BOSS TRIGGER: Spawn boss when colony reaches 2+ ants (for testing) ----------
-        if (antTotal >= 2 && !this.boss && !this.bossTriggered && !this.bossDefeated) {
-            this.bossTriggered = true;
-            // Notify player about the boss
-            if(typeof IdleAnts.notify === 'function'){
-                IdleAnts.notify(`The Anteater Boss has been awakened! Prepare for the ultimate challenge!`, 'danger');
-            }
-            // Trigger boss fight after a short delay to let the notification show
-            setTimeout(() => {
-                if (IdleAnts.game && typeof IdleAnts.game.startBossFight === 'function') {
-                    IdleAnts.game.startBossFight();
-                }
-            }, 2000);
-            return; // Skip regular enemy spawning during boss intro
-        }
-        // ------------------------------------------------------------------
-
-        // Update existing enemies
-        const ants=[...this.entities.ants,...this.entities.flyingAnts,...this.entities.carAnts,...this.entities.fireAnts];
-        for(let i=this.entities.enemies.length-1;i>=0;i--){
-            const e=this.entities.enemies[i];
-            if(e.isDead){this.entities.enemies.splice(i,1);continue;}
-            if(e instanceof IdleAnts.Entities.WoollyBearEnemy){
-                e.update(this.nestPosition,[],ants);
-            } else {
-                e.update(ants);
-            }
-        }
-        // Dynamic enemy spawning based on colony size
-        const baseInterval = 900; // 15s default for 0-10 ants
-        const scaledInterval = Math.max(300, Math.floor(baseInterval / (1 + antTotal/10)));
-
-        this.enemySpawnCounter++;
-        if(this.enemySpawnCounter >= scaledInterval){
-            const batch = 1 + Math.floor(antTotal / 20);
-            this.createEnemy(batch);
-            this.enemySpawnCounter = 0;
-        }
-    }
-
-    // Spawn one of each enemy type for early variety
-    spawnInitialEnemies(){
-        // Spawn only initial tier enemies (woolly bear & cricket)
-        const initialTypes = this.enemyTiers[0];
-        const tex = this.assetManager.getTexture('ant');
-        const bounds = {width:this.mapBounds.width,height:this.mapBounds.height};
-        initialTypes.forEach(typeName => {
-            const EnemyClass = this.enemyClassMap[typeName];
-            if(!EnemyClass) return;
-            const e = new EnemyClass(tex, bounds);
-            this.entitiesContainers.enemies.addChild(e);
-            this.entities.enemies.push(e);
-        });
-    }
-
-    createInitialLarvae() {
-        // Create a larvae near the nest position for immediate visual feedback
-        if (this.nestPosition) {
-            // Position the larvae slightly offset from the nest
-            const angle = Math.random() * Math.PI * 2;
-            const distance = 30 + Math.random() * 20; // 30-50 pixels from nest
-            const larvaeX = this.nestPosition.x + Math.cos(angle) * distance;
-            const larvaeY = this.nestPosition.y + Math.sin(angle) * distance;
-            
-            // Create the larvae
-            this.createLarvae(larvaeX, larvaeY);
-            
-            console.log(`Created initial larvae at (${larvaeX}, ${larvaeY}) near nest`);
-        }
-    }
-
-    // Spawn the anteater boss and return reference
-    spawnAnteaterBoss() {
-        if (this.boss && !this.boss.isDead) return this.boss;
-        console.log('Creating new Anteater Boss...');
-        const textures = {
-            body: this.assetManager.getTexture('anteater_boss_body'),
-            front_leg: this.assetManager.getTexture('anteater_boss_leg_front'),
-            back_leg: this.assetManager.getTexture('anteater_boss_leg_back')
         };
-        console.log("Retrieved boss textures:", textures);
-        this.boss = new IdleAnts.Entities.AnteaterBoss(textures, { width: this.mapBounds.width, height: this.mapBounds.height });
-        this.bossDefeated = false;
-        this.entitiesContainers.enemies.addChild(this.boss);
-        this.entities.enemies.push(this.boss);
-        return this.boss;
     }
 
-    // Remove all current enemies except the boss (used before boss intro)
-    clearEnemies() {
-        for (let i = this.entities.enemies.length - 1; i >= 0; i--) {
-            const e = this.entities.enemies[i];
-            
-            if (e === this.boss) {
-                continue;
-            }
+    /**
+     * Get entities within radius of position
+     * @param {Object} position - Center position {x, y}
+     * @param {number} radius - Search radius
+     * @returns {Object} Entities within radius by type
+     */
+    getEntitiesWithinRadius(position, radius) {
+        return {
+            ants: this.antManager.entities.ants.filter(ant => {
+                const dx = ant.x - position.x;
+                const dy = ant.y - position.y;
+                return (dx * dx + dy * dy) <= radius * radius;
+            }),
+            food: this.foodManager.getFoodWithinRadius(position, radius),
+            enemies: this.enemyManager.getEnemiesWithinRadius(position, radius)
+        };
+    }
 
-            if (e.parent) e.parent.removeChild(e);
-            this.entities.enemies.splice(i, 1);
+    /**
+     * Clear all entities
+     */
+    clearAllEntities() {
+        this.antManager.destroy();
+        this.foodManager.removeAllFood();
+        this.enemyManager.removeAllEnemies();
+        
+        console.log('[EntityManager] All entities cleared');
+    }
+
+    /**
+     * Reset entities to initial state
+     */
+    resetEntities() {
+        this.clearAllEntities();
+        this.setupEntities();
+        
+        console.log('[EntityManager] Entities reset to initial state');
+    }
+
+    /**
+     * Get entity manager by type
+     * @param {string} type - Manager type ('ant', 'food', 'enemy', 'nest')
+     * @returns {Object|null} Specialized entity manager
+     */
+    getEntityManager(type) {
+        switch (type) {
+            case 'ant':
+            case 'ants':
+                return this.antManager;
+            case 'food':
+                return this.foodManager;
+            case 'enemy':
+            case 'enemies':
+                return this.enemyManager;
+            case 'nest':
+                return this.nestManager;
+            default:
+                return null;
         }
     }
-    
-    // Reset boss trigger for testing or replay
-    resetBossTrigger() {
-        this.bossTriggered = false;
-        this.boss = null;
+
+    // ===== FALLBACK MANAGER CREATION =====
+
+    /**
+     * Create fallback nest manager
+     */
+    createFallbackNestManager() {
+        return {
+            getNestPosition: () => ({ x: 1500, y: 1000 }),
+            getNest: () => null,
+            update: () => {},
+            setEffectManager: () => {},
+            setMapConfig: () => {},
+            getStatistics: () => ({ exists: false }),
+            destroy: () => {}
+        };
     }
-} 
+
+    /**
+     * Create fallback ant manager
+     */
+    createFallbackAntManager() {
+        return {
+            entities: { ants: [], flyingAnts: [], carAnts: [], fireAnts: [], queen: null, larvae: [] },
+            createAnt: () => {},
+            createFlyingAnt: () => {},
+            createCarAnt: () => {},
+            createFireAnt: () => {},
+            createQueen: () => {},
+            createLarvae: () => {},
+            getAntCount: () => 0,
+            getAntCounts: () => ({ regular: 0, flying: 0, car: 0, fire: 0, queen: 0, larvae: 0, total: 0 }),
+            update: () => {},
+            setNestPosition: () => {},
+            setEffectManager: () => {},
+            destroy: () => {}
+        };
+    }
+
+    /**
+     * Create fallback food manager
+     */
+    createFallbackFoodManager() {
+        return {
+            entities: [],
+            createFood: () => {},
+            addFood: () => {},
+            addFoodAtPosition: () => {},
+            getAvailableFood: () => [],
+            getFoodCount: () => 0,
+            getFoodWithinRadius: () => [],
+            getStatistics: () => ({ total: 0, available: 0 }),
+            update: () => {},
+            setMapConfig: () => {},
+            setEffectManager: () => {},
+            removeAllFood: () => {},
+            destroy: () => {}
+        };
+    }
+
+    /**
+     * Create fallback enemy manager
+     */
+    createFallbackEnemyManager() {
+        return {
+            entities: [],
+            createBoss: () => null,
+            spawnRandomEnemy: () => {},
+            getEnemyCount: () => 0,
+            getEnemiesWithinRadius: () => [],
+            getStatistics: () => ({ total: 0, alive: 0 }),
+            update: () => {},
+            setNestPosition: () => {},
+            setMapConfig: () => {},
+            setEffectManager: () => {},
+            removeAllEnemies: () => {},
+            destroy: () => {}
+        };
+    }
+
+    /**
+     * Destroy all entity managers and cleanup
+     */
+    destroy() {
+        if (this.nestManager) {
+            this.nestManager.destroy();
+        }
+        
+        if (this.antManager) {
+            this.antManager.destroy();
+        }
+        
+        if (this.foodManager) {
+            this.foodManager.destroy();
+        }
+        
+        if (this.enemyManager) {
+            this.enemyManager.destroy();
+        }
+        
+        // Clear references
+        this.nestManager = null;
+        this.antManager = null;
+        this.foodManager = null;
+        this.enemyManager = null;
+        this.entities = null;
+        this.nest = null;
+        this.nestPosition = null;
+    }
+};

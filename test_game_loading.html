@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Loading Test</title>
+</head>
+<body>
+    <div id="output"></div>
+    
+    <!-- Core namespace must be loaded first -->
+    <script src="src/core/Namespace.js"></script>
+    <!-- Error handling and recovery systems -->
+    <script src="src/core/ErrorHandler.js"></script>
+    
+    <!-- Game Modules -->
+    <script src="src/game/GameStateManager.js"></script>
+    <script src="src/game/GameAudioManager.js"></script>
+    <script src="src/game/GameUpgradeManager.js"></script>
+    <script src="src/game/GameBossManager.js"></script>
+    <script src="src/game/GameMinimapManager.js"></script>
+    
+    <script>
+        function log(message) {
+            console.log(message);
+            const output = document.getElementById('output');
+            output.innerHTML += message + '<br>';
+        }
+        
+        // Test our loading logic
+        window.addEventListener('load', () => {
+            log('[Test] Page loaded, checking namespace...');
+            log('[Test] IdleAnts: ' + (typeof IdleAnts !== 'undefined' ? 'Available' : 'NOT AVAILABLE'));
+            
+            if (IdleAnts && IdleAnts.Game) {
+                log('[Test] IdleAnts.Game: Available');
+                log('[Test] Available Game managers: ' + Object.keys(IdleAnts.Game).join(', '));
+                
+                const requiredManagers = ['GameAudioManager', 'GameUpgradeManager', 'GameBossManager', 'GameMinimapManager', 'StateManager'];
+                const missingManagers = requiredManagers.filter(mgr => !IdleAnts.Game[mgr]);
+                
+                if (missingManagers.length === 0) {
+                    log('[Test] ✅ ALL REQUIRED MANAGERS LOADED!');
+                } else {
+                    log('[Test] ❌ Missing managers: ' + missingManagers.join(', '));
+                }
+            } else {
+                log('[Test] ❌ IdleAnts.Game not available');
+            }
+        });
+    </script>
+</body>
+</html>

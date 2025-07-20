@@ -1,7 +1,8 @@
-// assets/environmentAssets.js
-(function() {
-    // Get a reference to the AssetDefinition class
-    const AssetDefinition = IdleAnts.Assets.AssetDefinition;
+// assets/environmentAssets.js - ES6 Module
+import AssetDefinition from './AssetDefinition.js';
+
+// Register environment assets
+{
     
     // Register nest asset
     AssetDefinition.register('nest', function(app) {
@@ -81,4 +82,4 @@
         
         return groundGraphics;
     });
-})(); 
+} 

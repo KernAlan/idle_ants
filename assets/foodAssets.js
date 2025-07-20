@@ -1,7 +1,8 @@
-// assets/foodAssets.js
-(function() {
-    // Get a reference to the AssetDefinition class
-    const AssetDefinition = IdleAnts.Assets.AssetDefinition;
+// assets/foodAssets.js - ES6 Module
+import AssetDefinition from './AssetDefinition.js';
+
+// Register food assets
+{
     
     // Register basic food asset
     AssetDefinition.register('food', function(app) {
@@ -291,4 +292,4 @@
         
         return watermelonGraphics;
     });
-})(); 
+} 

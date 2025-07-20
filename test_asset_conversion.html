@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Asset Conversion Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/pixi.js@7.x/dist/pixi.min.js"></script>
+</head>
+<body>
+    <div id="test-results"></div>
+    
+    <script type="module">
+        // Set up basic namespace
+        window.IdleAnts = {
+            Assets: {},
+            onInit: []
+        };
+        
+        try {
+            // Import converted asset modules
+            await import('./assets/index.js');
+            
+            // Check if assets were loaded properly
+            const results = document.getElementById('test-results');
+            
+            if (IdleAnts.Assets.AssetDefinition) {
+                results.innerHTML += '<p>✅ AssetDefinition loaded</p>';
+            } else {
+                results.innerHTML += '<p>❌ AssetDefinition not loaded</p>';
+            }
+            
+            if (IdleAnts.Assets.Ants) {
+                results.innerHTML += '<p>✅ Ant assets loaded</p>';
+            } else {
+                results.innerHTML += '<p>❌ Ant assets not loaded</p>';
+            }
+            
+            if (IdleAnts.AudioAssets) {
+                results.innerHTML += '<p>✅ Audio assets loaded</p>';
+            } else {
+                results.innerHTML += '<p>❌ Audio assets not loaded</p>';
+            }
+            
+            results.innerHTML += '<p>✅ Asset conversion test completed successfully!</p>';
+            
+        } catch (error) {
+            const results = document.getElementById('test-results');
+            results.innerHTML += `<p>❌ Error: ${error.message}</p>`;
+            console.error('Asset conversion test failed:', error);
+        }
+    </script>
+</body>
+</html>

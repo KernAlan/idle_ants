@@ -645,4 +645,53 @@ IdleAnts.Managers.UIManager = class {
 
     showWinScreen() { this.winScreen.style.display = 'flex'; }
     showLoseScreen() { this.loseScreen.style.display = 'flex'; }
+    
+    // Pause overlay methods (stub implementations)
+    hidePauseOverlay() {
+        // Stub implementation - could be extended later
+        console.log('[UIManager] hidePauseOverlay called');
+    }
+    
+    showPauseOverlay() {
+        // Stub implementation - could be extended later  
+        console.log('[UIManager] showPauseOverlay called');
+    }
+    
+    // Upgrade menu methods (stub implementations)
+    hideUpgradeMenu() {
+        // Stub implementation - could be extended later
+        console.log('[UIManager] hideUpgradeMenu called');
+    }
+    
+    showUpgradeMenu() {
+        // Stub implementation - could be extended later
+        console.log('[UIManager] showUpgradeMenu called');
+    }
+    
+    // State UI methods (stub implementations)
+    updateStateUI(state) {
+        // Stub implementation - could be extended later
+        console.log('[UIManager] updateStateUI called with state:', state);
+    }
+    
+    // Resize and interaction methods (stub implementations)
+    onResize() {
+        // Stub implementation - could be extended later
+        console.log('[UIManager] onResize called');
+    }
+    
+    handleTouchStart(e) {
+        // Stub implementation - could be extended later
+        console.log('[UIManager] handleTouchStart called');
+    }
+    
+    updateHoverIndicator(x, y) {
+        // Stub implementation - could be extended later
+        console.log('[UIManager] updateHoverIndicator called with coordinates:', x, y);
+    }
+    
+    handleResize() {
+        // Stub implementation - could be extended later
+        console.log('[UIManager] handleResize called');
+    }
 } 

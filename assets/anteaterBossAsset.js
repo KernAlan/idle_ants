@@ -1,6 +1,8 @@
-// assets/anteaterBossAsset.js
-(function() {
-    const AssetDefinition = IdleAnts.Assets.AssetDefinition;
+// assets/anteaterBossAsset.js - ES6 Module
+import AssetDefinition from './AssetDefinition.js';
+
+// Register anteater boss assets
+{
 
     // --- PRIVATE HELPER FUNCTIONS to draw parts ---
     function drawBody(g, scale, colors) {
@@ -203,5 +205,4 @@
         drawBackLeg(g, scale, colorPalette);
         return g;
     });
-
-})();
+}

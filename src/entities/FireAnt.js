@@ -127,7 +127,10 @@ IdleAnts.Entities.FireAnt = class extends IdleAnts.Entities.AntBase {
     // Placeholder for future combat bite action
     bite(target) {
         if (this._attackTimer === 0) {
-            // TODO: integrate with CombatManager to apply damage to target
+            // Integrate with CombatManager to apply damage to target
+            if (this.entityManager && this.entityManager.combatManager) {
+                this.entityManager.combatManager.registerAttack(this, target, this.attackDamage);
+            }
             this._attackTimer = this.attackCooldown;
         }
     }

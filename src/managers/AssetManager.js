@@ -16,7 +16,6 @@ IdleAnts.Managers.AssetManager = class {
     }
 
     async loadAssets() {
-        console.log("AssetManager: Starting asset loading...");
         try {
             // Placeholder for loading asset definition files if they do more than just declare objects
             // await this.loadAssetDefinitionFiles(); // e.g., antAssets.js, foodAssets.js
@@ -31,25 +30,20 @@ IdleAnts.Managers.AssetManager = class {
                                 if (Object.hasOwnProperty.call(category, assetKey)) {
                                     const assetConfig = category[assetKey];
                                     if (assetConfig && assetConfig.id) {
-                                        console.log(`AssetManager: Processing asset ${assetConfig.id}`);
                                         if (assetConfig.path) {
                                             // Load texture from path
                                             try {
-                                                console.log(`AssetManager: Loading texture for ${assetConfig.id} from ${assetConfig.path}`);
                                                 const texture = await PIXI.Assets.load(assetConfig.path);
                                                 this.textures[assetConfig.id] = texture;
-                                                console.log(`AssetManager: Texture ${assetConfig.id} loaded successfully.`);
                                             } catch (error) {
                                                 console.error(`AssetManager: Error loading texture for ${assetConfig.id} from ${assetConfig.path}:`, error);
                                             }
                                         } else if (assetConfig.generator && typeof assetConfig.generator === 'function') {
                                             // Generate texture from generator function
                                             try {
-                                                console.log(`AssetManager: Generating texture for ${assetConfig.id}`);
                                                 const graphics = assetConfig.generator(this.app);
                                                 if (graphics instanceof PIXI.Graphics) {
                                                     this.textures[assetConfig.id] = this.app.renderer.generateTexture(graphics);
-                                                    console.log(`AssetManager: Texture ${assetConfig.id} generated successfully.`);
                                                 } else {
                                                     console.error(`AssetManager: Generator for ${assetConfig.id} did not return a PIXI.Graphics object.`);
                                                 }
@@ -57,7 +51,10 @@ IdleAnts.Managers.AssetManager = class {
                                                 console.error(`AssetManager: Error generating texture for ${assetConfig.id}:`, error);
                                             }
                                         } else {
-                                            console.warn(`AssetManager: Asset ${assetConfig.id} has no path or generator.`);
+                                            // Only warn if this asset is not registered via AssetDefinition.register()
+                                            if (!this.assetDefinitions || !this.assetDefinitions[assetConfig.id]) {
+                                                console.warn(`AssetManager: Asset ${assetConfig.id} has no path or generator and is not registered via AssetDefinition.register().`);
+                                            }
                                         }
                                     }
                                 }
@@ -69,14 +66,12 @@ IdleAnts.Managers.AssetManager = class {
 
             // Process assets registered via AssetDefinition.register (if any are still used this way)
             // This part remains similar to original logic if AssetDefinition.register is still in use for some assets
-            if (this.assetDefinitions && Object.keys(this.assetDefinitions).length > 0) { // Check this.assetDefinitions
-                for (const [name, definitionFn] of Object.entries(this.assetDefinitions)) { // Iterate over this.assetDefinitions
+            if (this.assetDefinitions && Object.keys(this.assetDefinitions).length > 0) {
+                for (const [name, definitionFn] of Object.entries(this.assetDefinitions)) {
                     try {
-                        console.log(`AssetManager: Generating texture for registered asset ${name}`);
                         const graphics = definitionFn(this.app);
                         if (graphics instanceof PIXI.Graphics) {
                            this.textures[name] = this.app.renderer.generateTexture(graphics);
-                           console.log(`AssetManager: Texture for registered asset ${name} generated successfully.`);
                         } else {
                             console.error(`AssetManager: Generator for registered asset ${name} did not return a PIXI.Graphics object.`);
                         }
@@ -84,9 +79,9 @@ IdleAnts.Managers.AssetManager = class {
                         console.error(`AssetManager: Error generating texture for registered asset ${name}:`, error);
                     }
                 }
+            } else {
+                console.warn('AssetManager: No assets registered via AssetDefinition.register()');
             }
-            
-            console.log("AssetManager: Asset loading finished.");
         } catch (error) {
             console.error("AssetManager: Critical error during asset loading:", error);
         }

@@ -1,7 +1,8 @@
-// assets/antAssets.js
-(function() {
-    // Get a reference to the AssetDefinition class
-    const AssetDefinition = IdleAnts.Assets.AssetDefinition;
+// assets/antAssets.js - ES6 Module
+import AssetDefinition from './AssetDefinition.js';
+
+// Register programmatically generated ant assets
+{
     
     // Register ant asset
     AssetDefinition.register('ant', function(app) {
@@ -432,6 +433,125 @@
         return larvaeGraphics;
     });
     
+    // Register flying ant asset 
+    AssetDefinition.register('flying_ant', function(app) {
+        const flyingAntGraphics = AssetDefinition.createGraphics();
+        
+        // Create flying ant based on regular ant but with wings
+        
+        // Create angled perspective ant (3/4 view) to match nest perspective
+        
+        // Rear segment (abdomen) - angled ellipse showing depth
+        flyingAntGraphics.beginFill(0x2A1B10); // Dark brown base
+        flyingAntGraphics.drawEllipse(0, 8, 7, 10); // Main abdomen shape
+        flyingAntGraphics.endFill();
+        
+        // Abdomen highlight - shows the "top" surface at an angle
+        flyingAntGraphics.beginFill(0x3D2817);
+        flyingAntGraphics.drawEllipse(-1, 6, 6, 8); // Offset to show angled top
+        flyingAntGraphics.endFill();
+        
+        // Abdomen bright highlight - the most visible "top" surface
+        flyingAntGraphics.beginFill(0x5D4037);
+        flyingAntGraphics.drawEllipse(-2, 5, 4, 6); // Further offset for depth
+        flyingAntGraphics.endFill();
+        
+        // Middle segment (thorax) - angled perspective
+        flyingAntGraphics.beginFill(0x2A1B10);
+        flyingAntGraphics.drawEllipse(0, -2, 5, 7); // Base thorax
+        flyingAntGraphics.endFill();
+        
+        // Thorax top surface
+        flyingAntGraphics.beginFill(0x3D2817);
+        flyingAntGraphics.drawEllipse(-1, -3, 4, 5); // Angled top
+        flyingAntGraphics.endFill();
+        
+        // Thorax highlight
+        flyingAntGraphics.beginFill(0x5D4037);
+        flyingAntGraphics.drawEllipse(-1.5, -4, 3, 3); // Top highlight
+        flyingAntGraphics.endFill();
+        
+        // Head - angled circular perspective (more oval when viewed at angle)
+        flyingAntGraphics.beginFill(0x2A1B10);
+        flyingAntGraphics.drawEllipse(0, -14, 5, 6); // Base head - elliptical due to angle
+        flyingAntGraphics.endFill();
+        
+        // Head top surface
+        flyingAntGraphics.beginFill(0x3D2817);
+        flyingAntGraphics.drawEllipse(-1, -15, 4, 5); // Angled top surface
+        flyingAntGraphics.endFill();
+        
+        // Head highlight
+        flyingAntGraphics.beginFill(0x5D4037);
+        flyingAntGraphics.drawEllipse(-1.5, -15.5, 3, 3); // Top highlight
+        flyingAntGraphics.endFill();
+        
+        // Wings - transparent with slight color
+        flyingAntGraphics.beginFill(0x87CEEB, 0.6); // Sky blue, semi-transparent
+        // Left wing
+        flyingAntGraphics.drawEllipse(-8, -5, 12, 6);
+        // Right wing
+        flyingAntGraphics.drawEllipse(8, -5, 12, 6);
+        flyingAntGraphics.endFill();
+        
+        // Wing outlines
+        flyingAntGraphics.lineStyle(1, 0x4682B4);
+        flyingAntGraphics.drawEllipse(-8, -5, 12, 6);
+        flyingAntGraphics.drawEllipse(8, -5, 12, 6);
+        flyingAntGraphics.lineStyle(0);
+        
+        // Eyes - positioned for angled view (more visible on the "front" side)
+        flyingAntGraphics.beginFill(0x000000);
+        flyingAntGraphics.drawEllipse(-2.5, -15, 1.2, 1.5); // Left eye - more elliptical
+        flyingAntGraphics.drawEllipse(1.5, -14.5, 1.2, 1.5); // Right eye - slightly different position
+        flyingAntGraphics.endFill();
+        
+        // Eye highlights - angled perspective
+        flyingAntGraphics.beginFill(0xFFFFFF, 0.8);
+        flyingAntGraphics.drawEllipse(-2.7, -15.2, 0.5, 0.7); // Left eye highlight
+        flyingAntGraphics.drawEllipse(1.3, -14.7, 0.5, 0.7); // Right eye highlight
+        flyingAntGraphics.endFill();
+        
+        // Antennae - curved with angled perspective
+        flyingAntGraphics.lineStyle(1, 0x2A1B10);
+        
+        // Left antenna - more visible from this angle
+        flyingAntGraphics.moveTo(-2.5, -17);
+        flyingAntGraphics.bezierCurveTo(-5.5, -21, -7.5, -23, -6.5, -25);
+        
+        // Right antenna - partially visible from angle
+        flyingAntGraphics.moveTo(2, -16.5);
+        flyingAntGraphics.bezierCurveTo(4.5, -20, 6.5, -22, 6, -24);
+        
+        // Antenna tips
+        flyingAntGraphics.lineStyle(0);
+        flyingAntGraphics.beginFill(0x3D2817);
+        flyingAntGraphics.drawCircle(-6.5, -25, 1);
+        flyingAntGraphics.drawCircle(6, -24, 1);
+        flyingAntGraphics.endFill();
+        
+        // Legs - positioned for angled perspective (some more visible than others)
+        flyingAntGraphics.lineStyle(1.5, 0x2A1B10);
+        
+        // Left side legs (more visible from this angle)
+        flyingAntGraphics.moveTo(-4, -8); // Front leg
+        flyingAntGraphics.lineTo(-8, -6);
+        flyingAntGraphics.moveTo(-4, -2); // Middle leg
+        flyingAntGraphics.lineTo(-8, 0);
+        flyingAntGraphics.moveTo(-4, 4); // Rear leg
+        flyingAntGraphics.lineTo(-8, 6);
+        
+        // Right side legs (partially visible from angle)
+        flyingAntGraphics.moveTo(3, -7); // Front leg
+        flyingAntGraphics.lineTo(6, -5);
+        flyingAntGraphics.moveTo(3, -1); // Middle leg
+        flyingAntGraphics.lineTo(6, 1);
+        flyingAntGraphics.moveTo(3, 5); // Rear leg
+        flyingAntGraphics.lineTo(6, 7);
+        
+        return flyingAntGraphics;
+    });
+    
     // Register egg asset for larvae effect
     AssetDefinition.register('egg', function(app) {
         const eggGraphics = AssetDefinition.createGraphics();
@@ -457,32 +577,26 @@
         
         return eggGraphics;
     });
-})(); 
+} 
 
 IdleAnts.Assets.Ants = {
     ANT: {
         id: 'ant',
-        path: 'assets/textures/ant_spritesheet.png',
-        isSpriteSheet: true,
-        frames: 4, // Number of frames in the spritesheet
-        frameWidth: 32, // Width of a single frame
-        frameHeight: 32, // Height of a single frame
+        type: 'generated', // Uses AssetDefinition.register
+        scale: { x: 1.0, y: 1.0 },
         animationSpeed: 0.15
     },
     FLYING_ANT: {
         id: 'flying_ant',
-        path: 'assets/textures/flying_ant_spritesheet.png', // Placeholder - replace with actual path
-        isSpriteSheet: true,
-        frames: 4, // Example: 4 frames for flying animation
-        frameWidth: 48, // Example width
-        frameHeight: 48, // Example height
+        type: 'generated', // Uses AssetDefinition.register
+        scale: { x: 1.0, y: 1.0 },
         animationSpeed: 0.2
     },
     QUEEN_ANT: {
-        id: 'queen_ant',
-        path: 'assets/textures/queen_ant.png', // Placeholder - replace with actual path
+        id: 'queenAnt',
+        type: 'generated', // Uses AssetDefinition.register
         scale: { x: 1.5, y: 1.5 },
-        animationSpeed: 0.1 // Example, if animated
+        animationSpeed: 0.1
     },
     // Add new CarAnt placeholder texture
     CAR_ANT: {
@@ -506,4 +620,10 @@ IdleAnts.Assets.Ants = {
         isSpriteSheet: false, // Correct, it's a single generated graphic
         frames: 1 // Correct
     }
-}; 
+};
+
+// Register to global namespace for backward compatibility
+// (The object is already assigned to IdleAnts.Assets.Ants above)
+
+// Export for ES6 module system
+export default IdleAnts.Assets.Ants; 

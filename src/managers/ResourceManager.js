@@ -206,6 +206,11 @@ IdleAnts.Managers.ResourceManager = class {
         }
     }
     
+    // Method to get ant cost
+    getAntCost() {
+        return this.stats.antCost;
+    }
+    
     // Method to check if an ant can be purchased
     canBuyAnt() {
         return this.canAfford(this.stats.antCost) && 
@@ -598,5 +603,17 @@ IdleAnts.Managers.ResourceManager = class {
             return true;
         }
         return false;
+    }
+
+    // Update UI method for Game.js compatibility
+    updateUI() {
+        // This method is called from Game.js but can be empty or implement UI updates if needed
+        // Currently no UI updates are needed from the ResourceManager itself
+    }
+
+    // Update display food method for Game.js compatibility
+    updateDisplayFood() {
+        // This method is called from Game.js to update display food animation
+        // Currently no display food updates are needed from the ResourceManager itself
     }
 } 

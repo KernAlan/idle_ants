@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Idle Ants - Ant Colony Simulation Game</title>
     <link rel="stylesheet" href="styles.css">
     
@@ -11,31 +14,9 @@
     
     <!-- Primary game entry point - works for both development and production -->
     
-    <!-- Debug mode configuration -->
-    <script>
-        // Set debug mode based on environment or query parameter
-        (function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-            const debugParam = urlParams.get('debug');
-            
-            // Pre-setup for namespace
-            window.debugMode = isLocalhost || debugParam === 'true';
-            
-            if (window.debugMode) {
-                console.log('Debug mode enabled - running locally');
-            }
-        })();
-    </script>
+
     
-    <!-- Core namespace must be loaded first -->
-    <script src="src/core/Namespace.js"></script>
-    <script>
-        // Set debug mode after namespace is loaded
-        if (window.IdleAnts && window.debugMode) {
-            window.IdleAnts.Config.debug = window.debugMode;
-        }
-    </script>
+    <!-- Debug mode configuration will be handled in the ES6 modules -->
 </head>
 <body>
     <!-- Preload audio files as HTML elements to avoid CORS issues -->
@@ -149,63 +130,8 @@
     <!-- Import Pixi.js from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/pixi.js@7.x/dist/pixi.min.js"></script>
     
-    <!-- Import our game scripts in correct order -->
-    <script src="src/data/FoodTypes.js"></script>
-    <!-- Effect Classes -->
-    <script src="src/effects/Effect.js"></script>
-    <script src="src/effects/SpawnEffect.js"></script>
-    <script src="src/effects/FoodSpawnEffect.js"></script>
-    <script src="src/effects/FoodDropEffect.js"></script>
-    <script src="src/effects/FoodCollectEffect.js"></script>
-    <script src="src/effects/Trail.js"></script>
-    <script src="src/effects/LarvaeEffect.js"></script>
-    <script src="src/effects/index.js"></script>
-    <!-- Asset Definitions -->
-    <script src="assets/AssetDefinition.js"></script>
-    <script src="assets/antAssets.js"></script>
-    <script src="assets/anteaterBossAsset.js"></script>
-    <script src="assets/foodAssets.js"></script>
-    <script src="assets/environmentAssets.js"></script>
-    <script src="assets/audioAssets.js"></script>
-    <!-- Managers -->
-    <script src="src/managers/ResourceManager.js"></script>
-    <script src="src/managers/AssetManager.js"></script>
-    <script src="src/managers/BackgroundManager.js"></script>
-    <script src="src/managers/EffectManager.js"></script>
-    <script src="src/managers/EntityManager.js"></script>
-    <script src="src/managers/AudioManager.js"></script>
-    <script src="src/managers/UIManager.js"></script>
-    <!-- Notification Manager -->
-    <script src="src/managers/NotificationManager.js"></script>
-    <!-- Achievement Manager -->
-    <script src="src/managers/AchievementManager.js"></script>
-    <!-- Daily Challenge Manager -->
-    <script src="src/managers/DailyChallengeManager.js"></script>
-    <script src="src/managers/camera/CameraManager.js"></script>
-    <script src="src/managers/input/InputManager.js"></script>
-    <script src="src/managers/CombatManager.js"></script>
-    <!-- Entities -->
-    <script src="src/entities/AntBase.js"></script>
-    <script src="src/entities/Ant.js"></script>
-    <script src="src/entities/FlyingAnt.js"></script>
-    <script src="src/entities/CarAnt.js"></script>
-    <script src="src/entities/QueenAnt.js"></script>
-    <script src="src/entities/Larvae.js"></script>
-    <script src="src/entities/Food.js"></script>
-    <script src="src/entities/Nest.js"></script>
-    <script src="src/entities/FireAnt.js"></script>
-    <script src="src/entities/Enemy.js"></script>
-    <script src="src/entities/GrasshopperEnemy.js"></script>
-    <script src="src/entities/WoollyBearEnemy.js"></script>
-    <script src="src/entities/CricketEnemy.js"></script>
-    <script src="src/entities/MantisEnemy.js"></script>
-    <script src="src/entities/BeeEnemy.js"></script>
-    <script src="src/entities/HerculesBeetleEnemy.js"></script>
-    <script src="src/entities/FrogEnemy.js"></script>
-    <script src="src/entities/AnteaterBoss.js"></script>
-    <!-- Game Core -->
-    <script src="src/Game.js"></script>
-    <script src="src/index.js"></script>
+    <!-- All game modules now loaded via ES6 imports in src/index.js -->
+    <script type="module" src="src/index.js?v=20250720001"></script>
     
     <!-- Script to handle the audio start button -->
     <script>

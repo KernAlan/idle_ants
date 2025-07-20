@@ -466,6 +466,35 @@ IdleAnts.Managers.DailyChallengeManager = class {
         this.precisionActions += 1;
         this.updateChallengeProgress('perfectTiming', this.precisionActions);
     }
+
+    // Main updateProgress method called by GameUpgradeManager and other components
+    updateProgress(type, amount = 1) {
+        switch(type) {
+            case 'antPurchase':
+                this.trackAntPurchase();
+                break;
+            case 'speedUpgrade':
+                this.trackSpeedUpgrade();
+                break;
+            case 'foodClick':
+                this.trackFoodClick();
+                break;
+            case 'precisionAction':
+                this.trackPrecisionAction();
+                break;
+            case 'anyUpgrade':
+                this.progress.upgradeSpree += amount;
+                this.updateChallengeProgress('upgradeSpree', this.progress.upgradeSpree);
+                break;
+            default:
+                // For other types, try to track them directly
+                if (this.progress.hasOwnProperty(type)) {
+                    this.progress[type] += amount;
+                    this.updateChallengeProgress(type, this.progress[type]);
+                }
+                break;
+        }
+    }
     
     // Update active time tracking with more granular checks
     updateActiveTime() {

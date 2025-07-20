@@ -135,14 +135,18 @@ IdleAnts.Managers.AchievementManager = class {
     }
     
     setupTracking() {
-        // Track food collection
-        const originalAddFood = this.resourceManager.addFood.bind(this.resourceManager);
-        this.resourceManager.addFood = (amount) => {
-            const result = originalAddFood(amount);
-            this.progress.foodCollected += amount;
-            this.checkAchievements();
-            return result;
-        };
+        // Track food collection - with safety checks
+        if (this.resourceManager && this.resourceManager.addFood) {
+            const originalAddFood = this.resourceManager.addFood.bind(this.resourceManager);
+            this.resourceManager.addFood = (amount) => {
+                const result = originalAddFood(amount);
+                this.progress.foodCollected += amount;
+                this.checkAchievements();
+                return result;
+            };
+        } else {
+            console.warn('[AchievementManager] ResourceManager.addFood not available for tracking');
+        }
         
         // Track ant purchases
         const originalStats = this.resourceManager.stats;

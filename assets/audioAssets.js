@@ -1,5 +1,7 @@
+// assets/audioAssets.js - ES6 Module
+
 // Audio assets for Idle Ants
-IdleAnts.AudioAssets = {
+const AudioAssets = {
     // Background music
     BGM: {
         MAIN_THEME: {
@@ -33,4 +35,10 @@ IdleAnts.AudioAssets = {
         }
         // Add more sound effects as needed
     }
-}; 
+};
+
+// Register to global namespace for backward compatibility
+IdleAnts.AudioAssets = AudioAssets;
+
+// Export for ES6 module system
+export default AudioAssets; 

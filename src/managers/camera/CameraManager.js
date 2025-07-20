@@ -83,36 +83,30 @@ IdleAnts.Managers.CameraManager = class {
     }
 
     centerViewOnPosition(x, y) {
+        console.log(`[CAMERA] centerViewOnPosition called with center: (${x}, ${y})`);
+        
         const viewWidth = this.app.screen.width / this.mapConfig.zoom.level;
         const viewHeight = this.app.screen.height / this.mapConfig.zoom.level;
         
-        console.log(`[CAMERA] centerViewOnPosition called with center: (${x}, ${y})`);
-        console.log(`[CAMERA] Screen dimensions: ${this.app.screen.width}x${this.app.screen.height}, zoom: ${this.mapConfig.zoom.level}`);
-        console.log(`[CAMERA] View dimensions in world: ${viewWidth}x${viewHeight}`);
+        // Calculate where to position the viewport to center on (x,y)
+        const viewportX = x - (viewWidth / 2);
+        const viewportY = y - (viewHeight / 2);
         
-        const viewportX = Math.max(0, Math.min(x - (viewWidth / 2), this.mapConfig.width - viewWidth));
-        const viewportY = Math.max(0, Math.min(y - (viewHeight / 2), this.mapConfig.height - viewHeight));
+        // Clamp to map boundaries
+        const clampedX = Math.max(0, Math.min(viewportX, this.mapConfig.width - viewWidth));
+        const clampedY = Math.max(0, Math.min(viewportY, this.mapConfig.height - viewHeight));
         
-        console.log(`[CAMERA] Calculated viewport before assignment: (${viewportX}, ${viewportY})`);
-        console.log(`[CAMERA] Viewport calculation: Y = max(0, min(${y} - ${viewHeight/2}, ${this.mapConfig.height} - ${viewHeight}))`);
-        console.log(`[CAMERA] Viewport calculation: Y = max(0, min(${y - (viewHeight / 2)}, ${this.mapConfig.height - viewHeight}))`);
+        console.log(`[CAMERA] Setting viewport to: (${clampedX}, ${clampedY})`);
         
-        this.mapConfig.viewport.x = viewportX;
-        this.mapConfig.viewport.y = viewportY;
+        // Update viewport
+        this.mapConfig.viewport.x = clampedX;
+        this.mapConfig.viewport.y = clampedY;
         
-        // Safety check for worldContainer and position
-        if (this.worldContainer && this.worldContainer.position && typeof this.worldContainer.position.set === 'function') {
-            this.worldContainer.position.set(
-                -this.mapConfig.viewport.x * this.mapConfig.zoom.level,
-                -this.mapConfig.viewport.y * this.mapConfig.zoom.level
-            );
-        } else {
-            console.error('[CAMERA] worldContainer or position is undefined:', {
-                worldContainer: !!this.worldContainer,
-                position: this.worldContainer ? !!this.worldContainer.position : 'N/A',
-                set: this.worldContainer && this.worldContainer.position ? typeof this.worldContainer.position.set : 'N/A'
-            });
-        }
+        // Position world container (negative of viewport position, scaled by zoom)
+        this.worldContainer.x = -clampedX * this.mapConfig.zoom.level;
+        this.worldContainer.y = -clampedY * this.mapConfig.zoom.level;
+        
+        console.log(`[CAMERA] World container positioned at: (${this.worldContainer.x}, ${this.worldContainer.y})`);
         
         if (this.game && typeof this.game.updateMinimap === 'function') {
             this.game.updateMinimap();
@@ -504,5 +498,19 @@ IdleAnts.Managers.CameraManager = class {
             }
         };
         PIXI.Ticker.shared.add(shakeFn);
+    }
+    
+    // Main update method called from game loop
+    update() {
+        // Update cinematic pan if active
+        this.updateCinematicPan();
+        
+        // Any other camera-related updates can go here
+        // For example, screen shake updates are handled via PIXI.Ticker
+    }
+    
+    // Handle window resize events
+    onResize() {
+        this.handleResizeOrOrientationChange();
     }
 };
