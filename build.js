@@ -1,6 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 
+// Logger setup
+const logger = IdleAnts.Logger?.create('build') || console;
+
+
 // List of JavaScript files in the correct loading order (from index.html)
 const scriptFiles = [
     'src/core/Namespace.js',
@@ -63,7 +67,7 @@ const scriptFiles = [
 ];
 
 function buildBundle() {
-    console.log('Building JavaScript bundle...');
+    logger.debug('Building JavaScript bundle...');
     
     let bundledContent = '// Idle Ants - Bundled JavaScript\n';
     bundledContent += '// Generated on: ' + new Date().toISOString() + '\n\n';
@@ -78,33 +82,33 @@ function buildBundle() {
                 bundledContent += content;
                 bundledContent += '\n';
                 filesProcessed++;
-                console.log(`✓ Included: ${filePath}`);
+                logger.debug(`✓ Included: ${filePath}`);
             } else {
-                console.warn(`⚠ File not found: ${filePath}`);
+                logger.warn(`⚠ File not found: ${filePath}`);
             }
         } catch (error) {
-            console.error(`✗ Error reading ${filePath}:`, error.message);
+            logger.error(`✗ Error reading ${filePath}:`, error.message);
         }
     }
     
     // Write the bundled file
     try {
         fs.writeFileSync('bundle.js', bundledContent);
-        console.log(`\n✓ Bundle created successfully!`);
-        console.log(`  Files processed: ${filesProcessed}/${scriptFiles.length}`);
-        console.log(`  Output: bundle.js`);
-        console.log(`  Size: ${(bundledContent.length / 1024).toFixed(2)} KB`);
+        logger.debug(`\n✓ Bundle created successfully!`);
+        logger.debug(`  Files processed: ${filesProcessed}/${scriptFiles.length}`);
+        logger.debug(`  Output: bundle.js`);
+        logger.debug(`  Size: ${(bundledContent.length / 1024).toFixed(2)} KB`);
         
         // Create a production index.html that uses the bundle
         createProductionIndex();
         
     } catch (error) {
-        console.error('✗ Error writing bundle:', error.message);
+        logger.error('✗ Error writing bundle:', error.message);
     }
 }
 
 function createProductionIndex() {
-    console.log('\nCreating production index.html...');
+    logger.debug('\nCreating production index.html...');
     
     try {
         const indexContent = fs.readFileSync('index.html', 'utf8');
@@ -118,10 +122,10 @@ function createProductionIndex() {
         );
         
         fs.writeFileSync('index-production.html', productionContent);
-        console.log('✓ Production index.html created as index-production.html');
+        logger.debug('✓ Production index.html created as index-production.html');
         
     } catch (error) {
-        console.error('✗ Error creating production index:', error.message);
+        logger.error('✗ Error creating production index:', error.message);
     }
 }
 
