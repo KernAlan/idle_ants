@@ -1,5 +1,32 @@
 // Logger setup
 const logger = IdleAnts.Logger?.create('ResourceManager') || console;
+// Validation helpers
+const validateObject = (obj, name) => {
+    if (!obj) {
+        logger.error(`${name} is null or undefined`);
+        throw new Error(`${name} is required but was ${obj}`);
+    }
+    return obj;
+};
+
+const validateFunction = (fn, name) => {
+    if (typeof fn !== 'function') {
+        logger.error(`${name} is not a function`);
+        throw new Error(`${name} must be a function but was ${typeof fn}`);
+    }
+    return fn;
+};
+
+const safeCall = (fn, context, ...args) => {
+    try {
+        return fn.apply(context, args);
+    } catch (error) {
+        logger.error('Safe call failed', error);
+        throw error;
+    }
+};
+
+
 
 // src/managers/ResourceManager.js
 IdleAnts.Managers.ResourceManager = class {
@@ -271,12 +298,12 @@ IdleAnts.Managers.ResourceManager = class {
             
             // If the specific tier isn't found, try to get the BASIC food type
             if (IdleAnts.Data && IdleAnts.Data.FoodTypes && IdleAnts.Data.FoodTypes.BASIC) {
-                console.warn("Food tier not found, using BASIC food type");
+                logger.warn("Food tier not found, using BASIC food type");
                 return IdleAnts.Data.FoodTypes.BASIC;
             }
             
             // Last resort: create a minimal valid food type object
-            console.error("No valid food types available, creating fallback");
+            logger.error("No valid food types available, creating fallback");
             return {
                 id: 'fallback',
                 name: 'Food',
@@ -291,7 +318,7 @@ IdleAnts.Managers.ResourceManager = class {
                 description: 'Simple food.'
             };
         } catch (error) {
-            console.error("Error getting food type:", error);
+            logger.error("Error getting food type:", error);
             // If all else fails, return a minimal valid object
             return {
                 id: 'error',

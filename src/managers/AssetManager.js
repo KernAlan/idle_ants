@@ -1,5 +1,32 @@
 // Logger setup
 const logger = IdleAnts.Logger?.create('AssetManager') || console;
+// Validation helpers
+const validateObject = (obj, name) => {
+    if (!obj) {
+        logger.error(`${name} is null or undefined`);
+        throw new Error(`${name} is required but was ${obj}`);
+    }
+    return obj;
+};
+
+const validateFunction = (fn, name) => {
+    if (typeof fn !== 'function') {
+        logger.error(`${name} is not a function`);
+        throw new Error(`${name} must be a function but was ${typeof fn}`);
+    }
+    return fn;
+};
+
+const safeCall = (fn, context, ...args) => {
+    try {
+        return fn.apply(context, args);
+    } catch (error) {
+        logger.error('Safe call failed', error);
+        throw error;
+    }
+};
+
+
 
 // src/managers/AssetManager.js
 IdleAnts.Managers.AssetManager = class {
@@ -43,7 +70,7 @@ IdleAnts.Managers.AssetManager = class {
                                                 this.textures[assetConfig.id] = texture;
                                                 logger.debug(`AssetManager: Texture ${assetConfig.id} loaded successfully.`);
                                             } catch (error) {
-                                                console.error(`AssetManager: Error loading texture for ${assetConfig.id} from ${assetConfig.path}:`, error);
+                                                logger.error(`AssetManager: Error loading texture for ${assetConfig.id} from ${assetConfig.path}:`, error);
                                             }
                                         } else if (assetConfig.generator && typeof assetConfig.generator === 'function') {
                                             // Generate texture from generator function
@@ -54,13 +81,13 @@ IdleAnts.Managers.AssetManager = class {
                                                     this.textures[assetConfig.id] = this.app.renderer.generateTexture(graphics);
                                                     logger.debug(`AssetManager: Texture ${assetConfig.id} generated successfully.`);
                                                 } else {
-                                                    console.error(`AssetManager: Generator for ${assetConfig.id} did not return a PIXI.Graphics object.`);
+                                                    logger.error(`AssetManager: Generator for ${assetConfig.id} did not return a PIXI.Graphics object.`);
                                                 }
                                             } catch (error) {
-                                                console.error(`AssetManager: Error generating texture for ${assetConfig.id}:`, error);
+                                                logger.error(`AssetManager: Error generating texture for ${assetConfig.id}:`, error);
                                             }
                                         } else {
-                                            console.warn(`AssetManager: Asset ${assetConfig.id} has no path or generator.`);
+                                            logger.warn(`AssetManager: Asset ${assetConfig.id} has no path or generator.`);
                                         }
                                     }
                                 }
@@ -81,17 +108,17 @@ IdleAnts.Managers.AssetManager = class {
                            this.textures[name] = this.app.renderer.generateTexture(graphics);
                            logger.debug(`AssetManager: Texture for registered asset ${name} generated successfully.`);
                         } else {
-                            console.error(`AssetManager: Generator for registered asset ${name} did not return a PIXI.Graphics object.`);
+                            logger.error(`AssetManager: Generator for registered asset ${name} did not return a PIXI.Graphics object.`);
                         }
                     } catch (error) {
-                        console.error(`AssetManager: Error generating texture for registered asset ${name}:`, error);
+                        logger.error(`AssetManager: Error generating texture for registered asset ${name}:`, error);
                     }
                 }
             }
             
             logger.debug("AssetManager: Asset loading finished.");
         } catch (error) {
-            console.error("AssetManager: Critical error during asset loading:", error);
+            logger.error("AssetManager: Critical error during asset loading:", error);
         }
         // No explicit resolve/reject needed if not returning a Promise directly from loadAssets
         // However, Game.js expects loadAssets to return a Promise.
@@ -113,7 +140,7 @@ IdleAnts.Managers.AssetManager = class {
     //     try {
     //         // If these files truly had self-executing registration logic, it would have run by now.
     //     } catch (error) {
-    //         console.error(`AssetManager: Error conceptually loading module ${path}:`, error);
+    //         logger.error(`AssetManager: Error conceptually loading module ${path}:`, error);
     //     }
     // }
     
@@ -138,7 +165,7 @@ IdleAnts.Managers.AssetManager = class {
             if (this.textures[nameLower]) return this.textures[nameLower];
             if (this.textures[nameUpper]) return this.textures[nameUpper];
             
-            console.warn(`AssetManager: Texture '${name}' not found.`);
+            logger.warn(`AssetManager: Texture '${name}' not found.`);
             // To prevent crashes, return a placeholder texture or throw a more specific error.
             // For now, returning undefined which will likely lead to downstream errors if not handled.
             return undefined; 

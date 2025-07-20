@@ -11,7 +11,7 @@ IdleAnts.Entities.Larvae = class {
         this.y = y;
         
         // Create a container for the larvae
-        this.container = new PIXI.Container();
+        this.container = (() => { try { return new PIXI.Container(); } catch(error) { logger.error("Container creation failed", error); return new PIXI.Container(); } })();
         this.container.x = this.x;
         this.container.y = this.y;
         
@@ -34,7 +34,7 @@ IdleAnts.Entities.Larvae = class {
                 if (eggTexture) {
                     this.egg = new PIXI.Sprite(eggTexture);
                     this.egg.anchor.set(0.5);
-                    this.container.addChild(this.egg);
+                    this.containertry { .addChild(this.egg); } catch(error) { logger.error("AddChild operation failed", error); }
                     
                     // Add a pulsing animation
                     this.pulseTime = 0;
@@ -42,7 +42,7 @@ IdleAnts.Entities.Larvae = class {
                     this.createEggGraphic();
                 }
             } catch (error) {
-                console.error("Error loading egg texture:", error);
+                logger.error("Error loading egg texture:", error);
                 this.createEggGraphic();
             }
         } else {
@@ -53,11 +53,11 @@ IdleAnts.Entities.Larvae = class {
         // Add to the dedicated larvae container in EntityManager
         if (IdleAnts.app && IdleAnts.app.entityManager && IdleAnts.app.entityManager.entitiesContainers.larvae) {
             // Add to the dedicated larvae container
-            IdleAnts.app.entityManager.entitiesContainers.larvae.addChild(this.container);
+            IdleAnts.app.entityManager.entitiesContainers.larvaetry { .addChild(this.container); } catch(error) { logger.error("AddChild operation failed", error); }
             logger.debug(`Added larvae to dedicated larvae container (z-index already set correctly in EntityManager)`);
         } else if (IdleAnts.app && IdleAnts.app.worldContainer) {
             // Fallback: add directly to world container
-            IdleAnts.app.worldContainer.addChild(this.container);
+            IdleAnts.app.worldContainertry { .addChild(this.container); } catch(error) { logger.error("AddChild operation failed", error); }
             logger.debug(`Warning: Added larvae directly to world container (z-index may not be correct)`);
         }
     }
@@ -70,7 +70,7 @@ IdleAnts.Entities.Larvae = class {
         this.glow.beginFill(0xFFF8DC, 0.2); // Very subtle cream glow
         this.glow.drawCircle(0, 0, 12);
         this.glow.endFill();
-        this.container.addChild(this.glow);
+        this.containertry { .addChild(this.glow); } catch(error) { logger.error("AddChild operation failed", error); }
         
         // Main egg body - realistic ant egg colors
         this.egg = new PIXI.Graphics();
@@ -98,7 +98,7 @@ IdleAnts.Entities.Larvae = class {
         }
         this.egg.endFill();
         
-        this.container.addChild(this.egg);
+        this.containertry { .addChild(this.egg); } catch(error) { logger.error("AddChild operation failed", error); }
         
         // Animation parameters
         this.pulseTime = 0;
@@ -224,7 +224,7 @@ IdleAnts.Entities.Larvae = class {
                     }
                 }, 7000); // Match the 7-second duration of the LarvaeEffect (extended from 2 seconds)
             } catch (error) {
-                console.error("Error creating hatching effect:", error);
+                logger.error("Error creating hatching effect:", error);
                 // Fallback: create ant immediately if effect fails, but only if one hasn't been created yet
                 if (!this.antCreated && IdleAnts.app && IdleAnts.app.entityManager) {
                     this.antCreated = true; // Mark that we've created an ant
@@ -278,6 +278,6 @@ IdleAnts.Entities.Larvae = class {
         this.cracks.moveTo(-3, 1);
         this.cracks.lineTo(0, -2);
         
-        this.container.addChild(this.cracks);
+        this.containertry { .addChild(this.cracks); } catch(error) { logger.error("AddChild operation failed", error); }
     }
 }; 

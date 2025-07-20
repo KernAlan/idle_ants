@@ -1,5 +1,32 @@
 // Logger setup
 const logger = IdleAnts.Logger?.create('CameraManager') || console;
+// Validation helpers
+const validateObject = (obj, name) => {
+    if (!obj) {
+        logger.error(`${name} is null or undefined`);
+        throw new Error(`${name} is required but was ${obj}`);
+    }
+    return obj;
+};
+
+const validateFunction = (fn, name) => {
+    if (typeof fn !== 'function') {
+        logger.error(`${name} is not a function`);
+        throw new Error(`${name} must be a function but was ${typeof fn}`);
+    }
+    return fn;
+};
+
+const safeCall = (fn, context, ...args) => {
+    try {
+        return fn.apply(context, args);
+    } catch (error) {
+        logger.error('Safe call failed', error);
+        throw error;
+    }
+};
+
+
 
 // src/managers/camera/CameraManager.js
 // Ensure IdleAnts and IdleAnts.Managers namespaces exist
@@ -38,7 +65,7 @@ IdleAnts.Managers.CameraManager = class {
             this.mapConfig.zoom.min = Math.max(this.mapConfig.zoom.min || 0.25, dynamicMinZoom);
             this.mapConfig.zoom.level = Math.max(this.mapConfig.zoom.level || 1.0, dynamicMinZoom);
         } else {
-            console.warn("CameraManager: PIXI app view dimensions or mapConfig dimensions not fully initialized for dynamic zoom calculation. Using default/existing zoom levels.");
+            logger.warn("CameraManager: PIXI app view dimensions or mapConfig dimensions not fully initialized for dynamic zoom calculation. Using default/existing zoom levels.");
             // Ensure zoom object and its properties exist with defaults if not already set
             this.mapConfig.zoom = this.mapConfig.zoom || {};
             this.mapConfig.zoom.min = this.mapConfig.zoom.min || 0.25;
@@ -79,7 +106,7 @@ IdleAnts.Managers.CameraManager = class {
                     -this.mapConfig.viewport.y * this.mapConfig.zoom.level
                 );
             } else {
-                console.error('[CAMERA] worldContainer.position is undefined in updateCamera');
+                logger.error('[CAMERA] worldContainer.position is undefined in updateCamera');
             }
         }
         return cameraMoved;
@@ -110,7 +137,7 @@ IdleAnts.Managers.CameraManager = class {
                 -this.mapConfig.viewport.y * this.mapConfig.zoom.level
             );
         } else {
-            console.error('[CAMERA] worldContainer or position is undefined:', {
+            logger.error('[CAMERA] worldContainer or position is undefined:', {
                 worldContainer: !!this.worldContainer,
                 position: this.worldContainer ? !!this.worldContainer.position : 'N/A',
                 set: this.worldContainer && this.worldContainer.position ? typeof this.worldContainer.position.set : 'N/A'
@@ -305,7 +332,7 @@ IdleAnts.Managers.CameraManager = class {
         if (this.worldContainer && this.worldContainer.scale && typeof this.worldContainer.scale.set === 'function') {
             this.worldContainer.scale.set(this.mapConfig.zoom.level, this.mapConfig.zoom.level);
         } else {
-            console.error('[CAMERA] worldContainer.scale is undefined in setZoom');
+            logger.error('[CAMERA] worldContainer.scale is undefined in setZoom');
         }
         
         // Update viewport position to maintain current view
@@ -328,7 +355,7 @@ IdleAnts.Managers.CameraManager = class {
                 -this.mapConfig.viewport.y * this.mapConfig.zoom.level
             );
         } else {
-            console.error('[CAMERA] worldContainer.position is undefined in setZoom');
+            logger.error('[CAMERA] worldContainer.position is undefined in setZoom');
         }
         
         // Update minimap if available
@@ -377,7 +404,7 @@ IdleAnts.Managers.CameraManager = class {
                     -this.mapConfig.viewport.y * this.mapConfig.zoom.level
                 );
             } else {
-                console.error('[CAMERA] worldContainer.position is undefined in restoreCameraState');
+                logger.error('[CAMERA] worldContainer.position is undefined in restoreCameraState');
             }
             
             logger.debug('[CAMERA] State restored to:', this.preservedCameraState);
@@ -455,11 +482,11 @@ IdleAnts.Managers.CameraManager = class {
     shake(duration = 400, strength = 20) {
         // --- Diagnostic guard to identify undefined chain ---
         if (!this.app || !this.app.stage) {
-            console.error('[Camera-shake] this.app or this.app.stage missing', this.app);
+            logger.error('[Camera-shake] this.app or this.app.stage missing', this.app);
             return;
         }
         if (!this.app.stage.scale) {
-            console.error('[Camera-shake] this.app.stage.scale missing – stage:', this.app.stage);
+            logger.error('[Camera-shake] this.app.stage.scale missing – stage:', this.app.stage);
             requestAnimationFrame(() => this.shake(duration, strength));
             return;
         }

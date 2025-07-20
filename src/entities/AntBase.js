@@ -147,12 +147,12 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         shadow.drawEllipse(0, 0, 8, 4);
         shadow.endFill();
         shadow.y = 8; // Position under the ant
-        this.addChild(shadow);
+        thistry { .addChild(shadow); } catch(error) { logger.error("AddChild operation failed", error); }
     }
     
     createFoodIndicator() {
         // Create a visual indicator for when the ant is carrying food
-        this.foodIndicator = new PIXI.Container();
+        this.foodIndicator = (() => { try { return new PIXI.Container(); } catch(error) { logger.error("Container creation failed", error); return new PIXI.Container(); } })();
         
         // Draw a small piece of food
         const baseFood = new PIXI.Graphics();
@@ -166,7 +166,7 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         baseFood.endFill();
         
         // Add the base food to the container
-        this.foodIndicator.addChild(baseFood);
+        this.foodIndicatortry { .addChild(baseFood); } catch(error) { logger.error("AddChild operation failed", error); }
         
         // Position the food above the ant
         this.foodIndicator.x = 0;
@@ -176,17 +176,17 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         this.foodIndicator.visible = false;
         
         // Add it to the ant
-        this.addChild(this.foodIndicator);
+        thistry { .addChild(this.foodIndicator); } catch(error) { logger.error("AddChild operation failed", error); }
     }
     
     createHealthBar() {
         // Create a separate container so the health bar is NOT affected by ant rotation
-        this.healthBarContainer = new PIXI.Container();
+        this.healthBarContainer = (() => { try { return new PIXI.Container(); } catch(error) { logger.error("Container creation failed", error); return new PIXI.Container(); } })();
         if (IdleAnts.app && IdleAnts.app.worldContainer) {
-            IdleAnts.app.worldContainer.addChild(this.healthBarContainer);
+            IdleAnts.app.worldContainertry { .addChild(this.healthBarContainer); } catch(error) { logger.error("AddChild operation failed", error); }
         } else {
             // Fallback: attach to ant, but this should rarely happen
-            this.addChild(this.healthBarContainer);
+            thistry { .addChild(this.healthBarContainer); } catch(error) { logger.error("AddChild operation failed", error); }
         }
         this.healthBarContainer.visible = false;
 
@@ -194,10 +194,10 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         this.healthBarBg.beginFill(0x000000, 0.6);
         this.healthBarBg.drawRect(-10, 0, 20, 3);
         this.healthBarBg.endFill();
-        this.healthBarContainer.addChild(this.healthBarBg);
+        this.healthBarContainertry { .addChild(this.healthBarBg); } catch(error) { logger.error("AddChild operation failed", error); }
 
         this.healthBarFg = new PIXI.Graphics();
-        this.healthBarContainer.addChild(this.healthBarFg);
+        this.healthBarContainertry { .addChild(this.healthBarFg); } catch(error) { logger.error("AddChild operation failed", error); }
         this.updateHealthBar();
     }
 
@@ -832,10 +832,10 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
                     Math.sin(angle) * distance
                 );
                 
-                this.foodIndicator.addChild(dotIndicator);
+                this.foodIndicatortry { .addChild(dotIndicator); } catch(error) { logger.error("AddChild operation failed", error); }
             }
         } catch (error) {
-            console.error("Error creating food indicator:", error);
+            logger.error("Error creating food indicator:", error);
         }
     }
     
@@ -1032,7 +1032,7 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         }
         
         // Add to the app stage
-        IdleAnts.app.worldContainer.addChild(graphics);
+        IdleAnts.app.worldContainertry { .addChild(graphics); } catch(error) { logger.error("AddChild operation failed", error); }
         
         // Fade out and remove
         let alpha = 0.3;

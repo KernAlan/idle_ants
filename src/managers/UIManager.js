@@ -1,4 +1,35 @@
 // src/managers/UIManager.js
+
+// Logger setup
+const logger = IdleAnts.Logger?.create('UIManager') || console;
+// Validation helpers
+const validateObject = (obj, name) => {
+    if (!obj) {
+        logger.error(`${name} is null or undefined`);
+        throw new Error(`${name} is required but was ${obj}`);
+    }
+    return obj;
+};
+
+const validateFunction = (fn, name) => {
+    if (typeof fn !== 'function') {
+        logger.error(`${name} is not a function`);
+        throw new Error(`${name} must be a function but was ${typeof fn}`);
+    }
+    return fn;
+};
+
+const safeCall = (fn, context, ...args) => {
+    try {
+        return fn.apply(context, args);
+    } catch (error) {
+        logger.error('Safe call failed', error);
+        throw error;
+    }
+};
+
+
+
 IdleAnts.Managers.UIManager = class {
     constructor(resourceManager, game, effectManager) {
         this.resourceManager = resourceManager;
@@ -75,7 +106,7 @@ IdleAnts.Managers.UIManager = class {
             if (element) {
                 element.addEventListener('click', callback);
             } else {
-                console.warn(`UIManager: Element with id '${id}' not found for event listener`);
+                logger.warn(`UIManager: Element with id '${id}' not found for event listener`);
             }
         };
         
@@ -260,7 +291,7 @@ IdleAnts.Managers.UIManager = class {
             const expandFireAntCapacityCost = this.resourceManager.stats.maxFireAnts > 0 ? this.resourceManager.stats.fireAntCost * (this.resourceManager.stats.maxFireAnts + 1) * 0.5 : 10000;
             updateCachedElementText(this.elements.expandFireAntCost, Math.floor(expandFireAntCapacityCost));
         } catch (error) {
-            console.error('Error updating UI resources:', error);
+            logger.error('Error updating UI resources:', error);
         }
         
         // Update previous food amount without playing any sound
@@ -316,7 +347,7 @@ IdleAnts.Managers.UIManager = class {
                 updateCachedElementText(this.elements.queenLarvaeRate, '15-45s'); // Updated to reflect faster spawn rate
             }
         } catch (error) {
-            console.error('Error updating UI:', error);
+            logger.error('Error updating UI:', error);
         }
         
         // Update button states
@@ -493,7 +524,7 @@ IdleAnts.Managers.UIManager = class {
                 }
             }
         } catch (error) {
-            console.error("Error in UIManager.animateCounters:", error);
+            logger.error("Error in UIManager.animateCounters:", error);
         }
     }
     
@@ -502,7 +533,7 @@ IdleAnts.Managers.UIManager = class {
             // Find the button element
             const button = document.getElementById(buttonId);
             if (!button) {
-                console.warn(`UIManager: Button with id '${buttonId}' not found for upgrade effect`);
+                logger.warn(`UIManager: Button with id '${buttonId}' not found for upgrade effect`);
                 return;
             }
             
@@ -557,7 +588,7 @@ IdleAnts.Managers.UIManager = class {
                 button.style.transform = '';
             }, 300);
         } catch (error) {
-            console.error("Error in UIManager.showUpgradeEffect:", error);
+            logger.error("Error in UIManager.showUpgradeEffect:", error);
         }
     }
 

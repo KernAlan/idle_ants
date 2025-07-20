@@ -17,7 +17,7 @@ IdleAnts.Effects.LarvaeEffect = class extends IdleAnts.Effects.Effect {
         logger.debug(`Creating larvae effect at (${this.x}, ${this.y})`);
         
         // Create a container for the larvae effect
-        this.container = new PIXI.Container();
+        this.container = (() => { try { return new PIXI.Container(); } catch(error) { logger.error("Container creation failed", error); return new PIXI.Container(); } })();
         this.container.x = this.x;
         this.container.y = this.y;
         
@@ -32,7 +32,7 @@ IdleAnts.Effects.LarvaeEffect = class extends IdleAnts.Effects.Effect {
                 if (eggTexture) {
                     this.egg = new PIXI.Sprite(eggTexture);
                     this.egg.anchor.set(0.5);
-                    this.container.addChild(this.egg);
+                    this.containertry { .addChild(this.egg); } catch(error) { logger.error("AddChild operation failed", error); }
                     logger.debug("Using egg texture from assets");
                 } else {
                     this.createEggGraphic();
@@ -44,13 +44,13 @@ IdleAnts.Effects.LarvaeEffect = class extends IdleAnts.Effects.Effect {
                     this.larvae = new PIXI.Sprite(larvaeTexture);
                     this.larvae.anchor.set(0.5);
                     this.larvae.alpha = 0; // Start invisible
-                    this.container.addChild(this.larvae);
+                    this.containertry { .addChild(this.larvae); } catch(error) { logger.error("AddChild operation failed", error); }
                     logger.debug("Using larvae texture from assets");
                 } else {
                     this.createLarvaeGraphic();
                 }
             } catch (error) {
-                console.error("Error loading asset textures:", error);
+                logger.error("Error loading asset textures:", error);
                 this.createEggGraphic();
                 this.createLarvaeGraphic();
             }
@@ -66,7 +66,7 @@ IdleAnts.Effects.LarvaeEffect = class extends IdleAnts.Effects.Effect {
         // Make sure we're adding to the world container if possible
         if (IdleAnts.app && IdleAnts.app.worldContainer) {
             logger.debug("Adding larvae effect to world container");
-            IdleAnts.app.worldContainer.addChild(this.container);
+            IdleAnts.app.worldContainertry { .addChild(this.container); } catch(error) { logger.error("AddChild operation failed", error); }
             
             // Bring to front
             IdleAnts.app.worldContainer.setChildIndex(
@@ -75,7 +75,7 @@ IdleAnts.Effects.LarvaeEffect = class extends IdleAnts.Effects.Effect {
             );
         } else {
             logger.debug("Adding larvae effect to app stage");
-            this.app.stage.addChild(this.container);
+            this.app.stagetry { .addChild(this.container); } catch(error) { logger.error("AddChild operation failed", error); }
         }
     }
     
@@ -85,7 +85,7 @@ IdleAnts.Effects.LarvaeEffect = class extends IdleAnts.Effects.Effect {
         this.glow.beginFill(0xFFF8DC, 0.3); // Subtle cream glow
         this.glow.drawCircle(0, 0, 12);
         this.glow.endFill();
-        this.container.addChild(this.glow);
+        this.containertry { .addChild(this.glow); } catch(error) { logger.error("AddChild operation failed", error); }
         
         // Main egg body
         this.egg = new PIXI.Graphics();
@@ -111,7 +111,7 @@ IdleAnts.Effects.LarvaeEffect = class extends IdleAnts.Effects.Effect {
         this.egg.lineTo(-1, 0);
         this.egg.lineTo(2, 3);
         
-        this.container.addChild(this.egg);
+        this.containertry { .addChild(this.egg); } catch(error) { logger.error("AddChild operation failed", error); }
     }
     
     createLarvaeGraphic() {
@@ -142,7 +142,7 @@ IdleAnts.Effects.LarvaeEffect = class extends IdleAnts.Effects.Effect {
         this.larvae.endFill();
         
         this.larvae.alpha = 0; // Start invisible
-        this.container.addChild(this.larvae);
+        this.containertry { .addChild(this.larvae); } catch(error) { logger.error("AddChild operation failed", error); }
     }
     
     createParticles() {
@@ -162,7 +162,7 @@ IdleAnts.Effects.LarvaeEffect = class extends IdleAnts.Effects.Effect {
             particle.alpha = 0; // Start invisible
             particle.delay = i * 0.08; // Stagger the appearance
             
-            this.container.addChild(particle);
+            this.containertry { .addChild(particle); } catch(error) { logger.error("AddChild operation failed", error); }
             this.particles.push(particle);
         }
     }

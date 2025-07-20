@@ -62,8 +62,8 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
     
     createLegs() {
         // Create container for legs
-        this.legsContainer = new PIXI.Container();
-        this.addChild(this.legsContainer);
+        this.legsContainer = (() => { try { return new PIXI.Container(); } catch(error) { logger.error("Container creation failed", error); return new PIXI.Container(); } })();
+        thistry { .addChild(this.legsContainer); } catch(error) { logger.error("AddChild operation failed", error); }
         
         // Create each pair of legs - these will be animated
         this.legs = [];
@@ -97,8 +97,8 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
             rightLeg.index = i;
             rightLeg.side = 'right';
             
-            this.legsContainer.addChild(leftLeg);
-            this.legsContainer.addChild(rightLeg);
+            this.legsContainertry { .addChild(leftLeg); } catch(error) { logger.error("AddChild operation failed", error); }
+            this.legsContainertry { .addChild(rightLeg); } catch(error) { logger.error("AddChild operation failed", error); }
             
             this.legs.push(leftLeg, rightLeg);
         }
@@ -256,7 +256,7 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
                 this.currentLarvae += larvaeToSpawn;
                 // logger.debug(`Queen now has ${this.currentLarvae} larvae`);
             } catch (error) {
-                console.error('Error creating larvae:', error);
+                logger.error('Error creating larvae:', error);
             }
         }
     }

@@ -1,5 +1,32 @@
 // Logger setup
 const logger = IdleAnts.Logger?.create('Game') || console;
+// Validation helpers
+const validateObject = (obj, name) => {
+    if (!obj) {
+        logger.error(`${name} is null or undefined`);
+        throw new Error(`${name} is required but was ${obj}`);
+    }
+    return obj;
+};
+
+const validateFunction = (fn, name) => {
+    if (typeof fn !== 'function') {
+        logger.error(`${name} is not a function`);
+        throw new Error(`${name} must be a function but was ${typeof fn}`);
+    }
+    return fn;
+};
+
+const safeCall = (fn, context, ...args) => {
+    try {
+        return fn.apply(context, args);
+    } catch (error) {
+        logger.error('Safe call failed', error);
+        throw error;
+    }
+};
+
+
 
 // src/Game.js
 IdleAnts.Game = class {
@@ -60,12 +87,12 @@ IdleAnts.Game = class {
         this.assetManager = new IdleAnts.Managers.AssetManager(this.app);
         
         // Create container for all game elements
-        this.worldContainer = new PIXI.Container();
-        this.app.stage.addChild(this.worldContainer);
+        this.worldContainer = (() => { try { return new PIXI.Container(); } catch(error) { logger.error("Container creation failed", error); return new PIXI.Container(); } })();
+        this.app.stagetry { .addChild(this.worldContainer); } catch(error) { logger.error("AddChild operation failed", error); }
         
         // Create minimap
-        this.minimapContainer = new PIXI.Container();
-        this.app.stage.addChild(this.minimapContainer);
+        this.minimapContainer = (() => { try { return new PIXI.Container(); } catch(error) { logger.error("Container creation failed", error); return new PIXI.Container(); } })();
+        this.app.stagetry { .addChild(this.minimapContainer); } catch(error) { logger.error("AddChild operation failed", error); }
         
         this.cameraManager = new IdleAnts.Managers.CameraManager(this.app, this.worldContainer, this.mapConfig, this);
         
@@ -307,7 +334,7 @@ IdleAnts.Game = class {
 
         // Create and track hover effect (Graphics object setup)
         this.hoverIndicator = new PIXI.Graphics();
-        this.app.stage.addChild(this.hoverIndicator);
+        this.app.stagetry { .addChild(this.hoverIndicator); } catch(error) { logger.error("AddChild operation failed", error); }
         // Actual update of hoverIndicator position is handled by InputManager updating lastMouseX/Y,
         // and gameLoop calling updateHoverIndicator().
 
@@ -370,7 +397,7 @@ IdleAnts.Game = class {
             try {
                 this.uiManager.updateUI();
             } catch (error) {
-                console.error("Error initializing UI:", error);
+                logger.error("Error initializing UI:", error);
             }
             
             // Start ticker
@@ -427,15 +454,15 @@ IdleAnts.Game = class {
         );
         
         // Add to the minimap container
-        this.minimapContainer.addChild(this.minimap);
+        this.minimapContainertry { .addChild(this.minimap); } catch(error) { logger.error("AddChild operation failed", error); }
         
         // Create visuals for nest, ants, and food
         this.minimapVisuals = new PIXI.Graphics();
-        this.minimap.addChild(this.minimapVisuals);
+        this.minimaptry { .addChild(this.minimapVisuals); } catch(error) { logger.error("AddChild operation failed", error); }
         
         // Create viewport indicator
         this.minimapViewport = new PIXI.Graphics();
-        this.minimap.addChild(this.minimapViewport);
+        this.minimaptry { .addChild(this.minimapViewport); } catch(error) { logger.error("AddChild operation failed", error); }
         
         // Add click event to minimap for quick navigation
         this.minimap.interactive = true;
@@ -610,7 +637,7 @@ IdleAnts.Game = class {
         logger.debug('startBossFight called, current state:', this.state);
         
         if (this.state !== IdleAnts.Game.States.PLAYING) {
-            console.warn('Cannot start boss fight - not in playing state');
+            logger.warn('Cannot start boss fight - not in playing state');
             return;
         }
 
@@ -1031,7 +1058,7 @@ IdleAnts.Game = class {
                 try {
                     initFn(this);
                 } catch (error) {
-                    console.error('Error in initialization hook:', error);
+                    logger.error('Error in initialization hook:', error);
                 }
             });
         }
@@ -1203,8 +1230,8 @@ IdleAnts.Game = class {
         const expectedBossY = 150; // Top of map for invasion
 
         if (Math.abs(boss.x - expectedBossX) > 1 || Math.abs(boss.y - expectedBossY) > 1) {
-            console.warn(`[CINEMATIC] Boss position incorrect! Expected: (${expectedBossX}, ${expectedBossY}), Actual: (${boss.x}, ${boss.y})`);
-            console.warn(`[CINEMATIC] Correcting boss position...`);
+            logger.warn(`[CINEMATIC] Boss position incorrect! Expected: (${expectedBossX}, ${expectedBossY}), Actual: (${boss.x}, ${boss.y})`);
+            logger.warn(`[CINEMATIC] Correcting boss position...`);
             boss.x = expectedBossX;
             boss.y = expectedBossY;
         }

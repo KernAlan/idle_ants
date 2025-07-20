@@ -1,4 +1,35 @@
 // src/managers/AchievementManager.js
+
+// Logger setup
+const logger = IdleAnts.Logger?.create('AchievementManager') || console;
+// Validation helpers
+const validateObject = (obj, name) => {
+    if (!obj) {
+        logger.error(`${name} is null or undefined`);
+        throw new Error(`${name} is required but was ${obj}`);
+    }
+    return obj;
+};
+
+const validateFunction = (fn, name) => {
+    if (typeof fn !== 'function') {
+        logger.error(`${name} is not a function`);
+        throw new Error(`${name} must be a function but was ${typeof fn}`);
+    }
+    return fn;
+};
+
+const safeCall = (fn, context, ...args) => {
+    try {
+        return fn.apply(context, args);
+    } catch (error) {
+        logger.error('Safe call failed', error);
+        throw error;
+    }
+};
+
+
+
 IdleAnts.Managers.AchievementManager = class {
     constructor(resourceManager, effectManager) {
         this.resourceManager = resourceManager;
@@ -389,7 +420,7 @@ IdleAnts.Managers.AchievementManager = class {
                 // Load progress
                 this.progress = { ...this.progress, ...data.progress };
             } catch (error) {
-                console.error('Error loading achievement data:', error);
+                logger.error('Error loading achievement data:', error);
             }
         }
     }

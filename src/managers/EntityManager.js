@@ -1,5 +1,32 @@
 // Logger setup
 const logger = IdleAnts.Logger?.create('EntityManager') || console;
+// Validation helpers
+const validateObject = (obj, name) => {
+    if (!obj) {
+        logger.error(`${name} is null or undefined`);
+        throw new Error(`${name} is required but was ${obj}`);
+    }
+    return obj;
+};
+
+const validateFunction = (fn, name) => {
+    if (typeof fn !== 'function') {
+        logger.error(`${name} is not a function`);
+        throw new Error(`${name} must be a function but was ${typeof fn}`);
+    }
+    return fn;
+};
+
+const safeCall = (fn, context, ...args) => {
+    try {
+        return fn.apply(context, args);
+    } catch (error) {
+        logger.error('Safe call failed', error);
+        throw error;
+    }
+};
+
+
 
 // src/managers/EntityManager.js
 IdleAnts.Managers.EntityManager = class {
@@ -12,27 +39,27 @@ IdleAnts.Managers.EntityManager = class {
         
         // Create containers for game objects
         this.entitiesContainers = {
-            ants: new PIXI.Container(),
-            flyingAnts: new PIXI.Container(),
-            food: new PIXI.Container(),
-            nest: new PIXI.Container(),
-            queen: new PIXI.Container(), // Container for queen ant
-            larvae: new PIXI.Container(), // New container for larvae
-            carAnts: new PIXI.Container(), // New container for Car Ants
-            fireAnts: new PIXI.Container(), // Container for Fire Ants
-            enemies: new PIXI.Container() // Container for Enemies
+            ants: (() => { try { return new PIXI.Container(); } catch(error) { logger.error("Container creation failed", error); return new PIXI.Container(); } })(),
+            flyingAnts: (() => { try { return new PIXI.Container(); } catch(error) { logger.error("Container creation failed", error); return new PIXI.Container(); } })(),
+            food: (() => { try { return new PIXI.Container(); } catch(error) { logger.error("Container creation failed", error); return new PIXI.Container(); } })(),
+            nest: (() => { try { return new PIXI.Container(); } catch(error) { logger.error("Container creation failed", error); return new PIXI.Container(); } })(),
+            queen: (() => { try { return new PIXI.Container(); } catch(error) { logger.error("Container creation failed", error); return new PIXI.Container(); } })(), // Container for queen ant
+            larvae: (() => { try { return new PIXI.Container(); } catch(error) { logger.error("Container creation failed", error); return new PIXI.Container(); } })(), // New container for larvae
+            carAnts: (() => { try { return new PIXI.Container(); } catch(error) { logger.error("Container creation failed", error); return new PIXI.Container(); } })(), // New container for Car Ants
+            fireAnts: (() => { try { return new PIXI.Container(); } catch(error) { logger.error("Container creation failed", error); return new PIXI.Container(); } })(), // Container for Fire Ants
+            enemies: (() => { try { return new PIXI.Container(); } catch(error) { logger.error("Container creation failed", error); return new PIXI.Container(); } })() // Container for Enemies
         };
         
         // Add containers to the world container instead of directly to the stage
-        this.worldContainer.addChild(this.entitiesContainers.nest);
-        this.worldContainer.addChild(this.entitiesContainers.food);
-        this.worldContainer.addChild(this.entitiesContainers.larvae); // Add larvae container
-        this.worldContainer.addChild(this.entitiesContainers.ants);
-        this.worldContainer.addChild(this.entitiesContainers.flyingAnts);
-        this.worldContainer.addChild(this.entitiesContainers.queen); // Add queen container
-        this.worldContainer.addChild(this.entitiesContainers.carAnts); // Add Car Ants container
-        this.worldContainer.addChild(this.entitiesContainers.fireAnts); // Add Fire Ants container
-        this.worldContainer.addChild(this.entitiesContainers.enemies); // Enemies container
+        this.worldContainertry { .addChild(this.entitiesContainers.nest); } catch(error) { logger.error("AddChild operation failed", error); }
+        this.worldContainertry { .addChild(this.entitiesContainers.food); } catch(error) { logger.error("AddChild operation failed", error); }
+        this.worldContainertry { .addChild(this.entitiesContainers.larvae); } catch(error) { logger.error("AddChild operation failed", error); } // Add larvae container
+        this.worldContainertry { .addChild(this.entitiesContainers.ants); } catch(error) { logger.error("AddChild operation failed", error); }
+        this.worldContainertry { .addChild(this.entitiesContainers.flyingAnts); } catch(error) { logger.error("AddChild operation failed", error); }
+        this.worldContainertry { .addChild(this.entitiesContainers.queen); } catch(error) { logger.error("AddChild operation failed", error); } // Add queen container
+        this.worldContainertry { .addChild(this.entitiesContainers.carAnts); } catch(error) { logger.error("AddChild operation failed", error); } // Add Car Ants container
+        this.worldContainertry { .addChild(this.entitiesContainers.fireAnts); } catch(error) { logger.error("AddChild operation failed", error); } // Add Fire Ants container
+        this.worldContainertry { .addChild(this.entitiesContainers.enemies); } catch(error) { logger.error("AddChild operation failed", error); } // Enemies container
         
         // Entity collections
         this.entities = {
@@ -138,7 +165,7 @@ IdleAnts.Managers.EntityManager = class {
             this.mapBounds.height / 2
         );
         
-        this.entitiesContainers.nest.addChild(nest);
+        this.entitiesContainers.nesttry { .addChild(nest); } catch(error) { logger.error("AddChild operation failed", error); }
         this.nest = nest;
         this.nestPosition = nest.getPosition();
     }
@@ -159,7 +186,7 @@ IdleAnts.Managers.EntityManager = class {
         // strengthMultiplier now directly represents capacity
         ant.capacity = this.resourceManager.stats.strengthMultiplier;
         
-        this.entitiesContainers.ants.addChild(ant);
+        this.entitiesContainers.antstry { .addChild(ant); } catch(error) { logger.error("AddChild operation failed", error); }
         this.entities.ants.push(ant);
         
         // Add a spawning effect
@@ -184,7 +211,7 @@ IdleAnts.Managers.EntityManager = class {
         // strengthMultiplier now directly represents capacity
         flyingAnt.capacity = this.resourceManager.stats.strengthMultiplier;
         
-        this.entitiesContainers.flyingAnts.addChild(flyingAnt);
+        this.entitiesContainers.flyingAntstry { .addChild(flyingAnt); } catch(error) { logger.error("AddChild operation failed", error); }
         this.entities.flyingAnts.push(flyingAnt);
         
         // Add a sparkly spawning effect for flying ants
@@ -196,12 +223,12 @@ IdleAnts.Managers.EntityManager = class {
     
     createCarAnt() {
         if (!this.nestPosition) {
-            console.error("EntityManager: Nest position not available to create Car Ant. Nest may not have been initialized yet.");
+            logger.error("EntityManager: Nest position not available to create Car Ant. Nest may not have been initialized yet.");
             return null; // Return null or handle appropriately
         }
         const carAntTexture = this.assetManager.getTexture(IdleAnts.Assets.Ants.CAR_ANT.id);
         if (!carAntTexture) {
-            console.error("EntityManager: Car Ant texture not found!");
+            logger.error("EntityManager: Car Ant texture not found!");
             // Potentially use a fallback or skip creation
             return;
         }
@@ -219,7 +246,7 @@ IdleAnts.Managers.EntityManager = class {
         // For now, let them scale with strength like other ants.
         carAnt.capacity = this.resourceManager.stats.strengthMultiplier; 
 
-        this.entitiesContainers.carAnts.addChild(carAnt);
+        this.entitiesContainers.carAntstry { .addChild(carAnt); } catch(error) { logger.error("AddChild operation failed", error); }
         this.entities.carAnts.push(carAnt);
 
         if (this.effectManager) {
@@ -231,7 +258,7 @@ IdleAnts.Managers.EntityManager = class {
     
     createFireAnt() {
         if (!this.nestPosition) {
-            console.error("EntityManager: Nest position not available to create Fire Ant.");
+            logger.error("EntityManager: Nest position not available to create Fire Ant.");
             return;
         }
         const fireAntTexture = this.assetManager.getTexture('ant'); // reuse regular ant texture
@@ -243,7 +270,7 @@ IdleAnts.Managers.EntityManager = class {
         fireAnt.x = this.nestPosition.x;
         fireAnt.y = this.nestPosition.y;
 
-        this.entitiesContainers.fireAnts.addChild(fireAnt);
+        this.entitiesContainers.fireAntstry { .addChild(fireAnt); } catch(error) { logger.error("AddChild operation failed", error); }
         this.entities.fireAnts.push(fireAnt);
 
         if (this.effectManager) {
@@ -267,11 +294,11 @@ IdleAnts.Managers.EntityManager = class {
                 
                 // Verify that the food type has all required properties
                 if (!foodType || !foodType.scale || typeof foodType.scale.min === 'undefined') {
-                    console.warn("Invalid food type detected, falling back to basic food type");
+                    logger.warn("Invalid food type detected, falling back to basic food type");
                     foodType = IdleAnts.Data.FoodTypes.BASIC;
                 }
             } catch (error) {
-                console.error("Error getting food type:", error);
+                logger.error("Error getting food type:", error);
                 foodType = IdleAnts.Data.FoodTypes.BASIC;
             }
             
@@ -301,10 +328,10 @@ IdleAnts.Managers.EntityManager = class {
                 this.effectManager.createFoodSpawnEffect(x, y, validFoodType.glowColor);
             }
             
-            this.entitiesContainers.food.addChild(food);
+            this.entitiesContainers.foodtry { .addChild(food); } catch(error) { logger.error("AddChild operation failed", error); }
             this.entities.foods.push(food);
         } catch (error) {
-            console.error("Error creating food:", error);
+            logger.error("Error creating food:", error);
         }
     }
     
@@ -872,7 +899,7 @@ IdleAnts.Managers.EntityManager = class {
     createQueenAnt() {
         // Check if queen already exists
         if (this.entities.queen) {
-            console.warn('Queen ant already exists');
+            logger.warn('Queen ant already exists');
             return;
         }
         
@@ -888,7 +915,7 @@ IdleAnts.Managers.EntityManager = class {
         queen.y = this.nestPosition.y;
         
         // Add to container and store reference
-        this.entitiesContainers.queen.addChild(queen);
+        this.entitiesContainers.queentry { .addChild(queen); } catch(error) { logger.error("AddChild operation failed", error); }
         this.entities.queen = queen;
         
         // Create spawn effect
@@ -931,7 +958,7 @@ IdleAnts.Managers.EntityManager = class {
         }
         
         // Add to container and array
-        this.entitiesContainers.ants.addChild(ant);
+        this.entitiesContainers.antstry { .addChild(ant); } catch(error) { logger.error("AddChild operation failed", error); }
         this.entities.ants.push(ant);
         
         // Create spawn effect
@@ -1095,7 +1122,7 @@ IdleAnts.Managers.EntityManager = class {
             const EnemyClass = this.enemyClassMap[typeName];
             if(!EnemyClass){ continue; }
             const enemy = new EnemyClass(tex, {width: this.mapBounds.width, height: this.mapBounds.height});
-            this.entitiesContainers.enemies.addChild(enemy);
+            this.entitiesContainers.enemiestry { .addChild(enemy); } catch(error) { logger.error("AddChild operation failed", error); }
             this.entities.enemies.push(enemy);
         }
     }
@@ -1172,7 +1199,7 @@ IdleAnts.Managers.EntityManager = class {
             const EnemyClass = this.enemyClassMap[typeName];
             if(!EnemyClass) return;
             const e = new EnemyClass(tex, bounds);
-            this.entitiesContainers.enemies.addChild(e);
+            this.entitiesContainers.enemiestry { .addChild(e); } catch(error) { logger.error("AddChild operation failed", error); }
             this.entities.enemies.push(e);
         });
     }
@@ -1205,7 +1232,7 @@ IdleAnts.Managers.EntityManager = class {
         logger.debug("Retrieved boss textures:", textures);
         this.boss = new IdleAnts.Entities.AnteaterBoss(textures, { width: this.mapBounds.width, height: this.mapBounds.height });
         this.bossDefeated = false;
-        this.entitiesContainers.enemies.addChild(this.boss);
+        this.entitiesContainers.enemiestry { .addChild(this.boss); } catch(error) { logger.error("AddChild operation failed", error); }
         this.entities.enemies.push(this.boss);
         return this.boss;
     }

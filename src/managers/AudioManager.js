@@ -1,5 +1,32 @@
 // Logger setup
 const logger = IdleAnts.Logger?.create('AudioManager') || console;
+// Validation helpers
+const validateObject = (obj, name) => {
+    if (!obj) {
+        logger.error(`${name} is null or undefined`);
+        throw new Error(`${name} is required but was ${obj}`);
+    }
+    return obj;
+};
+
+const validateFunction = (fn, name) => {
+    if (typeof fn !== 'function') {
+        logger.error(`${name} is not a function`);
+        throw new Error(`${name} must be a function but was ${typeof fn}`);
+    }
+    return fn;
+};
+
+const safeCall = (fn, context, ...args) => {
+    try {
+        return fn.apply(context, args);
+    } catch (error) {
+        logger.error('Safe call failed', error);
+        throw error;
+    }
+};
+
+
 
 IdleAnts.AudioManager = (function() {
     // Private audio context and sounds storage
@@ -23,7 +50,7 @@ IdleAnts.AudioManager = (function() {
             logger.debug('Audio Manager initialized');
             return true;
         } catch (e) {
-            console.error('Web Audio API is not supported in this browser', e);
+            logger.error('Web Audio API is not supported in this browser', e);
             return false;
         }
     }
@@ -64,7 +91,7 @@ IdleAnts.AudioManager = (function() {
                         logger.debug(`Audio loaded from HTML: ${asset.id}`);
                         loadedSounds++;
                     } else {
-                        console.warn(`Audio element with ID ${asset.id} not found in HTML`);
+                        logger.warn(`Audio element with ID ${asset.id} not found in HTML`);
                     }
                 }
             }
@@ -93,14 +120,14 @@ IdleAnts.AudioManager = (function() {
                         logger.debug(`Audio loaded from HTML: ${asset.id}`);
                         loadedSounds++;
                     } else {
-                        console.warn(`Audio element with ID ${asset.id} not found in HTML`);
+                        logger.warn(`Audio element with ID ${asset.id} not found in HTML`);
                     }
                 }
             }
             
             logger.debug(`Loaded ${loadedSounds}/${totalSounds} audio files from HTML`);
         } catch (error) {
-            console.error('Error loading audio assets:', error);
+            logger.error('Error loading audio assets:', error);
         }
     }
     
@@ -121,12 +148,12 @@ IdleAnts.AudioManager = (function() {
             
             // Play the sound
             sound.audio.play().catch(e => {
-                console.warn(`Failed to play sound ${id}:`, e);
+                logger.warn(`Failed to play sound ${id}:`, e);
                 // This usually happens due to browser policy requiring user interaction
                 // before audio can play. We'll ignore this error.
             });
         } catch (error) {
-            console.error(`Error playing sound ${id}:`, error);
+            logger.error(`Error playing sound ${id}:`, error);
         }
     }
     
@@ -149,12 +176,12 @@ IdleAnts.AudioManager = (function() {
             
             // Play the BGM
             sound.audio.play().catch(e => {
-                console.warn(`Failed to play BGM ${id}:`, e);
+                logger.warn(`Failed to play BGM ${id}:`, e);
                 // This usually happens due to browser policy requiring user interaction
                 // before audio can play. We'll handle this with a resumeAudioContext function
             });
         } catch (error) {
-            console.error(`Error playing BGM ${id}:`, error);
+            logger.error(`Error playing BGM ${id}:`, error);
         }
     }
     
@@ -165,7 +192,7 @@ IdleAnts.AudioManager = (function() {
                 sounds[bgmTrack].audio.pause();
                 sounds[bgmTrack].audio.currentTime = 0;
             } catch (error) {
-                console.error(`Error stopping BGM:`, error);
+                logger.error(`Error stopping BGM:`, error);
             }
             bgmTrack = null;
         }
@@ -180,7 +207,7 @@ IdleAnts.AudioManager = (function() {
             try {
                 sounds[id].audio.volume = isMuted ? 0 : sounds[id].volume;
             } catch (error) {
-                console.error(`Error toggling mute for ${id}:`, error);
+                logger.error(`Error toggling mute for ${id}:`, error);
             }
         }
         
@@ -194,7 +221,7 @@ IdleAnts.AudioManager = (function() {
                 sounds[id].volume = volume;
                 sounds[id].audio.volume = isMuted ? 0 : volume;
             } catch (error) {
-                console.error(`Error setting volume for ${id}:`, error);
+                logger.error(`Error setting volume for ${id}:`, error);
             }
         }
     }
@@ -213,7 +240,7 @@ IdleAnts.AudioManager = (function() {
                 });
             }
         } catch (error) {
-            console.error('Error resuming audio context:', error);
+            logger.error('Error resuming audio context:', error);
         }
     }
     

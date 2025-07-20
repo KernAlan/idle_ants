@@ -1,4 +1,8 @@
 // src/entities/Food.js
+
+// Logger setup
+const logger = IdleAnts.Logger?.create('Food') || console;
+
 IdleAnts.Entities.Food = class extends PIXI.Sprite {
     // Define food state constants
     static States = {
@@ -34,7 +38,7 @@ IdleAnts.Entities.Food = class extends PIXI.Sprite {
                     textureToUse = specificTexture;
                 }
             } catch (error) {
-                console.warn(`${foodType_.id} texture not available, using default texture`);
+                logger.warn(`${foodType_.id} texture not available, using default texture`);
             }
         }
         
@@ -410,7 +414,7 @@ IdleAnts.Entities.Food = class extends PIXI.Sprite {
             // Random rotation
             this.rotation = Math.random() * Math.PI * 2;
         } catch (error) {
-            console.error("Error applying food visuals:", error);
+            logger.error("Error applying food visuals:", error);
             // Set reasonable defaults
             this.scale.set(1.0);
             this.tint = 0xFFFFFF;
@@ -443,7 +447,7 @@ IdleAnts.Entities.Food = class extends PIXI.Sprite {
             // Add the glow as the first child so it appears behind the food sprite
             this.addChildAt(glow, 0);
         } catch (error) {
-            console.error("Error creating glow:", error);
+            logger.error("Error creating glow:", error);
             // Create a default glow as fallback
             const glow = new PIXI.Graphics();
             glow.beginFill(0xFFFF99, 0.3);
@@ -471,7 +475,7 @@ IdleAnts.Entities.Food = class extends PIXI.Sprite {
             // Add the shadow as a child, but position it behind the sprite
             this.addChildAt(shadow, 0);
         } catch (error) {
-            console.error("Error creating shadow:", error);
+            logger.error("Error creating shadow:", error);
         }
     }
     
