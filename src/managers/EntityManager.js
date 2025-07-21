@@ -1119,8 +1119,8 @@ IdleAnts.Managers.EntityManager = class {
             }
         }
         
-        // ---------- BOSS TRIGGER: Spawn boss when colony reaches 2+ ants (for testing) ----------
-        if (antTotal >= 2 && !this.boss && !this.bossTriggered && !this.bossDefeated) {
+        // ---------- BOSS TRIGGER: Spawn boss when colony reaches 60+ ants (final level) ----------
+        if (antTotal >= 60 && !this.boss && !this.bossTriggered && !this.bossDefeated) {
             this.bossTriggered = true;
             // Notify player about the boss
             if(typeof IdleAnts.notify === 'function'){

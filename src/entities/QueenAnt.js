@@ -30,7 +30,7 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
         this.scale.set(1.5);
         
         // Override state to always be SPAWNING or near-nest state
-        this.state = IdleAnts.Entities.AntBase.States.SPAWNING;
+        this.transitionToState(IdleAnts.Entities.AntBase.States.SPAWNING);
     }
     
     // Set a random production time for the next larvae
