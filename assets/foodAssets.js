@@ -17,19 +17,42 @@
     AssetDefinition.register('appleFood', function(app) {
         const appleGraphics = AssetDefinition.createGraphics();
         
-        // Draw the apple slice shape
-        appleGraphics.beginFill(0xFF4500); // Red apple color
-        appleGraphics.drawEllipse(0, 0, 8, 10); // Slightly oval shape
+        // Draw the apple slice base (crescent shape)
+        appleGraphics.beginFill(0xFFFFF0); // Off-white flesh
+        appleGraphics.arc(0, 0, 12, 0.3, Math.PI - 0.3);
+        appleGraphics.lineTo(-8, -3);
+        appleGraphics.closePath();
         appleGraphics.endFill();
         
-        // Add apple skin highlight
-        appleGraphics.beginFill(0xFF6347); // Lighter red highlight
-        appleGraphics.drawEllipse(-2, -2, 4, 3);
+        // Draw apple skin/peel on the curved edge
+        appleGraphics.beginFill(0xFF3030); // Bright red skin
+        appleGraphics.lineStyle(0);
+        appleGraphics.arc(0, 0, 12, 0.3, Math.PI - 0.3);
+        appleGraphics.arc(0, 0, 10, Math.PI - 0.3, 0.3, true);
+        appleGraphics.closePath();
         appleGraphics.endFill();
         
-        // Add apple seed
-        appleGraphics.beginFill(0x8B4513); // Brown seed
-        appleGraphics.drawEllipse(1, 1, 1, 2);
+        // Add skin highlight/shine
+        appleGraphics.beginFill(0xFF6B6B); // Lighter red highlight
+        appleGraphics.drawEllipse(-4, -8, 3, 1.5);
+        appleGraphics.drawEllipse(2, -7, 2, 1);
+        appleGraphics.endFill();
+        
+        // Add subtle flesh texture
+        appleGraphics.beginFill(0xFFF8DC, 0.3); // Very light flesh texture
+        appleGraphics.drawEllipse(-2, -2, 4, 6);
+        appleGraphics.endFill();
+        
+        // Add apple seeds
+        appleGraphics.beginFill(0x2F1B14); // Dark brown seeds
+        appleGraphics.drawEllipse(-1, 0, 1.5, 2.5);
+        appleGraphics.drawEllipse(2, -1, 1.2, 2);
+        appleGraphics.endFill();
+        
+        // Add seed highlights
+        appleGraphics.beginFill(0x5D4037, 0.6);
+        appleGraphics.drawEllipse(-1.2, -0.5, 0.6, 1);
+        appleGraphics.drawEllipse(1.8, -1.3, 0.5, 0.8);
         appleGraphics.endFill();
         
         return appleGraphics;
@@ -112,29 +135,17 @@
     AssetDefinition.register('hotDogFood', function(app) {
         const hotDogGraphics = AssetDefinition.createGraphics();
         
-        // Draw hot dog sausage
-        hotDogGraphics.beginFill(0xDC143C); // Crimson red
-        hotDogGraphics.drawRoundedRect(-8, -3, 16, 6, 3);
+        // Draw tan/brown bun (split to show opening)
+        hotDogGraphics.beginFill(0xD4A574); // Golden tan bun color
+        // Bottom half of bun
+        hotDogGraphics.drawRoundedRect(-10, 0, 20, 4, 3);
+        // Top half of bun
+        hotDogGraphics.drawRoundedRect(-10, -4, 20, 4, 3);
         hotDogGraphics.endFill();
         
-        // Add hot dog highlights
-        hotDogGraphics.beginFill(0xFF69B4); // Hot pink highlights
-        hotDogGraphics.drawRoundedRect(-6, -2, 4, 2, 1);
-        hotDogGraphics.drawRoundedRect(2, 0, 3, 1, 0.5);
-        hotDogGraphics.endFill();
-        
-        // Add grill marks
-        hotDogGraphics.lineStyle(1, 0x8B0000, 0.8);
-        hotDogGraphics.moveTo(-6, -1);
-        hotDogGraphics.lineTo(6, -1);
-        hotDogGraphics.moveTo(-6, 1);
-        hotDogGraphics.lineTo(6, 1);
-        hotDogGraphics.lineStyle(0);
-        
-        // Add small bun pieces
-        hotDogGraphics.beginFill(0xF4A460); // Sandy brown bun
-        hotDogGraphics.drawRoundedRect(-9, -4, 3, 2, 1);
-        hotDogGraphics.drawRoundedRect(6, 2, 3, 2, 1);
+        // Draw reddish meat sausage (nestled inside)
+        hotDogGraphics.beginFill(0xDC143C); // Dark reddish sausage
+        hotDogGraphics.drawRoundedRect(-8, -1, 16, 2, 1);
         hotDogGraphics.endFill();
         
         return hotDogGraphics;

@@ -92,9 +92,9 @@ IdleAnts.Data.FoodTypes = {
         collectionTime: 3.0,   // Takes time to collect
         rarity: 6,             // Rare protein source
         scale: {min: 1.4, max: 2.1},
-        color: 0xDC143C,       // Crimson red
-        shadowColor: 0xB22222, // Fire brick shadow
-        glowColor: 0xFF69B4,   // Hot pink glow
+        color: 0xDEB887,       // Burlywood tan to match bun
+        shadowColor: 0xCD853F, // Peru brown shadow
+        glowColor: 0xF4A460,   // Sandy brown glow
         glowAlpha: 0.6,
         description: 'Juicy hot dog pieces provide valuable protein for the colony!'
     },
