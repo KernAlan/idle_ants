@@ -2,6 +2,7 @@
 IdleAnts.Game = class {
     // Define game state constants
     static States = {
+        TITLE: 'title',               // Title screen
         INITIALIZING: 'initializing', // Loading assets and setup
         PLAYING: 'playing',           // Main gameplay
         PAUSED: 'paused',             // Game paused
@@ -16,8 +17,8 @@ IdleAnts.Game = class {
         // Make app accessible globally for components that need it
         IdleAnts.app = this;
         
-        // Initialize game state
-        this.state = IdleAnts.Game.States.INITIALIZING;
+        // Initialize game state - start with title screen
+        this.state = IdleAnts.Game.States.TITLE;
         
         // Detect if running on mobile device
         this.isMobileDevice = this.detectMobileDevice();
@@ -47,10 +48,22 @@ IdleAnts.Game = class {
         
         // Create the PIXI application
         this.app = new PIXI.Application({
-            background: '#78AB46', // Grass green background
-            resizeTo: document.getElementById('game-canvas-container'),
+            background: 0x269c3f, // Matching green background
+            width: window.innerWidth,
+            height: window.innerHeight,
         });
-        document.getElementById('game-canvas-container').appendChild(this.app.view);
+        
+        const canvasContainer = document.getElementById('game-canvas-container');
+        console.log('Canvas container found:', canvasContainer);
+        console.log('App view:', this.app.view);
+        canvasContainer.appendChild(this.app.view);
+        
+        // Make sure the canvas is visible
+        this.app.view.style.position = 'absolute';
+        this.app.view.style.top = '0';
+        this.app.view.style.left = '0';
+        this.app.view.style.zIndex = '10';
+        console.log('Canvas styles applied');
         
         // Initialize managers
         this.resourceManager = new IdleAnts.Managers.ResourceManager();
@@ -69,7 +82,90 @@ IdleAnts.Game = class {
         // Run any registered initialization functions
         this.runInitHooks();
         
-        // Load assets before initializing other managers
+        // Hide UI elements initially
+        this.hideUIElements();
+        
+        // Show title screen first
+        this.showTitleScreen();
+        
+        // Start the game loop so title screen animations work
+        this.app.ticker.add(() => this.gameLoop());
+        
+        // Don't load game assets yet - wait for user to press key
+    }
+    
+    showTitleScreen() {
+        console.log('Showing title screen...');
+        
+        // Create title screen container
+        this.titleContainer = new PIXI.Container();
+        this.app.stage.addChild(this.titleContainer);
+        
+        // Load and display title background (centered, slightly smaller)
+        console.log('Loading title image...');
+        this.titleSprite = PIXI.Sprite.from('assets/backgrounds/adil_ants_title_screen.png');
+        this.titleSprite.anchor.set(0.5); // Center the anchor point
+        this.titleSprite.scale.set(0.6); // Scale down to 60% of original size
+        this.titleSprite.x = this.app.screen.width / 2;  // Center horizontally
+        this.titleSprite.y = this.app.screen.height / 2; // Center vertically
+        this.titleContainer.addChild(this.titleSprite);
+        console.log('Title sprite added to container');
+        
+        // Add "Press any key to start" text
+        const textStyle = new PIXI.TextStyle({
+            fontFamily: 'Impact, Arial Black, sans-serif',
+            fontSize: 48,
+            fontWeight: 'bold',
+            fill: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 4,
+            dropShadow: true,
+            dropShadowColor: '#000000',
+            dropShadowBlur: 8,
+            dropShadowDistance: 4,
+            align: 'center'
+        });
+        
+        this.titleText = new PIXI.Text('Press any key to start', textStyle);
+        this.titleText.anchor.set(0.5);
+        this.titleText.x = this.app.screen.width / 2;
+        this.titleText.y = this.app.screen.height - 100;
+        this.titleContainer.addChild(this.titleText);
+        
+        // Add pulsing animation
+        const pulse = () => {
+            if (this.state === IdleAnts.Game.States.TITLE && this.titleText) {
+                const scale = 1 + Math.sin(Date.now() * 0.003) * 0.1;
+                this.titleText.scale.set(scale);
+                requestAnimationFrame(pulse);
+            }
+        };
+        pulse();
+        
+        // Set up event listeners for any key press
+        this.titleKeyHandler = () => {
+            if (this.state === IdleAnts.Game.States.TITLE) {
+                this.startGame();
+            }
+        };
+        
+        document.addEventListener('keydown', this.titleKeyHandler);
+        document.addEventListener('click', this.titleKeyHandler);
+    }
+    
+    startGame() {
+        // Remove title screen
+        this.app.stage.removeChild(this.titleContainer);
+        document.removeEventListener('keydown', this.titleKeyHandler);
+        document.removeEventListener('click', this.titleKeyHandler);
+        
+        // Show UI elements now
+        this.showUIElements();
+        
+        // Change state to initializing and load game
+        this.state = IdleAnts.Game.States.INITIALIZING;
+        
+        // Load assets and initialize game
         this.assetManager.loadAssets().then(() => {
             this.backgroundManager = new IdleAnts.Managers.BackgroundManager(this.app, this.assetManager, this.worldContainer);
             this.entityManager = new IdleAnts.Managers.EntityManager(this.app, this.assetManager, this.resourceManager, this.worldContainer);
@@ -98,7 +194,6 @@ IdleAnts.Game = class {
             
             this.setupGame();
             this.setupEventListeners(); // This will be simplified
-            this.startGameLoop();
             this.setupMinimap();
             this.updateMinimap();
             
@@ -108,6 +203,34 @@ IdleAnts.Game = class {
             this.startBackgroundMusic();
             this.transitionToState(IdleAnts.Game.States.PLAYING);
         });
+    }
+    
+    hideUIElements() {
+        // Hide the UI container only, not the whole game container
+        const uiContainer = document.getElementById('ui-container');
+        if (uiContainer) {
+            uiContainer.style.display = 'none';
+        }
+        
+        // Hide audio start overlay
+        const audioOverlay = document.getElementById('start-audio-overlay');
+        if (audioOverlay) {
+            audioOverlay.style.display = 'none';
+        }
+    }
+    
+    showUIElements() {
+        // Show the UI container
+        const uiContainer = document.getElementById('ui-container');
+        if (uiContainer) {
+            uiContainer.style.display = 'flex';
+        }
+        
+        // Show audio start overlay if it should be shown
+        const audioOverlay = document.getElementById('start-audio-overlay');
+        if (audioOverlay) {
+            audioOverlay.style.display = 'block';
+        }
     }
     
     // Setup audio resume on user interaction
@@ -534,6 +657,11 @@ IdleAnts.Game = class {
     }
     
     gameLoop() {
+        // Don't run game logic during title screen
+        if (this.state === IdleAnts.Game.States.TITLE) {
+            return;
+        }
+        
         // Only update full game logic during active gameplay or boss fight
         const gameplayActive = (this.state === IdleAnts.Game.States.PLAYING || this.state === IdleAnts.Game.States.BOSS_FIGHT);
         if (!gameplayActive) {
