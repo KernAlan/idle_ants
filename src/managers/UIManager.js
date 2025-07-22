@@ -568,7 +568,7 @@ IdleAnts.Managers.UIManager = class {
         this.bossBarContainer.id = 'boss-bar-container';
         Object.assign(this.bossBarContainer.style, {
             position: 'fixed',
-            top: '20px',
+            bottom: '20px',
             left: '50%',
             transform: 'translateX(-50%)',
             width: '60%',
