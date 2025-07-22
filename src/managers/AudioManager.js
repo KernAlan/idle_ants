@@ -7,6 +7,11 @@ IdleAnts.AudioManager = (function() {
     let loadedSounds = 0;
     let totalSounds = 0;
     
+    // Music playlist system
+    let currentPlaylist = null;
+    let currentTrackIndex = 0;
+    let playlistLooping = false;
+    
     // Initialize audio context
     function init() {
         try {
@@ -55,8 +60,11 @@ IdleAnts.AudioManager = (function() {
                         };
                         
                         // Set volume and loop properties
-                        audioElement.loop = true;
+                        audioElement.loop = false; // We'll handle looping manually for playlists
                         audioElement.volume = asset.volume || 0.5;
+                        
+                        // Add event listener for when track ends
+                        audioElement.addEventListener('ended', handleTrackEnded);
                         
                         console.log(`Audio loaded from HTML: ${asset.id}`);
                         loadedSounds++;
@@ -127,32 +135,93 @@ IdleAnts.AudioManager = (function() {
         }
     }
     
-    // Play background music with looping
-    function playBGM(id) {
+    // Handle when a track ends - for playlist functionality
+    function handleTrackEnded() {
+        if (currentPlaylist && playlistLooping) {
+            // Move to next track in playlist
+            currentTrackIndex = (currentTrackIndex + 1) % currentPlaylist.length;
+            const nextTrackId = currentPlaylist[currentTrackIndex];
+            playBGMInternal(nextTrackId, false); // Don't reset playlist
+        } else if (bgmTrack && sounds[bgmTrack]) {
+            // Single track looping
+            sounds[bgmTrack].audio.currentTime = 0;
+            sounds[bgmTrack].audio.play().catch(e => {
+                console.warn(`Failed to loop track ${bgmTrack}:`, e);
+            });
+        }
+    }
+    
+    // Start a music playlist that loops between tracks
+    function startMusicPlaylist(trackIds) {
+        if (!Array.isArray(trackIds) || trackIds.length === 0) {
+            console.warn('Invalid playlist provided');
+            return;
+        }
+        
+        // Validate all tracks exist
+        for (const trackId of trackIds) {
+            if (!sounds[trackId] || !sounds[trackId].isMusic) {
+                console.warn(`Invalid track in playlist: ${trackId}`);
+                return;
+            }
+        }
+        
+        currentPlaylist = trackIds;
+        currentTrackIndex = 0;
+        playlistLooping = true;
+        
+        // Start playing the first track
+        playBGMInternal(trackIds[0], false);
+    }
+    
+    // Stop playlist and return to single track mode
+    function stopMusicPlaylist() {
+        currentPlaylist = null;
+        currentTrackIndex = 0;
+        playlistLooping = false;
+        stopBGM();
+    }
+    
+    // Internal BGM play function (used by both single track and playlist)
+    function playBGMInternal(id, resetPlaylist = true) {
         if (!sounds[id]) return;
         
         try {
             // Stop current BGM if playing
-            stopBGM();
+            if (bgmTrack && sounds[bgmTrack]) {
+                sounds[bgmTrack].audio.pause();
+                sounds[bgmTrack].audio.currentTime = 0;
+            }
             
             const sound = sounds[id];
             if (!sound.isMusic) return; // Don't play SFX with this method
             
             bgmTrack = id;
             
-            // Set loop and volume
-            sound.audio.loop = true;
+            if (resetPlaylist) {
+                // Reset playlist when manually changing tracks
+                currentPlaylist = null;
+                playlistLooping = false;
+                sound.audio.loop = true; // Enable native looping for single tracks
+            } else {
+                sound.audio.loop = false; // Disable native looping for playlist tracks
+            }
+            
+            // Set volume
             sound.audio.volume = isMuted ? 0 : sound.volume;
             
             // Play the BGM
             sound.audio.play().catch(e => {
                 console.warn(`Failed to play BGM ${id}:`, e);
-                // This usually happens due to browser policy requiring user interaction
-                // before audio can play. We'll handle this with a resumeAudioContext function
             });
         } catch (error) {
             console.error(`Error playing BGM ${id}:`, error);
         }
+    }
+    
+    // Play background music with looping
+    function playBGM(id) {
+        playBGMInternal(id, true); // Reset playlist when manually changing tracks
     }
     
     // Stop the currently playing background music
@@ -220,6 +289,8 @@ IdleAnts.AudioManager = (function() {
         playSFX: playSFX,
         playBGM: playBGM,
         stopBGM: stopBGM,
+        startMusicPlaylist: startMusicPlaylist,
+        stopMusicPlaylist: stopMusicPlaylist,
         toggleMute: toggleMute,
         setVolume: setVolume,
         resumeAudioContext: resumeAudioContext

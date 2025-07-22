@@ -8,6 +8,12 @@ IdleAnts.AudioAssets = {
             loop: true,
             volume: 0.5
         },
+        OLD_MAIN_THEME: {
+            id: 'bgm_old_main_theme',
+            path: 'assets/audio/old_main_theme_daft_punk.mp3',
+            loop: true,
+            volume: 0.5
+        },
         // Boss fight theme
         BOSS_THEME: {
             id: 'bgm_anteater_boss',

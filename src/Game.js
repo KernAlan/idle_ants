@@ -238,22 +238,17 @@ IdleAnts.Game = class {
         // List of events that count as user interaction
         const interactionEvents = ['click', 'touchstart', 'keydown', 'mousedown'];
         
-        // Helper function to attempt resuming audio context
+        // Helper function to attempt resuming audio context (without restarting music)
         const resumeAudio = () => {
             if (IdleAnts.AudioManager) {
                 IdleAnts.AudioManager.resumeAudioContext();
-                
-                // Re-start BGM if needed
-                if (IdleAnts.AudioAssets && IdleAnts.AudioAssets.BGM && IdleAnts.AudioAssets.BGM.MAIN_THEME) {
-                    IdleAnts.AudioManager.playBGM(IdleAnts.AudioAssets.BGM.MAIN_THEME.id);
-                }
                 
                 // Remove event listeners after first successful interaction
                 interactionEvents.forEach(event => {
                     document.removeEventListener(event, resumeAudio);
                 });
                 
-                console.log('Audio resumed after user interaction');
+                console.log('Audio context resumed after user interaction');
             }
         };
         
@@ -265,8 +260,15 @@ IdleAnts.Game = class {
     
     // Start background music
     startBackgroundMusic() {
-        // Play main theme BGM
-        if (IdleAnts.AudioAssets.BGM.MAIN_THEME) {
+        // Create playlist with main theme and old main theme
+        if (IdleAnts.AudioAssets.BGM.MAIN_THEME && IdleAnts.AudioAssets.BGM.OLD_MAIN_THEME) {
+            const playlist = [
+                IdleAnts.AudioAssets.BGM.MAIN_THEME.id,
+                IdleAnts.AudioAssets.BGM.OLD_MAIN_THEME.id
+            ];
+            IdleAnts.AudioManager.startMusicPlaylist(playlist);
+        } else if (IdleAnts.AudioAssets.BGM.MAIN_THEME) {
+            // Fallback to single track if old theme not available
             IdleAnts.AudioManager.playBGM(IdleAnts.AudioAssets.BGM.MAIN_THEME.id);
         }
     }
