@@ -52,6 +52,10 @@
         <audio id="bgm_anteater_boss" preload="auto" loop>
             <source src="assets/audio/anteater_boss_music.mp3" type="audio/mpeg">
         </audio>
+        <!-- Miniboss Theme -->
+        <audio id="bgm_miniboss_theme" preload="auto" loop>
+            <source src="assets/audio/miniboss_bgm.mp3" type="audio/mpeg">
+        </audio>
         <!-- Victory Theme -->
         <audio id="bgm_victory_theme" preload="auto">
             <source src="assets/audio/victory_music.mp3" type="audio/mpeg">
@@ -86,7 +90,191 @@
                 <div id="car-ant-resource-stats" class="hidden">Car Ants: <span id="car-ant-resource-count">0</span>/<span id="car-ant-resource-max">0</span></div>
                 <div id="fire-ant-resource-stats" class="hidden">Fire Ants: <span id="fire-ant-resource-count">0</span>/<span id="fire-ant-resource-max">0</span></div>
             </div>
-            <div id="upgrades">
+            <!-- New Modal-Based Action Bar -->
+            <div id="action-bar">
+                <button id="colony-btn" class="action-btn">
+                    <i class="fas fa-bug"></i>
+                    <span>Colony</span>
+                </button>
+                <button id="upgrades-btn" class="action-btn">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>Upgrades</span>
+                </button>
+                <button id="automation-btn" class="action-btn">
+                    <i class="fas fa-cog"></i>
+                    <span>Automation</span>
+                </button>
+                <button id="settings-btn" class="action-btn">
+                    <i class="fas fa-sliders-h"></i>
+                    <span>Settings</span>
+                </button>
+            </div>
+            
+            <!-- Modal System -->
+            <!-- Colony Modal -->
+            <div id="colony-modal" class="modal-backdrop">
+                <div class="modal-container">
+                    <div class="modal-header">
+                        <div class="modal-title">
+                            <i class="fas fa-bug"></i>
+                            Colony Management
+                        </div>
+                        <button class="modal-close" onclick="closeModal('colony-modal')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-content">
+                        <div class="modal-section">
+                            <h3>Basic Ants</h3>
+                            <button id="modal-buy-ant" class="modal-btn">
+                                <span><i class="fas fa-plus"></i>Buy Ant</span>
+                                <span id="modal-ant-cost">10</span>
+                            </button>
+                            <button id="modal-expand-colony" class="modal-btn">
+                                <span><i class="fas fa-expand"></i>Expand Colony</span>
+                                <span id="modal-expand-cost">100</span>
+                            </button>
+                        </div>
+                        <div class="modal-section">
+                            <h3>Queen</h3>
+                            <button id="modal-unlock-queen" class="modal-btn" style="display: none;">
+                                <span><i class="fas fa-crown"></i>Unlock Queen</span>
+                                <span id="modal-unlock-queen-cost">1000</span>
+                            </button>
+                            <button id="modal-upgrade-queen" class="modal-btn">
+                                <span><i class="fas fa-arrow-up"></i>Upgrade Queen</span>
+                                <span id="modal-upgrade-queen-cost">2000</span>
+                            </button>
+                            <div id="modal-queen-stats" class="modal-stats">
+                                Level: <span id="modal-queen-level">0</span>/5 | 
+                                Spawn: <span id="modal-queen-larvae-capacity">1 per spawn</span> | 
+                                Rate: <span id="modal-queen-larvae-rate">60-120</span>s
+                            </div>
+                        </div>
+                        <div class="modal-section">
+                            <h3>Flying Ants</h3>
+                            <button id="modal-unlock-flying-ants" class="modal-btn">
+                                <span><i class="fas fa-feather-alt"></i>Unlock Flying Ants</span>
+                                <span id="modal-flying-ant-unlock-cost">500</span>
+                            </button>
+                            <button id="modal-buy-flying-ant" class="modal-btn hidden">
+                                <span><i class="fas fa-plus"></i>Buy Flying Ant</span>
+                                <span id="modal-flying-ant-cost">100</span>
+                            </button>
+                            <button id="modal-expand-flying-ants" class="modal-btn hidden">
+                                <span><i class="fas fa-expand"></i>Expand Flying</span>
+                                <span id="modal-expand-flying-cost">150</span>
+                            </button>
+                        </div>
+                        <div class="modal-section">
+                            <h3>Super Ants</h3>
+                            <button id="modal-unlock-car-ants" class="modal-btn">
+                                <span><i class="fas fa-car"></i>Car Ants</span>
+                                <span id="modal-car-ant-unlock-cost">10000</span>
+                            </button>
+                            <button id="modal-unlock-fire-ants" class="modal-btn">
+                                <span><i class="fas fa-fire"></i>Fire Ants</span>
+                                <span id="modal-fire-ant-unlock-cost">20000</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upgrades Modal -->
+            <div id="upgrades-modal" class="modal-backdrop">
+                <div class="modal-container">
+                    <div class="modal-header">
+                        <div class="modal-title">
+                            <i class="fas fa-arrow-up"></i>
+                            Upgrades
+                        </div>
+                        <button class="modal-close" onclick="closeModal('upgrades-modal')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-content">
+                        <div class="modal-section">
+                            <h3>Core Upgrades</h3>
+                            <button id="modal-upgrade-food" class="modal-btn">
+                                <span><i class="fas fa-arrow-up"></i>Food Production</span>
+                                <span id="modal-food-upgrade-cost">50</span>
+                            </button>
+                            <button id="modal-upgrade-speed" class="modal-btn">
+                                <span><i class="fas fa-bolt"></i>Movement Speed</span>
+                                <span id="modal-speed-upgrade-cost">75</span>
+                            </button>
+                            <button id="modal-upgrade-strength" class="modal-btn">
+                                <span><i class="fas fa-dumbbell"></i>Ant Strength</span>
+                                <span id="modal-strength-upgrade-cost">100</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Automation Modal -->
+            <div id="automation-modal" class="modal-backdrop">
+                <div class="modal-container">
+                    <div class="modal-header">
+                        <div class="modal-title">
+                            <i class="fas fa-cog"></i>
+                            Automation
+                        </div>
+                        <button class="modal-close" onclick="closeModal('automation-modal')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-content">
+                        <div class="modal-section">
+                            <h3>Automated Systems</h3>
+                            <button id="modal-unlock-autofeeder" class="modal-btn">
+                                <span><i class="fas fa-seedling"></i>Unlock Autofeeder</span>
+                                <span id="modal-autofeeder-cost">500</span>
+                            </button>
+                            <button id="modal-upgrade-autofeeder" class="modal-btn hidden">
+                                <span><i class="fas fa-arrow-up"></i>Upgrade Autofeeder</span>
+                                <span id="modal-autofeeder-upgrade-cost">500</span>
+                            </button>
+                            <div id="modal-autofeeder-stats" class="modal-stats">
+                                Level: <span id="modal-autofeeder-level">0</span>/10
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Modal -->
+            <div id="settings-modal" class="modal-backdrop">
+                <div class="modal-container">
+                    <div class="modal-header">
+                        <div class="modal-title">
+                            <i class="fas fa-sliders-h"></i>
+                            Settings
+                        </div>
+                        <button class="modal-close" onclick="closeModal('settings-modal')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-content">
+                        <div class="modal-section">
+                            <h3>Audio</h3>
+                            <button id="modal-toggle-sound" class="modal-btn">
+                                <span><i class="fas fa-volume-up"></i>Sound: ON</span>
+                            </button>
+                        </div>
+                        <div class="modal-section">
+                            <h3>Daily Challenge</h3>
+                            <button id="modal-daily-challenge" class="modal-btn">
+                                <span><i class="fas fa-trophy"></i>View Challenges</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Keep original upgrade elements hidden for backward compatibility -->
+            <div id="upgrades" style="display: none;">
                 <div class="upgrade-section">
                     <h3>Ants</h3>
                     <button id="buy-ant" class="upgrade-btn"><i class="fas fa-plus"></i>Buy Ant (<span id="ant-cost">10</span>)</button>
@@ -155,6 +343,7 @@
     
     <!-- Import our game scripts in correct order -->
     <script src="src/data/FoodTypes.js"></script>
+    <script src="src/data/BossConfigs.js"></script>
     <!-- Effect Classes -->
     <script src="src/effects/Effect.js"></script>
     <script src="src/effects/SpawnEffect.js"></script>
@@ -170,7 +359,8 @@
     <script src="assets/anteaterBossAsset.js"></script>
     <script src="assets/foodAssets.js"></script>
     <script src="assets/environmentAssets.js"></script>
-    <script src="assets/audioAssets.js"></script>
+    '''    <script src="assets/audioAssets.js"></script>
+    <script src="assets/bossAssets.js"></script>''
     <!-- Managers -->
     <script src="src/managers/ResourceManager.js"></script>
     <script src="src/managers/AssetManager.js"></script>
@@ -206,7 +396,9 @@
     <script src="src/entities/BeeEnemy.js"></script>
     <script src="src/entities/HerculesBeetleEnemy.js"></script>
     <script src="src/entities/FrogEnemy.js"></script>
-    <script src="src/entities/AnteaterBoss.js"></script>
+    '''    <script src="src/entities/AnteaterBoss.js"></script>
+    <script src="src/entities/CarpenterAntQueenBoss.js"></script>
+    <script src="src/entities/GiantHornetBoss.js"></script>''
     <!-- Game Core -->
     <script src="src/Game.js"></script>
     <script src="src/index.js"></script>
@@ -233,7 +425,215 @@
                     }
                 });
             }
+            
+            // Modal System Setup
+            setupModalSystem();
         });
+        
+        // Modal System Functions
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('show');
+                // Update modal content when opened
+                updateModalContent(modalId);
+            }
+        }
+        
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('show');
+            }
+        }
+        
+        function setupModalSystem() {
+            // Setup action bar buttons
+            const actionButtons = {
+                'colony-btn': 'colony-modal',
+                'upgrades-btn': 'upgrades-modal',
+                'automation-btn': 'automation-modal',
+                'settings-btn': 'settings-modal'
+            };
+            
+            // Add click listeners to action buttons
+            for (const [buttonId, modalId] of Object.entries(actionButtons)) {
+                const button = document.getElementById(buttonId);
+                if (button) {
+                    button.addEventListener('click', () => openModal(modalId));
+                }
+            }
+            
+            // No backdrop click-to-close since there's no dark overlay
+            
+            // Setup modal button event listeners
+            setupModalButtonListeners();
+        }
+        
+        function setupModalButtonListeners() {
+            // Colony Modal Buttons
+            const modalBuyAnt = document.getElementById('modal-buy-ant');
+            const modalExpandColony = document.getElementById('modal-expand-colony');
+            const modalUnlockQueen = document.getElementById('modal-unlock-queen');
+            const modalUpgradeQueen = document.getElementById('modal-upgrade-queen');
+            const modalUnlockFlying = document.getElementById('modal-unlock-flying-ants');
+            const modalBuyFlying = document.getElementById('modal-buy-flying-ant');
+            const modalExpandFlying = document.getElementById('modal-expand-flying-ants');
+            const modalUnlockCar = document.getElementById('modal-unlock-car-ants');
+            const modalUnlockFire = document.getElementById('modal-unlock-fire-ants');
+            
+            // Upgrades Modal Buttons
+            const modalUpgradeFood = document.getElementById('modal-upgrade-food');
+            const modalUpgradeSpeed = document.getElementById('modal-upgrade-speed');
+            const modalUpgradeStrength = document.getElementById('modal-upgrade-strength');
+            
+            // Automation Modal Buttons
+            const modalUnlockAutofeeder = document.getElementById('modal-unlock-autofeeder');
+            const modalUpgradeAutofeeder = document.getElementById('modal-upgrade-autofeeder');
+            
+            // Settings Modal Buttons
+            const modalToggleSound = document.getElementById('modal-toggle-sound');
+            const modalDailyChallenge = document.getElementById('modal-daily-challenge');
+            
+            // Link modal buttons to original buttons
+            if (modalBuyAnt) modalBuyAnt.addEventListener('click', () => simulateClick('buy-ant'));
+            if (modalExpandColony) modalExpandColony.addEventListener('click', () => simulateClick('expand-colony'));
+            if (modalUnlockQueen) modalUnlockQueen.addEventListener('click', () => simulateClick('unlock-queen'));
+            if (modalUpgradeQueen) modalUpgradeQueen.addEventListener('click', () => simulateClick('upgrade-queen'));
+            if (modalUnlockFlying) modalUnlockFlying.addEventListener('click', () => simulateClick('unlock-flying-ants'));
+            if (modalBuyFlying) modalBuyFlying.addEventListener('click', () => simulateClick('buy-flying-ant'));
+            if (modalExpandFlying) modalExpandFlying.addEventListener('click', () => simulateClick('expand-flying-ants'));
+            if (modalUnlockCar) modalUnlockCar.addEventListener('click', () => simulateClick('unlock-car-ants'));
+            if (modalUnlockFire) modalUnlockFire.addEventListener('click', () => simulateClick('unlock-fire-ants'));
+            
+            if (modalUpgradeFood) modalUpgradeFood.addEventListener('click', () => simulateClick('upgrade-food'));
+            if (modalUpgradeSpeed) modalUpgradeSpeed.addEventListener('click', () => simulateClick('upgrade-speed'));
+            if (modalUpgradeStrength) modalUpgradeStrength.addEventListener('click', () => simulateClick('upgrade-strength'));
+            
+            if (modalUnlockAutofeeder) modalUnlockAutofeeder.addEventListener('click', () => simulateClick('unlock-autofeeder'));
+            if (modalUpgradeAutofeeder) modalUpgradeAutofeeder.addEventListener('click', () => simulateClick('upgrade-autofeeder'));
+            
+            if (modalToggleSound) modalToggleSound.addEventListener('click', () => simulateClick('toggle-sound'));
+            if (modalDailyChallenge) modalDailyChallenge.addEventListener('click', () => {
+                if (IdleAnts.DailyChallengeManager) {
+                    IdleAnts.DailyChallengeManager.showModal();
+                }
+                closeModal('settings-modal');
+            });
+        }
+        
+        function simulateClick(originalButtonId) {
+            const originalButton = document.getElementById(originalButtonId);
+            if (originalButton) {
+                originalButton.click();
+                // Update modal content after click
+                setTimeout(() => {
+                    const openModal = document.querySelector('.modal-backdrop.show');
+                    if (openModal) {
+                        updateModalContent(openModal.id);
+                    }
+                }, 100);
+            }
+        }
+        
+        function updateModalContent(modalId) {
+            // Sync modal button states and costs with original buttons
+            const buttonMappings = {
+                'colony-modal': [
+                    { modal: 'modal-ant-cost', original: 'ant-cost' },
+                    { modal: 'modal-expand-cost', original: 'expand-cost' },
+                    { modal: 'modal-unlock-queen-cost', original: 'unlock-queen-cost' },
+                    { modal: 'modal-upgrade-queen-cost', original: 'upgrade-queen-cost' },
+                    { modal: 'modal-queen-level', original: 'queen-level' },
+                    { modal: 'modal-queen-larvae-capacity', original: 'queen-larvae-capacity' },
+                    { modal: 'modal-queen-larvae-rate', original: 'queen-larvae-rate' },
+                    { modal: 'modal-flying-ant-unlock-cost', original: 'flying-ant-unlock-cost' },
+                    { modal: 'modal-flying-ant-cost', original: 'flying-ant-cost' },
+                    { modal: 'modal-expand-flying-cost', original: 'expand-flying-cost' },
+                    { modal: 'modal-car-ant-unlock-cost', original: 'car-ant-unlock-cost' },
+                    { modal: 'modal-fire-ant-unlock-cost', original: 'fire-ant-unlock-cost' }
+                ],
+                'upgrades-modal': [
+                    { modal: 'modal-food-upgrade-cost', original: 'food-upgrade-cost' },
+                    { modal: 'modal-speed-upgrade-cost', original: 'speed-upgrade-cost' },
+                    { modal: 'modal-strength-upgrade-cost', original: 'strength-upgrade-cost' }
+                ],
+                'automation-modal': [
+                    { modal: 'modal-autofeeder-cost', original: 'autofeeder-cost' },
+                    { modal: 'modal-autofeeder-upgrade-cost', original: 'autofeeder-upgrade-cost' },
+                    { modal: 'modal-autofeeder-level', original: 'autofeeder-level' }
+                ],
+                'settings-modal': []
+            };
+            
+            const mappings = buttonMappings[modalId];
+            if (mappings) {
+                mappings.forEach(mapping => {
+                    const modalElement = document.getElementById(mapping.modal);
+                    const originalElement = document.getElementById(mapping.original);
+                    if (modalElement && originalElement) {
+                        modalElement.textContent = originalElement.textContent;
+                    }
+                });
+            }
+            
+            // Update button visibility and states
+            updateModalButtonStates(modalId);
+        }
+        
+        function updateModalButtonStates(modalId) {
+            // Colony modal button states
+            if (modalId === 'colony-modal') {
+                const originalUnlockQueen = document.getElementById('unlock-queen');
+                const modalUnlockQueen = document.getElementById('modal-unlock-queen');
+                if (originalUnlockQueen && modalUnlockQueen) {
+                    modalUnlockQueen.style.display = originalUnlockQueen.style.display;
+                }
+                
+                const originalBuyFlying = document.getElementById('buy-flying-ant');
+                const modalBuyFlying = document.getElementById('modal-buy-flying-ant');
+                if (originalBuyFlying && modalBuyFlying) {
+                    if (originalBuyFlying.classList.contains('hidden')) {
+                        modalBuyFlying.classList.add('hidden');
+                    } else {
+                        modalBuyFlying.classList.remove('hidden');
+                    }
+                }
+                
+                const originalExpandFlying = document.getElementById('expand-flying-ants');
+                const modalExpandFlying = document.getElementById('modal-expand-flying-ants');
+                if (originalExpandFlying && modalExpandFlying) {
+                    if (originalExpandFlying.classList.contains('hidden')) {
+                        modalExpandFlying.classList.add('hidden');
+                    } else {
+                        modalExpandFlying.classList.remove('hidden');
+                    }
+                }
+            }
+            
+            // Automation modal button states
+            if (modalId === 'automation-modal') {
+                const originalUpgradeAutofeeder = document.getElementById('upgrade-autofeeder');
+                const modalUpgradeAutofeeder = document.getElementById('modal-upgrade-autofeeder');
+                if (originalUpgradeAutofeeder && modalUpgradeAutofeeder) {
+                    if (originalUpgradeAutofeeder.classList.contains('hidden')) {
+                        modalUpgradeAutofeeder.classList.add('hidden');
+                    } else {
+                        modalUpgradeAutofeeder.classList.remove('hidden');
+                    }
+                }
+            }
+            
+            // Settings modal - update sound button text
+            if (modalId === 'settings-modal') {
+                const originalToggleSound = document.getElementById('toggle-sound');
+                const modalToggleSound = document.getElementById('modal-toggle-sound');
+                if (originalToggleSound && modalToggleSound) {
+                    const soundText = originalToggleSound.textContent;
+                    modalToggleSound.innerHTML = `<span><i class="fas fa-volume-up"></i>${soundText}</span>`;
+                }
+            }
+        }
     </script>
 </body>
 </html> 

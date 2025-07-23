@@ -462,27 +462,38 @@
 IdleAnts.Assets.Ants = {
     ANT: {
         id: 'ant',
-        path: 'assets/textures/ant_spritesheet.png',
-        isSpriteSheet: true,
-        frames: 4, // Number of frames in the spritesheet
-        frameWidth: 32, // Width of a single frame
-        frameHeight: 32, // Height of a single frame
+        generator: function(app, assetManager) {
+            const registeredGenerators = assetManager.assetDefinitions || {};
+            if (registeredGenerators.ant) {
+                return registeredGenerators.ant(app);
+            }
+            // Fallback if registration failed
+            return IdleAnts.Assets.AssetDefinition.createGraphics();
+        },
         animationSpeed: 0.15
     },
     FLYING_ANT: {
         id: 'flying_ant',
-        path: 'assets/textures/flying_ant_spritesheet.png', // Placeholder - replace with actual path
-        isSpriteSheet: true,
-        frames: 4, // Example: 4 frames for flying animation
-        frameWidth: 48, // Example width
-        frameHeight: 48, // Example height
+        generator: function(app, assetManager) {
+            const registeredGenerators = assetManager.assetDefinitions || {};
+            if (registeredGenerators.flying_ant) {
+                return registeredGenerators.flying_ant(app);
+            }
+            return IdleAnts.Assets.AssetDefinition.createGraphics();
+        },
         animationSpeed: 0.2
     },
     QUEEN_ANT: {
         id: 'queen_ant',
-        path: 'assets/textures/queen_ant.png', // Placeholder - replace with actual path
+        generator: function(app, assetManager) {
+            const registeredGenerators = assetManager.assetDefinitions || {};
+            if (registeredGenerators.queen_ant) {
+                return registeredGenerators.queen_ant(app);
+            }
+            return IdleAnts.Assets.AssetDefinition.createGraphics();
+        },
         scale: { x: 1.5, y: 1.5 },
-        animationSpeed: 0.1 // Example, if animated
+        animationSpeed: 0.1
     },
     // Add new CarAnt placeholder texture
     CAR_ANT: {

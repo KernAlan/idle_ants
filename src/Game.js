@@ -515,6 +515,13 @@ IdleAnts.Game = class {
             }
         };
         
+        // Expose flexible boss spawner globally for testing
+        window.spawnBoss = (bossType, hpOrMultipliers, options) => {
+            if (this.spawnBoss) {
+                return this.spawnBoss(bossType, hpOrMultipliers, options);
+            }
+        };
+        
         // Expose ant count check for debugging
         window.checkAnts = () => {
             if (this.entityManager) {
@@ -732,6 +739,144 @@ IdleAnts.Game = class {
 
     /* ================= Boss Encounter Helpers ================= */
 
+    /**
+     * Flexible boss spawning wrapper function
+     * @param {string} bossType - The type of boss to spawn ('anteater', 'spider', 'beetle', etc.)
+     * @param {number|Object} hpOrMultipliers - Either HP value or multipliers object for boss stats
+     * @param {Object} options - Additional options for boss spawning
+     * 
+     * Examples:
+     * spawnBoss('anteater', 10000) // Spawn anteater with 10k HP
+     * spawnBoss('anteater', {hp: 0.5, damage: 1.5}) // Spawn anteater with 50% HP, 150% damage
+     * spawnBoss('spider', 15000, {noMusic: true, noCinematic: false})
+     */
+    spawnBoss(bossType, hpOrMultipliers = null, options = {}) {
+        console.log(`spawnBoss called with type: ${bossType}, hpOrMultipliers:`, hpOrMultipliers, 'options:', options);
+        
+        if (this.state !== IdleAnts.Game.States.PLAYING) {
+            console.warn('Cannot spawn boss - not in playing state');
+            return null;
+        }
+
+        // Get boss configuration
+        const bossConfig = IdleAnts.Data.BossConfigUtils.getBossConfig(bossType);
+        if (!bossConfig) {
+            console.error(`Unknown boss type: ${bossType}`);
+            return null;
+        }
+
+        // Process HP or multipliers
+        let finalConfig = bossConfig;
+        if (hpOrMultipliers !== null) {
+            if (typeof hpOrMultipliers === 'number') {
+                // Simple HP override
+                finalConfig = JSON.parse(JSON.stringify(bossConfig));
+                finalConfig.defaultStats.maxHp = hpOrMultipliers;
+            } else if (typeof hpOrMultipliers === 'object') {
+                // Multipliers object
+                finalConfig = IdleAnts.Data.BossConfigUtils.applyStatMultipliers(bossConfig, hpOrMultipliers);
+            }
+        }
+
+        // Store boss config for spawning process
+        this.pendingBossConfig = finalConfig;
+        this.pendingBossOptions = options;
+
+        // Use cinematic unless disabled
+        if (options.noCinematic === false || (finalConfig.cinematic && finalConfig.cinematic.enabled !== false)) {
+            this.startBossFightWithConfig(finalConfig, options);
+        } else {
+            // Spawn immediately without cinematic
+            this.spawnBossDirectly(finalConfig, options);
+        }
+
+        return finalConfig;
+    }
+
+    /**
+     * Start boss fight with configuration (includes cinematic)
+     */
+    startBossFightWithConfig(bossConfig, options = {}) {
+        console.log('Starting boss fight sequence with config:', bossConfig.name);
+        
+        // Calculate spawn position
+        const spawnPos = IdleAnts.Data.BossConfigUtils.calculateSpawnPosition(bossConfig, this.mapConfig);
+        
+        // Pre-position camera to show boss entrance area BEFORE spawning boss
+        if (this.cameraManager && bossConfig.cinematic.cameraPrePosition) {
+            console.log(`[CINEMATIC] Pre-positioning camera to show boss entrance area at (${spawnPos.x}, ${spawnPos.y})`);
+            this.cameraManager.startCinematicPanTo(spawnPos.x, spawnPos.y, 1000);
+            
+            // Delay boss spawn until camera is in position
+            setTimeout(() => {
+                this.spawnBossAfterCameraPan();
+            }, 1200);
+        } else {
+            // No camera manager or cinematic disabled, spawn immediately
+            this.spawnBossAfterCameraPan();
+        }
+    }
+
+    /**
+     * Spawn boss directly without cinematic
+     */
+    spawnBossDirectly(bossConfig, options = {}) {
+        console.log('Spawning boss directly without cinematic:', bossConfig.name);
+        
+        this.pendingBossConfig = bossConfig;
+        this.pendingBossOptions = options;
+        
+        // Ensure challenge modal is closed
+        if (this.dailyChallengeManager && this.dailyChallengeManager.closeModal) {
+            this.dailyChallengeManager.closeModal();
+        }
+        
+        // Spawn the boss
+        const boss = this.entityManager.spawnBossWithConfig(bossConfig);
+        
+        this.currentBoss = boss;
+        
+        // Start boss music unless disabled
+        if (!options.noMusic && bossConfig.audio && bossConfig.audio.theme) {
+            const themeKey = bossConfig.audio.theme;
+            console.log(`[MUSIC] Direct spawn - attempting to play boss theme: ${themeKey}`);
+            
+            // Stop any current playlist first
+            if (IdleAnts.AudioManager.stopMusicPlaylist) {
+                IdleAnts.AudioManager.stopMusicPlaylist();
+            }
+            
+            if (IdleAnts.AudioManager && IdleAnts.AudioAssets.BGM[themeKey]) {
+                console.log(`[MUSIC] Found theme ${themeKey}, playing: ${IdleAnts.AudioAssets.BGM[themeKey].id}`);
+                IdleAnts.AudioManager.playBGM(IdleAnts.AudioAssets.BGM[themeKey].id);
+                
+                // Fallback: direct HTML element access
+                setTimeout(() => {
+                    const audioElement = document.getElementById('bgm_anteater_boss');
+                    if (audioElement && audioElement.paused) {
+                        console.log('[MUSIC] Boss audio still paused, attempting direct play...');
+                        audioElement.volume = 0.6;
+                        audioElement.loop = true;
+                        audioElement.play().then(() => {
+                            console.log('[MUSIC] Direct boss audio play succeeded');
+                        }).catch(e => {
+                            console.error('[MUSIC] Direct boss audio play failed:', e);
+                        });
+                    }
+                }, 100);
+            } else {
+                console.warn(`Boss theme not found: ${themeKey}, available themes:`, Object.keys(IdleAnts.AudioAssets?.BGM || {}));
+            }
+        }
+        
+        // Show boss health bar
+        if (this.uiManager && boss) {
+            this.uiManager.showBossHealthBar(boss.maxHp);
+        }
+        
+        return boss;
+    }
+
     // Triggered (manually for now) to begin the boss fight
     startBossFight() {
         console.log('startBossFight called, current state:', this.state);
@@ -768,16 +913,24 @@ IdleAnts.Game = class {
             this.dailyChallengeManager.closeModal();
         }
         
-        // Clear existing enemies and spawn the boss
-        const boss = this.entityManager.spawnAnteaterBoss();
-        this.entityManager.clearEnemies();
+        // Use pending boss config if available, otherwise fall back to anteater
+        const bossConfig = this.pendingBossConfig || IdleAnts.Data.BossConfigUtils.getBossConfig('anteater');
+        console.log(`[DEBUG] Using boss config for: ${bossConfig?.name || 'unknown'}, arrival text: ${bossConfig?.cinematic?.arrivalText || 'none'}`);
+        const options = this.pendingBossOptions || {};
+        
+        // Spawn the boss
+        const boss = this.entityManager.spawnBossWithConfig(bossConfig);
         
         this.currentBoss = boss;
         console.log('Boss spawned at:', this.currentBoss.x, this.currentBoss.y);
-        console.log('Boss should be at top of map for invasion entrance');
+        console.log(`Boss ${bossConfig.name} spawned for cinematic entrance`);
 
         // Begin dramatic invasion cinematic
-        this.playBossIntroCinematic(boss);
+        this.playBossIntroCinematic(boss, bossConfig, options);
+        
+        // Clear pending config
+        this.pendingBossConfig = null;
+        this.pendingBossOptions = null;
     }
     
     // Manual boss trigger for testing (exposed globally)
@@ -789,21 +942,45 @@ IdleAnts.Game = class {
     }
 
     // Called by AnteaterBoss.die()
-    onBossDefeated() {
+    onBossDefeated(bossType = 'anteater') {
         if (this.uiManager) {
             this.uiManager.hideBossHealthBar();
-            this.uiManager.showWinScreen();
         }
+        
         if (this.entityManager) {
-            this.entityManager.bossDefeated = true;
             this.entityManager.boss = null;
-            this.entityManager.bossTriggered = false;
         }
-        // Play victory theme
-        if (IdleAnts.AudioManager && IdleAnts.AudioAssets && IdleAnts.AudioAssets.BGM && IdleAnts.AudioAssets.BGM.VICTORY_THEME) {
-            IdleAnts.AudioManager.playBGM(IdleAnts.AudioAssets.BGM.VICTORY_THEME.id);
+        
+        // Check if this is the final boss (anteater) or a miniboss
+        if (bossType === 'anteater') {
+            // Final boss defeated - trigger victory
+            if (this.uiManager) {
+                this.uiManager.showWinScreen();
+            }
+            if (this.entityManager) {
+                this.entityManager.bossDefeated = true;
+                this.entityManager.bossTriggered = false;
+            }
+            // Play victory theme
+            if (IdleAnts.AudioManager && IdleAnts.AudioAssets && IdleAnts.AudioAssets.BGM && IdleAnts.AudioAssets.BGM.VICTORY_THEME) {
+                IdleAnts.AudioManager.playBGM(IdleAnts.AudioAssets.BGM.VICTORY_THEME.id);
+            }
+            this.transitionToState(IdleAnts.Game.States.WIN);
+        } else {
+            // Miniboss defeated - continue game, return to normal music
+            if(typeof IdleAnts.notify === 'function'){
+                IdleAnts.notify(`Miniboss defeated! The colony grows stronger!`, 'success');
+            }
+            
+            // Resume normal background music playlist
+            if (IdleAnts.AudioManager) {
+                const playlist = ['bgm_main_theme', 'bgm_old_main_theme'];
+                IdleAnts.AudioManager.startMusicPlaylist(playlist);
+            }
+            
+            // Return to normal gameplay
+            this.transitionToState(IdleAnts.Game.States.PLAYING);
         }
-        this.transitionToState(IdleAnts.Game.States.WIN);
     }
 
     onColonyWiped() {
@@ -1310,14 +1487,18 @@ IdleAnts.Game = class {
      * Boss spawns at top of map and descends toward the center nest.
      * Duration: ~6 seconds total
      */
-    playBossIntroCinematic(boss) {
+    playBossIntroCinematic(boss, bossConfig = null, options = {}) {
+        // Use provided config or default to anteater
+        const config = bossConfig || IdleAnts.Data.BossConfigUtils.getBossConfig('anteater');
+        console.log(`[DEBUG] playBossIntroCinematic - bossConfig provided:`, bossConfig ? 'YES' : 'NO');
+        console.log(`[DEBUG] Final config name: ${config.name}, arrival text: ${config.cinematic?.arrivalText}`);
         this.transitionToState(IdleAnts.Game.States.BOSS_INTRO);
         console.log('%c[CINEMATIC] Epic Boss Invasion - Top to Center!', 'color: #FFD700; font-weight: bold; font-size: 16px;');
 
         // === PHASE 1: DRAMATIC CAMERA SETUP (0.5 seconds) ===
         
-        // Stop current music for dramatic pause
-        if (IdleAnts.AudioManager) {
+        // Stop current music for dramatic pause (unless disabled)
+        if (IdleAnts.AudioManager && config.cinematic.dramaPause) {
             IdleAnts.AudioManager.stopBGM();
         }
         
@@ -1379,7 +1560,47 @@ IdleAnts.Game = class {
                 // this.cameraManager.shake(800, 5);
             }
             
-            this.showEpicWarningText("THE GREAT ANTEATER HAS ARRIVED");
+            const arrivalText = config.cinematic.arrivalText || "A BOSS HAS ARRIVED";
+            console.log(`[DEBUG] Showing arrival text: "${arrivalText}" for boss: ${config.name}`);
+            this.showEpicWarningText(arrivalText);
+            
+            // Start boss music as soon as the boss arrival text shows
+            console.log(`[MUSIC] Boss arrival text shown (${config.name}), starting boss music...`);
+            
+            // Stop any current playlist first
+            if (IdleAnts.AudioManager && IdleAnts.AudioManager.stopMusicPlaylist) {
+                IdleAnts.AudioManager.stopMusicPlaylist();
+            }
+            
+            // Play boss theme (use config's audio theme)
+            const audioTheme = config.audio?.theme || 'BOSS_THEME';
+            const audioAsset = IdleAnts.AudioAssets?.BGM?.[audioTheme];
+            if (IdleAnts.AudioManager && audioAsset) {
+                console.log(`[MUSIC] Playing ${audioTheme} theme:`, audioAsset.id);
+                IdleAnts.AudioManager.playBGM(audioAsset.id);
+            } else {
+                console.warn(`[MUSIC] Audio theme ${audioTheme} not found, falling back to BOSS_THEME`);
+                if (IdleAnts.AudioManager && IdleAnts.AudioAssets?.BGM?.BOSS_THEME) {
+                    IdleAnts.AudioManager.playBGM(IdleAnts.AudioAssets.BGM.BOSS_THEME.id);
+                }
+            }
+            
+            // Fallback: direct HTML element access
+            setTimeout(() => {
+                    const audioElement = document.getElementById(audioAsset?.id || 'bgm_anteater_boss');
+                    if (audioElement && audioElement.paused) {
+                        console.log('[MUSIC] Boss audio still paused, attempting direct play...');
+                        audioElement.volume = 0.6;
+                        audioElement.loop = true;
+                        audioElement.play().then(() => {
+                            console.log('[MUSIC] Direct boss audio play succeeded');
+                        }).catch(e => {
+                            console.error('[MUSIC] Direct boss audio play failed:', e);
+                        });
+                    } else if (audioElement && !audioElement.paused) {
+                        console.log('[MUSIC] Boss audio is now playing successfully');
+                    }
+                }, 100);
             
             // Warning sound
             if (IdleAnts.AudioManager) {
@@ -1390,7 +1611,6 @@ IdleAnts.Game = class {
         // === PHASE 3: BOSS BEGINS INVASION MARCH (3 seconds) ===
         setTimeout(() => {
             this.hideWarningText();
-            this.showEpicWarningText("PREPARING TO ATTACK", true);
             
             // Create warning effects at boss current position
             if (this.effectManager) {
@@ -1542,7 +1762,7 @@ IdleAnts.Game = class {
                     }
                     
                     console.log(`[CINEMATIC] EPIC BOSS IMPACT! Boss crashed down at: ${boss.x}, ${boss.y}`);
-                    this.handleEpicBossInvasion(boss, boss.x, boss.y);
+                    this.handleEpicBossInvasion(boss, boss.x, boss.y, config);
                 }
             };
             
@@ -1618,7 +1838,7 @@ IdleAnts.Game = class {
         }
     }
 
-    handleEpicBossInvasion(boss, landingX, landingY) {
+    handleEpicBossInvasion(boss, landingX, landingY, config = null) {
         console.log('%c[CINEMATIC] BOSS HAS INVADED THE NEST AREA!', 'color: #FF4444; font-weight: bold; font-size: 16px;');
         
         // === MASSIVE SCREEN SHAKE FOR ARRIVAL ===
@@ -1666,12 +1886,11 @@ IdleAnts.Game = class {
         // === DRAMATIC BOSS NAME REVEAL ===
         setTimeout(() => {
             this.hideWarningText();
-            this.showFinalBossReveal();
+            const bossConfig = config || this.pendingBossConfig || IdleAnts.Data.BossConfigUtils.getBossConfig('anteater');
+            console.log(`[DEBUG] showFinalBossReveal using config for: ${bossConfig.name}`);
+            this.showFinalBossReveal(bossConfig);
             
-            // Start EPIC boss music
-            if (IdleAnts.AudioManager && IdleAnts.AudioAssets && IdleAnts.AudioAssets.BGM && IdleAnts.AudioAssets.BGM.BOSS_THEME) {
-                IdleAnts.AudioManager.playBGM(IdleAnts.AudioAssets.BGM.BOSS_THEME.id);
-            }
+            // Music already started when boss arrival text appeared
             
             // NO ZOOM ANIMATION - keep camera exactly where it is to prevent coordinate corruption
             // The camera is already properly positioned from the initial pan
@@ -1685,7 +1904,15 @@ IdleAnts.Game = class {
         }, 2500);
     }
 
-    showFinalBossReveal() {
+    showFinalBossReveal(config = null) {
+        // Use config or fallback to default values
+        const cinematic = config?.cinematic || {};
+        const bossTitle = cinematic.bossTitle || "◆ BOSS ◆";
+        const bossName = cinematic.bossName || "UNKNOWN BOSS";
+        const bossSubtitle = cinematic.bossSubtitle || "Threat to the Colony";
+        const titleColor = cinematic.titleColor || "#FFD700";
+        const nameColor = cinematic.nameColor || "#FFFFFF";
+        const subtitleColor = cinematic.subtitleColor || "#FFA500";
         // Create the ultimate boss name display
         this.bossNameDisplay = document.createElement('div');
         this.bossNameDisplay.style.cssText = `
@@ -1705,9 +1932,9 @@ IdleAnts.Game = class {
             pointer-events: none;
         `;
         this.bossNameDisplay.innerHTML = `
-            <div style="font-size: 28px; color: #FFD700; margin-bottom: 8px; text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.9);">◆ FINAL BOSS ◆</div>
-            <div style="letter-spacing: 3px;">THE GREAT ANTEATER</div>
-            <div style="font-size: 20px; color: #FFA500; margin-top: 8px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);">Destroyer of Colonies</div>
+            <div style="font-size: 28px; color: ${titleColor}; margin-bottom: 8px; text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.9);">${bossTitle}</div>
+            <div style="letter-spacing: 3px; color: ${nameColor};">${bossName}</div>
+            <div style="font-size: 20px; color: ${subtitleColor}; margin-top: 8px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);">${bossSubtitle}</div>
         `;
         document.body.appendChild(this.bossNameDisplay);
         
@@ -1756,6 +1983,8 @@ IdleAnts.Game = class {
             console.log(`[CINEMATIC] Camera remains exactly where player positioned it`);
         }
         
+        // Music already started when "Great Anteater" text appeared
+        
         // Show boss health bar
         if (this.uiManager) {
             this.uiManager.showBossHealthBar(this.currentBoss.maxHp);
@@ -1765,4 +1994,4 @@ IdleAnts.Game = class {
         this.transitionToState(IdleAnts.Game.States.BOSS_FIGHT);
         console.log('[CINEMATIC] Camera controls restored - DEFEND THE COLONY!');
     }
-}; 
+} 

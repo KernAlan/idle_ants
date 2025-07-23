@@ -21,6 +21,13 @@ IdleAnts.AudioAssets = {
             loop: true,
             volume: 0.6
         },
+        // Miniboss theme
+        MINIBOSS_THEME: {
+            id: 'bgm_miniboss_theme',
+            path: 'assets/audio/miniboss_bgm.mp3',
+            loop: true,
+            volume: 0.6
+        },
         VICTORY_THEME: {
             id: 'bgm_victory_theme',
             path: 'assets/audio/victory_music.mp3',

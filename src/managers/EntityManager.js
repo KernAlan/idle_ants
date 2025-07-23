@@ -91,6 +91,10 @@ IdleAnts.Managers.EntityManager = class {
         this.boss = null;
         this.bossTriggered = false; // Prevent multiple boss triggers
         this.bossDefeated = false; // Track if boss defeated to avoid respawn
+        
+        // Miniboss tracking
+        this.miniboss1Triggered = false; // Carpenter Ant Queen at 25 ants
+        this.miniboss2Triggered = false; // Giant Hornet at 45 ants
     }
     
     setEffectManager(effectManager) {
@@ -1119,6 +1123,35 @@ IdleAnts.Managers.EntityManager = class {
             }
         }
         
+        // ---------- MINIBOSS TRIGGERS ----------
+        // Miniboss 1: Carpenter Ant Queen at 25 ants
+        if (antTotal >= 25 && !this.miniboss1Triggered && !this.boss && !this.bossTriggered) {
+            this.miniboss1Triggered = true;
+            if(typeof IdleAnts.notify === 'function'){
+                IdleAnts.notify(`A rival Carpenter Ant Queen approaches with her guards!`, 'warning');
+            }
+            setTimeout(() => {
+                if (IdleAnts.game && typeof IdleAnts.game.spawnBoss === 'function') {
+                    IdleAnts.game.spawnBoss('carpenter_ant_queen');
+                }
+            }, 2000);
+            return; // Skip regular enemy spawning during miniboss intro
+        }
+        
+        // Miniboss 2: Giant Hornet at 45 ants
+        if (antTotal >= 45 && !this.miniboss2Triggered && !this.boss && !this.bossTriggered && this.miniboss1Triggered) {
+            this.miniboss2Triggered = true;
+            if(typeof IdleAnts.notify === 'function'){
+                IdleAnts.notify(`A massive Japanese Giant Hornet descends from the sky!`, 'warning');
+            }
+            setTimeout(() => {
+                if (IdleAnts.game && typeof IdleAnts.game.spawnBoss === 'function') {
+                    IdleAnts.game.spawnBoss('giant_hornet');
+                }
+            }, 2000);
+            return; // Skip regular enemy spawning during miniboss intro
+        }
+        
         // ---------- BOSS TRIGGER: Spawn boss when colony reaches 60+ ants (final level) ----------
         if (antTotal >= 60 && !this.boss && !this.bossTriggered && !this.bossDefeated) {
             this.bossTriggered = true;
@@ -1207,6 +1240,65 @@ IdleAnts.Managers.EntityManager = class {
         return this.boss;
     }
 
+    // Flexible boss spawning with configuration
+    spawnBossWithConfig(bossConfig) {
+        if (this.boss && !this.boss.isDead) return this.boss;
+        
+        console.log(`Creating boss: ${bossConfig.name}...`);
+        
+        // Calculate spawn position
+        const spawnPos = IdleAnts.Data.BossConfigUtils.calculateSpawnPosition(bossConfig, this.mapBounds);
+        
+        // Get required textures based on boss type
+        const textures = {};
+        for (const [key, textureName] of Object.entries(bossConfig.textures)) {
+            textures[key] = this.assetManager.getTexture(textureName);
+        }
+        console.log("Retrieved boss textures:", textures);
+        
+        // Create boss instance based on className
+        let bossInstance;
+        const BossClass = IdleAnts.Entities[bossConfig.className];
+        
+        if (BossClass) {
+            // Use the specific boss class
+            bossInstance = new BossClass(textures, this.mapBounds);
+        } else {
+            console.warn(`Boss class ${bossConfig.className} not found, using AnteaterBoss as fallback`);
+            bossInstance = new IdleAnts.Entities.AnteaterBoss(textures, this.mapBounds);
+        }
+        
+        // Apply configuration stats
+        this.applyBossStats(bossInstance, bossConfig.defaultStats);
+        
+        // Set custom spawn position
+        bossInstance.x = spawnPos.x;
+        bossInstance.y = spawnPos.y;
+        
+        this.boss = bossInstance;
+        this.bossDefeated = false;
+        this.entitiesContainers.enemies.addChild(this.boss);
+        this.entities.enemies.push(this.boss);
+        
+        console.log(`Boss ${bossConfig.name} spawned at (${spawnPos.x}, ${spawnPos.y})`);
+        return this.boss;
+    }
+
+    // Apply boss stats from configuration
+    applyBossStats(bossInstance, stats) {
+        if (stats.maxHp !== undefined) {
+            bossInstance.maxHp = stats.maxHp;
+            bossInstance.hp = stats.maxHp;
+        }
+        if (stats.attackDamage !== undefined) bossInstance.attackDamage = stats.attackDamage;
+        if (stats.attackRange !== undefined) bossInstance.attackRange = stats.attackRange;
+        if (stats.speed !== undefined) bossInstance.speed = stats.speed;
+        if (stats.perceptionRange !== undefined) bossInstance.perceptionRange = stats.perceptionRange;
+        if (stats.foodValue !== undefined) bossInstance.foodValue = stats.foodValue;
+        
+        console.log(`Applied boss stats:`, stats);
+    }
+
     // Remove all current enemies except the boss (used before boss intro)
     clearEnemies() {
         for (let i = this.entities.enemies.length - 1; i >= 0; i--) {
@@ -1225,5 +1317,7 @@ IdleAnts.Managers.EntityManager = class {
     resetBossTrigger() {
         this.bossTriggered = false;
         this.boss = null;
+        this.miniboss1Triggered = false;
+        this.miniboss2Triggered = false;
     }
 } 

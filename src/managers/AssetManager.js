@@ -46,7 +46,7 @@ IdleAnts.Managers.AssetManager = class {
                                             // Generate texture from generator function
                                             try {
                                                 console.log(`AssetManager: Generating texture for ${assetConfig.id}`);
-                                                const graphics = assetConfig.generator(this.app);
+                                                const graphics = assetConfig.generator(this.app, this);
                                                 if (graphics instanceof PIXI.Graphics) {
                                                     this.textures[assetConfig.id] = this.app.renderer.generateTexture(graphics);
                                                     console.log(`AssetManager: Texture ${assetConfig.id} generated successfully.`);

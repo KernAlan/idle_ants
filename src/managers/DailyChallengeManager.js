@@ -274,11 +274,8 @@ IdleAnts.Managers.DailyChallengeManager = class {
     }
     
     init() {
-        // Load saved data
-        this.loadData();
-        
-        // Check if we need new challenges
-        this.checkForNewChallenges();
+        // Generate fresh challenges each time for now
+        this.generateDailyChallenges();
         
         // Set up tracking
         this.setupTracking();
@@ -322,7 +319,9 @@ IdleAnts.Managers.DailyChallengeManager = class {
         this.precisionActions = 0;
         
         // Calculate player level based on total food collected
-        const playerLevel = Math.floor(this.resourceManager.resources.food / 100) + 1;
+        const currentFood = this.resourceManager?.resources?.food || 0;
+        const playerLevel = Math.max(1, Math.min(10, Math.floor(currentFood / 100) + 1)); // Cap at level 10
+        console.log(`[DailyChallenge] Current food: ${currentFood}, Player level: ${playerLevel}`);
         
         // Select 5 challenges from different categories to ensure variety
         const challengeTypes = Object.keys(this.challengeTemplates);
@@ -358,7 +357,7 @@ IdleAnts.Managers.DailyChallengeManager = class {
         });
         
         // Save data
-        this.saveData();
+        // this.saveData(); // Disabled for now
         
         // Update UI
         this.updateChallengeUI();
@@ -368,8 +367,11 @@ IdleAnts.Managers.DailyChallengeManager = class {
     }
     
     createChallenge(template, playerLevel) {
-        // Calculate target based on player level
-        const target = Math.ceil(template.baseTarget * Math.pow(template.multiplier, playerLevel - 1));
+        // Calculate target based on player level with safeguards
+        const multiplier = Math.min(template.multiplier, 2.0); // Cap multiplier at 2.0
+        const levelFactor = Math.min(playerLevel - 1, 9); // Cap level factor at 9
+        const target = Math.ceil(template.baseTarget * Math.pow(multiplier, levelFactor));
+        console.log(`[DailyChallenge] Creating ${template.id}: baseTarget=${template.baseTarget}, multiplier=${multiplier}, levelFactor=${levelFactor}, target=${target}`);
         
         // Calculate reward based on player level
         const rewardAmount = Math.ceil(template.reward.amount * (1 + (playerLevel - 1) * 0.2));
@@ -503,7 +505,7 @@ IdleAnts.Managers.DailyChallengeManager = class {
             }
             
             this.updateChallengeUI();
-            this.saveData();
+            // this.saveData(); // Disabled for now
         }
     }
     
@@ -522,7 +524,7 @@ IdleAnts.Managers.DailyChallengeManager = class {
             
             // Update UI
             this.updateChallengeUI();
-            this.saveData();
+            // this.saveData(); // Disabled for now
         }
     }
     
@@ -536,6 +538,11 @@ IdleAnts.Managers.DailyChallengeManager = class {
         
         // Position button in top-right corner
         document.body.appendChild(triggerButton);
+        
+        // Add click handler to trigger button
+        triggerButton.addEventListener('click', () => {
+            this.showModal();
+        });
         
         // Create modal backdrop
         const modalBackdrop = document.createElement('div');
@@ -889,6 +896,17 @@ IdleAnts.Managers.DailyChallengeManager = class {
         if (backdrop) {
             backdrop.classList.add('show');
         }
+    }
+    
+    showModal() {
+        this.isModalOpen = true;
+        const backdrop = document.getElementById('challenge-modal-backdrop');
+        if (backdrop) {
+            backdrop.classList.add('show');
+        }
+        
+        // Update the challenge list when modal opens
+        this.updateChallengeUI();
     }
     
     closeModal() {
