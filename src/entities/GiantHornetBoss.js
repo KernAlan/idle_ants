@@ -299,10 +299,20 @@ IdleAnts.Entities.GiantHornetBoss = class extends PIXI.Container {
         // Dive bomb logic
         this.diveBombTimer++;
         if (!this.isDiveBombing && this.diveBombTimer >= this.diveBombCooldown) {
-            // Find target for dive bomb
-            if (ants.length > 0) {
-                const randomAnt = ants[Math.floor(Math.random() * ants.length)];
-                this.startDiveBomb(randomAnt);
+            // Find target for dive bomb (prefer queen over regular ants)
+            const allTargets = [...ants];
+            
+            // Add queen to target list if available
+            if (IdleAnts.app && IdleAnts.app.entityManager && IdleAnts.app.entityManager.entities.queen && 
+                !IdleAnts.app.entityManager.entities.queen.isDead) {
+                allTargets.push(IdleAnts.app.entityManager.entities.queen);
+            }
+            
+            if (allTargets.length > 0) {
+                // Prioritize queen for dive bomb if available
+                const queenTarget = allTargets.find(target => target.isQueen);
+                const target = queenTarget || allTargets[Math.floor(Math.random() * allTargets.length)];
+                this.startDiveBomb(target);
             }
             this.diveBombTimer = 0;
         }
@@ -337,20 +347,78 @@ IdleAnts.Entities.GiantHornetBoss = class extends PIXI.Container {
                 this.poisonCloudTimer = 0;
             }
 
-            // Standard enemy AI logic when not dive bombing
-            if (!this.targetAnt || this.targetAnt.isDead) {
-                this.targetAnt = null;
-                let nearest = null, distSq = Infinity;
-                ants.forEach(ant => {
-                    const dx = ant.x - this.x;
-                    const dy = ant.y - this.y;
-                    const d = dx * dx + dy * dy;
-                    if (d < distSq && Math.sqrt(d) <= this.perceptionRange) {
-                        nearest = ant;
-                        distSq = d;
+            // Dynamic targeting AI logic when not dive bombing - continuously poll for best target
+            let nearestAnt = null, antDistSq = Infinity;
+            let queenTarget = null, queenDistSq = Infinity;
+            let attackingAnt = null, attackingDistSq = Infinity;
+            
+            // Check all potential targets (ants + queen)
+            const allTargets = [...ants];
+            
+            // Add queen to target list if available
+            if (IdleAnts.app && IdleAnts.app.entityManager && IdleAnts.app.entityManager.entities.queen && 
+                !IdleAnts.app.entityManager.entities.queen.isDead) {
+                allTargets.push(IdleAnts.app.entityManager.entities.queen);
+            }
+            
+            allTargets.forEach(target => {
+                if (target.isDead) return; // Skip dead targets
+                
+                const dx = target.x - this.x;
+                const dy = target.y - this.y;
+                const d = dx * dx + dy * dy;
+                const dist = Math.sqrt(d);
+                
+                if (dist <= this.perceptionRange) {
+                    if (target.isQueen) {
+                        // Track queen as potential target
+                        if (d < queenDistSq) {
+                            queenTarget = target;
+                            queenDistSq = d;
+                        }
+                    } else {
+                        // Check if this ant is attacking us (has us as target)
+                        const isAttackingUs = target.targetEnemy === this;
+                        
+                        if (isAttackingUs && d < attackingDistSq) {
+                            // Prioritize ants that are attacking us
+                            attackingAnt = target;
+                            attackingDistSq = d;
+                        } else if (d < antDistSq) {
+                            // Track nearest ant as fallback
+                            nearestAnt = target;
+                            antDistSq = d;
+                        }
                     }
-                });
-                if (nearest) this.targetAnt = nearest;
+                }
+            });
+            
+            // Priority: 1) Ants attacking us, 2) Queen (always pursue if available), 3) Nearest ant
+            const bestTarget = attackingAnt || queenTarget || nearestAnt;
+            
+            // Always switch to attacking ants if they exist
+            if (attackingAnt && attackingAnt !== this.targetAnt) {
+                this.targetAnt = attackingAnt;
+            }
+            // If no attackers but queen is available, always target queen
+            else if (!attackingAnt && queenTarget && this.targetAnt !== queenTarget) {
+                this.targetAnt = queenTarget;
+            }
+            // Fallback to nearest ant only if no queen available
+            else if (!attackingAnt && !queenTarget && nearestAnt && this.targetAnt !== nearestAnt) {
+                this.targetAnt = nearestAnt;
+            }
+            
+            // Clear target if current target is dead or out of range
+            if (this.targetAnt && (this.targetAnt.isDead || 
+                Math.sqrt((this.targetAnt.x - this.x) ** 2 + (this.targetAnt.y - this.y) ** 2) > this.perceptionRange)) {
+                this.targetAnt = null;
+            }
+            
+            // Special case: If we have no target but queen exists anywhere, pursue her
+            if (!this.targetAnt && IdleAnts.app && IdleAnts.app.entityManager && 
+                IdleAnts.app.entityManager.entities.queen && !IdleAnts.app.entityManager.entities.queen.isDead) {
+                this.targetAnt = IdleAnts.app.entityManager.entities.queen;
             }
 
             if (this.targetAnt && !this.targetAnt.isDead) {

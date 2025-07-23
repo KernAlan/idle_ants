@@ -34,6 +34,12 @@ IdleAnts.AudioAssets = {
             loop: false,
             volume: 0.6
         },
+        GAME_OVER_THEME: {
+            id: 'bgm_game_over_theme',
+            path: 'assets/audio/game_over_music.mp3',
+            loop: false,
+            volume: 0.7
+        },
         // Add more BGM tracks as needed
     },
     

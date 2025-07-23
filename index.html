@@ -60,6 +60,10 @@
         <audio id="bgm_victory_theme" preload="auto">
             <source src="assets/audio/victory_music.mp3" type="audio/mpeg">
         </audio>
+        <!-- Game Over Theme -->
+        <audio id="bgm_game_over_theme" preload="auto">
+            <source src="assets/audio/game_over_music.mp3" type="audio/mpeg">
+        </audio>
         <!-- Sound Effects -->
         <audio id="sfx_ant_spawn" preload="auto">
             <source src="assets/audio/ant_spawn.mp3" type="audio/mpeg">
@@ -172,9 +176,25 @@
                                 <span><i class="fas fa-car"></i>Car Ants</span>
                                 <span id="modal-car-ant-unlock-cost">10000</span>
                             </button>
+                            <button id="modal-buy-car-ant" class="modal-btn hidden">
+                                <span><i class="fas fa-plus"></i>Buy Car Ant</span>
+                                <span id="modal-car-ant-cost">2500</span>
+                            </button>
+                            <button id="modal-expand-car-ants" class="modal-btn hidden">
+                                <span><i class="fas fa-expand"></i>Expand Car Ant Bay</span>
+                                <span id="modal-expand-car-ant-cost">5000</span>
+                            </button>
                             <button id="modal-unlock-fire-ants" class="modal-btn">
                                 <span><i class="fas fa-fire"></i>Fire Ants</span>
                                 <span id="modal-fire-ant-unlock-cost">20000</span>
+                            </button>
+                            <button id="modal-buy-fire-ant" class="modal-btn hidden">
+                                <span><i class="fas fa-plus"></i>Buy Fire Ant</span>
+                                <span id="modal-fire-ant-cost">5000</span>
+                            </button>
+                            <button id="modal-expand-fire-ants" class="modal-btn hidden">
+                                <span><i class="fas fa-expand"></i>Expand Fire Ant Bay</span>
+                                <span id="modal-expand-fire-ant-cost">10000</span>
                             </button>
                         </div>
                     </div>
@@ -236,9 +256,6 @@
                                 <span><i class="fas fa-arrow-up"></i>Upgrade Autofeeder</span>
                                 <span id="modal-autofeeder-upgrade-cost">500</span>
                             </button>
-                            <div id="modal-autofeeder-stats" class="modal-stats">
-                                Level: <span id="modal-autofeeder-level">0</span>/10
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -431,13 +448,50 @@
         });
         
         // Modal System Functions
-        function openModal(modalId) {
+        function openModal(modalId, triggerElement) {
             const modal = document.getElementById(modalId);
             if (modal) {
+                // Position modal near the trigger button
+                if (triggerElement) {
+                    positionModalNearElement(modal, triggerElement);
+                }
                 modal.classList.add('show');
                 // Update modal content when opened
                 updateModalContent(modalId);
             }
+        }
+        
+        function positionModalNearElement(modal, element) {
+            const rect = element.getBoundingClientRect();
+            const modalWidth = 320; // Match CSS width
+            const modalMaxHeight = window.innerHeight - 120;
+            
+            // Calculate initial position (below and slightly to the right of the button)
+            let left = rect.left;
+            let top = rect.bottom + 10;
+            
+            // Adjust if modal would go off the right edge of screen
+            if (left + modalWidth > window.innerWidth - 20) {
+                left = window.innerWidth - modalWidth - 20;
+            }
+            
+            // Adjust if modal would go off the left edge of screen
+            if (left < 10) {
+                left = 10;
+            }
+            
+            // Adjust if modal would go off the bottom of screen
+            if (top + modalMaxHeight > window.innerHeight - 20) {
+                top = rect.top - modalMaxHeight - 10; // Position above the button instead
+            }
+            
+            // Adjust if modal would go off the top of screen
+            if (top < 10) {
+                top = 10;
+            }
+            
+            modal.style.left = left + 'px';
+            modal.style.top = top + 'px';
         }
         
         function closeModal(modalId) {
@@ -460,11 +514,26 @@
             for (const [buttonId, modalId] of Object.entries(actionButtons)) {
                 const button = document.getElementById(buttonId);
                 if (button) {
-                    button.addEventListener('click', () => openModal(modalId));
+                    button.addEventListener('click', (event) => {
+                        openModal(modalId, event.target.closest('button'));
+                    });
                 }
             }
             
-            // No backdrop click-to-close since there's no dark overlay
+            // Add click-away functionality to close modals
+            document.addEventListener('click', (event) => {
+                // Check if any modal is open
+                const openModal = document.querySelector('.modal-backdrop.show');
+                if (openModal) {
+                    // Check if the click was outside the modal and not on an action button
+                    const isClickInsideModal = openModal.contains(event.target);
+                    const isClickOnActionButton = event.target.closest('.action-btn');
+                    
+                    if (!isClickInsideModal && !isClickOnActionButton) {
+                        closeModal(openModal.id);
+                    }
+                }
+            });
             
             // Setup modal button event listeners
             setupModalButtonListeners();
@@ -480,7 +549,11 @@
             const modalBuyFlying = document.getElementById('modal-buy-flying-ant');
             const modalExpandFlying = document.getElementById('modal-expand-flying-ants');
             const modalUnlockCar = document.getElementById('modal-unlock-car-ants');
+            const modalBuyCar = document.getElementById('modal-buy-car-ant');
+            const modalExpandCar = document.getElementById('modal-expand-car-ants');
             const modalUnlockFire = document.getElementById('modal-unlock-fire-ants');
+            const modalBuyFire = document.getElementById('modal-buy-fire-ant');
+            const modalExpandFire = document.getElementById('modal-expand-fire-ants');
             
             // Upgrades Modal Buttons
             const modalUpgradeFood = document.getElementById('modal-upgrade-food');
@@ -504,7 +577,11 @@
             if (modalBuyFlying) modalBuyFlying.addEventListener('click', () => simulateClick('buy-flying-ant'));
             if (modalExpandFlying) modalExpandFlying.addEventListener('click', () => simulateClick('expand-flying-ants'));
             if (modalUnlockCar) modalUnlockCar.addEventListener('click', () => simulateClick('unlock-car-ants'));
+            if (modalBuyCar) modalBuyCar.addEventListener('click', () => simulateClick('buy-car-ant'));
+            if (modalExpandCar) modalExpandCar.addEventListener('click', () => simulateClick('expand-car-ants'));
             if (modalUnlockFire) modalUnlockFire.addEventListener('click', () => simulateClick('unlock-fire-ants'));
+            if (modalBuyFire) modalBuyFire.addEventListener('click', () => simulateClick('buy-fire-ant'));
+            if (modalExpandFire) modalExpandFire.addEventListener('click', () => simulateClick('expand-fire-ants'));
             
             if (modalUpgradeFood) modalUpgradeFood.addEventListener('click', () => simulateClick('upgrade-food'));
             if (modalUpgradeSpeed) modalUpgradeSpeed.addEventListener('click', () => simulateClick('upgrade-speed'));
@@ -515,16 +592,22 @@
             
             if (modalToggleSound) modalToggleSound.addEventListener('click', () => simulateClick('toggle-sound'));
             if (modalDailyChallenge) modalDailyChallenge.addEventListener('click', () => {
-                if (IdleAnts.DailyChallengeManager) {
-                    IdleAnts.DailyChallengeManager.showModal();
+                console.log('Daily challenge button clicked');
+                if (IdleAnts.game && IdleAnts.game.dailyChallengeManager) {
+                    console.log('Found dailyChallengeManager, calling showModal');
+                    IdleAnts.game.dailyChallengeManager.showModal();
+                } else {
+                    console.log('dailyChallengeManager not found');
                 }
                 closeModal('settings-modal');
             });
         }
         
         function simulateClick(originalButtonId) {
+            console.log(`simulateClick called for: ${originalButtonId}`);
             const originalButton = document.getElementById(originalButtonId);
             if (originalButton) {
+                console.log(`Found button ${originalButtonId}, clicking it`);
                 originalButton.click();
                 // Update modal content after click
                 setTimeout(() => {
@@ -533,6 +616,8 @@
                         updateModalContent(openModal.id);
                     }
                 }, 100);
+            } else {
+                console.log(`Button ${originalButtonId} not found!`);
             }
         }
         
@@ -551,7 +636,11 @@
                     { modal: 'modal-flying-ant-cost', original: 'flying-ant-cost' },
                     { modal: 'modal-expand-flying-cost', original: 'expand-flying-cost' },
                     { modal: 'modal-car-ant-unlock-cost', original: 'car-ant-unlock-cost' },
-                    { modal: 'modal-fire-ant-unlock-cost', original: 'fire-ant-unlock-cost' }
+                    { modal: 'modal-car-ant-cost', original: 'car-ant-cost' },
+                    { modal: 'modal-expand-car-ant-cost', original: 'expand-car-ant-cost' },
+                    { modal: 'modal-fire-ant-unlock-cost', original: 'fire-ant-unlock-cost' },
+                    { modal: 'modal-fire-ant-cost', original: 'fire-ant-cost' },
+                    { modal: 'modal-expand-fire-ant-cost', original: 'expand-fire-ant-cost' }
                 ],
                 'upgrades-modal': [
                     { modal: 'modal-food-upgrade-cost', original: 'food-upgrade-cost' },
@@ -560,8 +649,7 @@
                 ],
                 'automation-modal': [
                     { modal: 'modal-autofeeder-cost', original: 'autofeeder-cost' },
-                    { modal: 'modal-autofeeder-upgrade-cost', original: 'autofeeder-upgrade-cost' },
-                    { modal: 'modal-autofeeder-level', original: 'autofeeder-level' }
+                    { modal: 'modal-autofeeder-upgrade-cost', original: 'autofeeder-upgrade-cost' }
                 ],
                 'settings-modal': []
             };

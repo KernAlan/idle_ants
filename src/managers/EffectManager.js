@@ -188,4 +188,16 @@ IdleAnts.Managers.EffectManager = class {
         
         animate();
     }
+    
+    reset() {
+        // Clear all active effects
+        this.effects.forEach(effect => {
+            if (effect.parent) {
+                effect.parent.removeChild(effect);
+            }
+        });
+        this.effects = [];
+        
+        console.log('EffectManager reset completed');
+    }
 } 

@@ -535,6 +535,16 @@ IdleAnts.Game = class {
                 return antTotal;
             }
         };
+
+        // Debug function to test queen damage
+        window.damageQueen = (damage) => {
+            if (this.entityManager && this.entityManager.entities.queen) {
+                console.log('Manually damaging queen for testing...');
+                this.entityManager.entities.queen.takeDamage(damage || 10);
+            } else {
+                console.log('No queen found to damage');
+            }
+        };
     }
     
     setupMinimap() {
@@ -983,11 +993,40 @@ IdleAnts.Game = class {
         }
     }
 
+    onQueenDeath() {
+        console.log('Queen has died - triggering game over');
+        
+        // Stop all music
+        if (IdleAnts.AudioManager) {
+            IdleAnts.AudioManager.stopBGM();
+        }
+        
+        // Play game over music
+        if (IdleAnts.AudioManager && IdleAnts.AudioAssets && IdleAnts.AudioAssets.BGM && IdleAnts.AudioAssets.BGM.GAME_OVER_THEME) {
+            IdleAnts.AudioManager.playBGM(IdleAnts.AudioAssets.BGM.GAME_OVER_THEME.id);
+        }
+        
+        // Show lose screen
+        if (this.uiManager) {
+            this.uiManager.showLoseScreen();
+        }
+        
+        // Transition to lose state
+        this.transitionToState(IdleAnts.Game.States.LOSE);
+    }
+
     onColonyWiped() {
         if (this.uiManager) {
             this.uiManager.showLoseScreen();
         }
         this.transitionToState(IdleAnts.Game.States.LOSE);
+    }
+    
+    restartGame() {
+        console.log('Restarting game by reloading page...');
+        
+        // Simple and reliable restart - just reload the page
+        window.location.reload();
     }
     
     // Toggle pause state
@@ -1099,6 +1138,7 @@ IdleAnts.Game = class {
     }
     
     upgradeFood() {
+        console.log("upgradeFood() called in Game.js");
         const upgradeCost = this.resourceManager.stats.foodUpgradeCost;
         if (this.resourceManager.canAfford(upgradeCost)) {
             this.resourceManager.spendFood(upgradeCost);
@@ -1153,6 +1193,7 @@ IdleAnts.Game = class {
     }
     
     upgradeSpeed() {
+        console.log("upgradeSpeed() called in Game.js");
         const speedUpgradeCost = this.resourceManager.stats.speedUpgradeCost;
         if (this.resourceManager.canAfford(speedUpgradeCost)) {
             // Handle resource management
@@ -1181,6 +1222,7 @@ IdleAnts.Game = class {
     }
     
     upgradeStrength() {
+        console.log("upgradeStrength() called in Game.js");
         const strengthUpgradeCost = this.resourceManager.stats.strengthUpgradeCost;
         if (this.resourceManager.canAfford(strengthUpgradeCost)) {
             // Handle resource management

@@ -358,9 +358,14 @@ IdleAnts.Managers.ResourceManager = class {
         return false;
     }
     
+    canExpandFlyingAntCapacity() {
+        const expandFlyingCost = Math.floor(this.stats.expandCost * 1.5);
+        return this.stats.flyingAntsUnlocked && this.canAfford(expandFlyingCost);
+    }
+
     expandFlyingAntCapacity() {
         const expandFlyingCost = Math.floor(this.stats.expandCost * 1.5);
-        if (this.stats.flyingAntsUnlocked && this.canAfford(expandFlyingCost)) {
+        if (this.canExpandFlyingAntCapacity()) {
             this.spendFood(expandFlyingCost);
             this.stats.maxFlyingAnts += 2; // Add fewer flying ants per upgrade
             return true;
@@ -501,7 +506,6 @@ IdleAnts.Managers.ResourceManager = class {
             this.spendFood(this.stats.carAntUnlockCost);
             this.stats.carAntsUnlocked = true;
             this.stats.maxCarAnts = 2; // Unlock a small initial capacity, e.g., 2
-            // console.log("Car Ants Unlocked!");
             // Potentially update UI or trigger game event here
             return true;
         }
@@ -598,5 +602,68 @@ IdleAnts.Managers.ResourceManager = class {
             return true;
         }
         return false;
+    }
+    
+    resetToDefaults() {
+        // Reset resources
+        this.resources = {
+            food: IdleAnts.Config.debug ? 1000000 : 0,
+            displayFood: IdleAnts.Config.debug ? 1000000 : 0
+        };
+        
+        // Reset stats to initial values
+        this.stats = {
+            ants: 1,
+            maxAnts: 10,
+            flyingAnts: 0,
+            maxFlyingAnts: 0,
+            flyingAntsUnlocked: false,
+            foodPerClick: 1,
+            foodPerSecond: 0,
+            antCost: 10,
+            flyingAntCost: 100,
+            flyingAntUnlockCost: 500,
+            foodUpgradeCost: 1000,
+            expandCost: 100,
+            foodMultiplier: 1,
+            speedUpgradeCost: 75,
+            speedMultiplier: 1,
+            strengthUpgradeCost: 50,
+            strengthMultiplier: 1,
+            foodTier: 1,
+            maxFoodTier: 9,
+            autofeederUnlocked: false,
+            autofeederLevel: 0,
+            maxAutofeederLevel: 10,
+            autofeederCost: 500,
+            autofeederUpgradeCost: 500,
+            autofeederBaseFoodAmount: 10,
+            autofeederInterval: 600,
+            queenUnlocked: true,
+            hasQueen: true,
+            queenUnlockCost: 1000,
+            queenCost: 2000,
+            queenUpgradeLevel: 0,
+            maxQueenUpgradeLevel: 5,
+            queenUpgradeCost: 2000,
+            queenLarvaeCapacity: 1,
+            queenLarvaeRate: 60,
+            carAntsUnlocked: false,
+            carAnts: 0,
+            maxCarAnts: 0,
+            carAntCost: 2500,
+            carAntUnlockCost: 10000,
+            fireAntsUnlocked: false,
+            fireAnts: 0,
+            maxFireAnts: 0,
+            fireAntCost: 5000,
+            fireAntUnlockCost: 20000
+        };
+        
+        // Reset tracking arrays
+        this.foodGainHistory = [];
+        this.lastFoodUpdate = Date.now();
+        
+        console.log('ResourceManager reset to defaults');
     }
 } 

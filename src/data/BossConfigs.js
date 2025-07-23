@@ -227,7 +227,7 @@ IdleAnts.Data.BossConfigs = {
             dramaPause: true,
             arrivalText: "A GIANT HORNET DESCENDS",
             bossTitle: "◆ MINIBOSS ◆",
-            bossName: "MURDER HORNET",
+            bossName: "GIANT HORNET",
             bossSubtitle: "The Ants' Worst Nightmare",
             titleColor: "#FF8C00",
             nameColor: "#FFA500",

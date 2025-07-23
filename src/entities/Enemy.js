@@ -174,14 +174,46 @@ IdleAnts.Entities.Enemy = class extends PIXI.Sprite {
 
     update(ants){
         // Acquire or validate target ant within perception range
+        // Prioritize queen over regular ants
         if(!this.targetAnt || this.targetAnt.isDead){
             this.targetAnt=null;
-            let nearest=null,distSq=Infinity;
-            ants.forEach(a=>{
-                const dx=a.x-this.x; const dy=a.y-this.y; const d=dx*dx+dy*dy;
-                if(d<distSq && Math.sqrt(d)<=this.perceptionRange){nearest=a;distSq=d;}
+            let nearest=null, distSq=Infinity;
+            let queenTarget=null, queenDistSq=Infinity;
+            
+            // Check all potential targets (ants + queen)
+            const allTargets = [...ants];
+            
+            // Add queen to target list if available
+            if (IdleAnts.app && IdleAnts.app.entityManager && IdleAnts.app.entityManager.entities.queen && 
+                !IdleAnts.app.entityManager.entities.queen.isDead) {
+                allTargets.push(IdleAnts.app.entityManager.entities.queen);
+            }
+            
+            allTargets.forEach(target => {
+                const dx = target.x - this.x;
+                const dy = target.y - this.y;
+                const d = dx * dx + dy * dy;
+                const dist = Math.sqrt(d);
+                
+                if (dist <= this.perceptionRange) {
+                    // Prioritize queen if she's within range
+                    if (target.isQueen) {
+                        if (d < queenDistSq) {
+                            queenTarget = target;
+                            queenDistSq = d;
+                        }
+                    } else {
+                        // Regular ant targeting
+                        if (d < distSq) {
+                            nearest = target;
+                            distSq = d;
+                        }
+                    }
+                }
             });
-            if(nearest) this.targetAnt=nearest;
+            
+            // Prefer queen over regular ants if both are available
+            this.targetAnt = queenTarget || nearest;
         }
 
         // If locked on, adjust direction towards target

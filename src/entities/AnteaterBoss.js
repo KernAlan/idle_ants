@@ -225,15 +225,78 @@ IdleAnts.Entities.AnteaterBoss = class extends PIXI.Container {
             }
         }
 
-        // --- Standard Enemy Logic (copied from Enemy.js and adapted) ---
-        if(!this.targetAnt || this.targetAnt.isDead){
-            this.targetAnt=null;
-            let nearest=null,distSq=Infinity;
-            ants.forEach(a=>{
-                const dx=a.x-this.x; const dy=a.y-this.y; const d=dx*dx+dy*dy;
-                if(d<distSq && Math.sqrt(d)<=this.perceptionRange){nearest=a;distSq=d;}
-            });
-            if(nearest) this.targetAnt=nearest;
+        // --- Dynamic Enemy Logic (adapted for final boss) ---
+        let nearestAnt=null, antDistSq=Infinity;
+        let queenTarget=null, queenDistSq=Infinity;
+        let attackingAnt=null, attackingDistSq=Infinity;
+        
+        // Check all potential targets (ants + queen)
+        const allTargets = [...ants];
+        
+        // Add queen to target list if available
+        if (IdleAnts.app && IdleAnts.app.entityManager && IdleAnts.app.entityManager.entities.queen && 
+            !IdleAnts.app.entityManager.entities.queen.isDead) {
+            allTargets.push(IdleAnts.app.entityManager.entities.queen);
+        }
+        
+        allTargets.forEach(target => {
+            if (target.isDead) return; // Skip dead targets
+            
+            const dx = target.x - this.x;
+            const dy = target.y - this.y;
+            const d = dx * dx + dy * dy;
+            const dist = Math.sqrt(d);
+            
+            if (dist <= this.perceptionRange) {
+                if (target.isQueen) {
+                    // Track queen as potential target
+                    if (d < queenDistSq) {
+                        queenTarget = target;
+                        queenDistSq = d;
+                    }
+                } else {
+                    // Check if this ant is attacking us (has us as target)
+                    const isAttackingUs = target.targetEnemy === this;
+                    
+                    if (isAttackingUs && d < attackingDistSq) {
+                        // Prioritize ants that are attacking us
+                        attackingAnt = target;
+                        attackingDistSq = d;
+                    } else if (d < antDistSq) {
+                        // Track nearest ant as fallback
+                        nearestAnt = target;
+                        antDistSq = d;
+                    }
+                }
+            }
+        });
+        
+        // Priority: 1) Ants attacking us, 2) Queen (always pursue if available), 3) Nearest ant
+        const bestTarget = attackingAnt || queenTarget || nearestAnt;
+        
+        // Always switch to attacking ants if they exist
+        if (attackingAnt && attackingAnt !== this.targetAnt) {
+            this.targetAnt = attackingAnt;
+        }
+        // If no attackers but queen is available, always target queen
+        else if (!attackingAnt && queenTarget && this.targetAnt !== queenTarget) {
+            this.targetAnt = queenTarget;
+        }
+        // Fallback to nearest ant only if no queen available
+        else if (!attackingAnt && !queenTarget && nearestAnt && this.targetAnt !== nearestAnt) {
+            this.targetAnt = nearestAnt;
+        }
+        
+        // Clear target if current target is dead or out of range
+        if (this.targetAnt && (this.targetAnt.isDead || 
+            Math.sqrt((this.targetAnt.x - this.x) ** 2 + (this.targetAnt.y - this.y) ** 2) > this.perceptionRange)) {
+            this.targetAnt = null;
+        }
+        
+        // Special case: If we have no target but queen exists anywhere, pursue her
+        if (!this.targetAnt && IdleAnts.app && IdleAnts.app.entityManager && 
+            IdleAnts.app.entityManager.entities.queen && !IdleAnts.app.entityManager.entities.queen.isDead) {
+            this.targetAnt = IdleAnts.app.entityManager.entities.queen;
         }
 
         if(this.targetAnt && !this.targetAnt.isDead){

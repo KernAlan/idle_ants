@@ -11,6 +11,15 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
         // Queen-specific properties
         this.isQueen = true;
         
+        // Queen health system - high HP as she's the most important
+        this.maxHp = 1000;
+        this.hp = this.maxHp;
+        this.healthBarTimer = 0;
+        
+        // Make queen targetable by enemies
+        this.isTargetable = true;
+        this.targetPriority = 10; // High priority target for enemies
+        
         // Larvae production settings
         this.baseProductionRate = 30 * 60; // Base rate: 30 seconds at 60fps (0.5 minute) - FASTER!
         this.productionVariance = 15 * 60; // Variance: +/- 15 seconds (0.25 minute)
@@ -121,6 +130,14 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
         
         // Update rotation based on movement direction
         this.updateRotation();
+        
+        // Update health bar visibility
+        if (this.healthBarTimer > 0) {
+            this.healthBarTimer--;
+            if (this.healthBarTimer === 0 && this.healthBarContainer) {
+                this.healthBarContainer.visible = false;
+            }
+        }
         
         // Perform animation
         this.performAnimation();
@@ -370,5 +387,84 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
             const rotationSpeed = 0.05; // Adjust this for smoother/slower rotation
             this.rotation += angleDiff * rotationSpeed;
         }
+    }
+    
+    // Queen damage handling
+    takeDamage(dmg) {
+        console.log(`Queen taking ${dmg} damage! HP: ${this.hp} -> ${this.hp - dmg}`);
+        this.hp -= dmg;
+        this.healthBarTimer = 180; // Show health bar for 3 seconds
+        this.updateHealthBar();
+        
+        // Create visual feedback
+        if (IdleAnts.app && IdleAnts.app.effectManager) {
+            IdleAnts.app.effectManager.createSpawnEffect(this.x, this.y - 20, true);
+        }
+        
+        // Queen death triggers game over
+        if (this.hp <= 0) {
+            this.die();
+        }
+    }
+    
+    // Queen death handling
+    die() {
+        console.log('Queen has died! Game Over!');
+        
+        // Trigger lose condition in game
+        if (IdleAnts.game && typeof IdleAnts.game.onQueenDeath === 'function') {
+            IdleAnts.game.onQueenDeath();
+        }
+        
+        // Remove from world
+        if (this.parent) {
+            this.parent.removeChild(this);
+        }
+        if (this.healthBarContainer && this.healthBarContainer.parent) {
+            this.healthBarContainer.parent.removeChild(this.healthBarContainer);
+        }
+        
+        this.isDead = true;
+    }
+    
+    // Update health bar display
+    updateHealthBar() {
+        if (!this.healthBarContainer) {
+            this.createHealthBar();
+        }
+        
+        const ratio = Math.max(this.hp, 0) / this.maxHp;
+        
+        // Clear and redraw health bar
+        this.healthBarFg.clear();
+        this.healthBarFg.beginFill(ratio > 0.5 ? 0x00FF00 : ratio > 0.25 ? 0xFFFF00 : 0xFF0000);
+        this.healthBarFg.drawRect(-10, 0, 20 * ratio, 3);
+        this.healthBarFg.endFill();
+        
+        // Show health bar
+        this.healthBarContainer.visible = true;
+    }
+    
+    // Create health bar for queen
+    createHealthBar() {
+        // Create separate container for health bar (not affected by rotation)
+        this.healthBarContainer = new PIXI.Container();
+        if (IdleAnts.app && IdleAnts.app.worldContainer) {
+            IdleAnts.app.worldContainer.addChild(this.healthBarContainer);
+        } else {
+            this.addChild(this.healthBarContainer);
+        }
+        this.healthBarContainer.visible = false;
+        
+        // Background bar
+        this.healthBarBg = new PIXI.Graphics();
+        this.healthBarBg.beginFill(0x000000, 0.6);
+        this.healthBarBg.drawRect(-10, 0, 20, 3);
+        this.healthBarBg.endFill();
+        this.healthBarContainer.addChild(this.healthBarBg);
+        
+        // Foreground bar
+        this.healthBarFg = new PIXI.Graphics();
+        this.healthBarContainer.addChild(this.healthBarFg);
     }
 }; 

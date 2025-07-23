@@ -1320,4 +1320,91 @@ IdleAnts.Managers.EntityManager = class {
         this.miniboss1Triggered = false;
         this.miniboss2Triggered = false;
     }
+    
+    // Reset all entities and manager state
+    reset() {
+        // Clear all entities
+        this.entities.ants.forEach(ant => {
+            if (ant.parent) ant.parent.removeChild(ant);
+            if (ant.healthBarContainer && ant.healthBarContainer.parent) {
+                ant.healthBarContainer.parent.removeChild(ant.healthBarContainer);
+            }
+        });
+        this.entities.flyingAnts.forEach(ant => {
+            if (ant.parent) ant.parent.removeChild(ant);
+            if (ant.healthBarContainer && ant.healthBarContainer.parent) {
+                ant.healthBarContainer.parent.removeChild(ant.healthBarContainer);
+            }
+        });
+        this.entities.carAnts.forEach(ant => {
+            if (ant.parent) ant.parent.removeChild(ant);
+            if (ant.healthBarContainer && ant.healthBarContainer.parent) {
+                ant.healthBarContainer.parent.removeChild(ant.healthBarContainer);
+            }
+        });
+        this.entities.fireAnts.forEach(ant => {
+            if (ant.parent) ant.parent.removeChild(ant);
+            if (ant.healthBarContainer && ant.healthBarContainer.parent) {
+                ant.healthBarContainer.parent.removeChild(ant.healthBarContainer);
+            }
+        });
+        this.entities.larvae.forEach(larva => {
+            if (larva.parent) larva.parent.removeChild(larva);
+        });
+        this.entities.foods.forEach(food => {
+            if (food.parent) food.parent.removeChild(food);
+        });
+        this.entities.enemies.forEach(enemy => {
+            if (enemy.parent) enemy.parent.removeChild(enemy);
+            if (enemy.healthBarContainer && enemy.healthBarContainer.parent) {
+                enemy.healthBarContainer.parent.removeChild(enemy.healthBarContainer);
+            }
+        });
+        
+        // Remove queen
+        if (this.entities.queen) {
+            if (this.entities.queen.parent) this.entities.queen.parent.removeChild(this.entities.queen);
+            if (this.entities.queen.healthBarContainer && this.entities.queen.healthBarContainer.parent) {
+                this.entities.queen.healthBarContainer.parent.removeChild(this.entities.queen.healthBarContainer);
+            }
+        }
+        
+        // Remove boss
+        if (this.boss) {
+            if (this.boss.parent) this.boss.parent.removeChild(this.boss);
+            if (this.boss.healthBarContainer && this.boss.healthBarContainer.parent) {
+                this.boss.healthBarContainer.parent.removeChild(this.boss.healthBarContainer);
+            }
+        }
+        
+        // Reset arrays
+        this.entities = {
+            ants: [],
+            flyingAnts: [],
+            carAnts: [],
+            fireAnts: [],
+            larvae: [],
+            foods: [],
+            enemies: [],
+            queen: null
+        };
+        
+        // Reset boss tracking
+        this.bossTriggered = false;
+        this.bossDefeated = false;
+        this.boss = null;
+        this.miniboss1Triggered = false;
+        this.miniboss2Triggered = false;
+        
+        // Reset timers
+        this.autofeederTimer = 0;
+        this.enemySpawnTimer = 0;
+        this.foodSpawnTimer = 0;
+        
+        // Create initial ant and queen
+        this.createInitialAnt();
+        this.createQueenAnt();
+        
+        console.log('EntityManager reset completed');
+    }
 } 

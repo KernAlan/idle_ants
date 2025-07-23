@@ -529,20 +529,7 @@ IdleAnts.Managers.DailyChallengeManager = class {
     }
     
     createChallengeUI() {
-        // Create trigger button
-        const triggerButton = document.createElement('div');
-        triggerButton.id = 'challenge-trigger';
-        triggerButton.className = 'challenge-trigger';
-        triggerButton.innerHTML = '🎯';
-        triggerButton.title = 'Daily Challenges';
-        
-        // Position button in top-right corner
-        document.body.appendChild(triggerButton);
-        
-        // Add click handler to trigger button
-        triggerButton.addEventListener('click', () => {
-            this.showModal();
-        });
+        // Floating trigger button removed - now only accessible via settings modal
         
         // Create modal backdrop
         const modalBackdrop = document.createElement('div');
@@ -568,7 +555,6 @@ IdleAnts.Managers.DailyChallengeManager = class {
         modalBackdrop.appendChild(modal);
         
         // Add event listeners
-        triggerButton.addEventListener('click', () => this.openModal());
         modalBackdrop.addEventListener('click', (e) => {
             if (e.target === modalBackdrop) {
                 this.closeModal();
@@ -919,18 +905,9 @@ IdleAnts.Managers.DailyChallengeManager = class {
     
     updateChallengeUI() {
         const challengeList = document.getElementById('challenge-list');
-        const triggerButton = document.getElementById('challenge-trigger');
-        if (!challengeList || !triggerButton) return;
+        if (!challengeList) return;
         
         challengeList.innerHTML = '';
-        
-        // Update trigger button appearance
-        const hasCompletedChallenges = this.currentChallenges.some(challenge => challenge.completed && !challenge.claimed);
-        if (hasCompletedChallenges) {
-            triggerButton.classList.add('has-rewards');
-        } else {
-            triggerButton.classList.remove('has-rewards');
-        }
         
         // Show challenges if any exist
         if (this.currentChallenges.length === 0) {
