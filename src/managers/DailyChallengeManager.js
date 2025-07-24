@@ -266,6 +266,9 @@ IdleAnts.Managers.DailyChallengeManager = class {
         this.maxSavedFood = 0;
         this.precisionActions = 0;
         
+        // Golden ant tracking
+        this.goldenAntSpawned = false;
+        
         // Modal state
         this.isModalOpen = false;
         
@@ -502,6 +505,9 @@ IdleAnts.Managers.DailyChallengeManager = class {
             if (challenge.progress >= challenge.target) {
                 challenge.completed = true;
                 this.showChallengeCompletedNotification(challenge);
+                
+                // Check if all challenges are completed
+                this.checkAllChallengesComplete();
             }
             
             this.updateChallengeUI();
@@ -509,6 +515,115 @@ IdleAnts.Managers.DailyChallengeManager = class {
         }
     }
     
+    checkAllChallengesComplete() {
+        // Check if all challenges are completed
+        const allCompleted = this.currentChallenges.length > 0 && 
+                           this.currentChallenges.every(challenge => challenge.completed);
+        
+        if (allCompleted && !this.goldenAntSpawned) {
+            this.spawnGoldenAnt();
+        }
+    }
+    
+    spawnGoldenAnt() {
+        if (this.goldenAntSpawned) return;
+        
+        this.goldenAntSpawned = true;
+        
+        // Show epic notification
+        this.showGoldenAntNotification();
+        
+        // Spawn the golden ant through the entity manager
+        if (IdleAnts.game && IdleAnts.game.entityManager) {
+            IdleAnts.game.entityManager.createGoldenAnt();
+            
+            // Update resource manager stats
+            IdleAnts.game.resourceManager.stats.ants += 1;
+            
+            console.log('🌟 GOLDEN ANT SPAWNED! All daily challenges completed!');
+        }
+    }
+    
+    showGoldenAntNotification() {
+        // Create epic golden ant notification
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #FFD700, #FFA500, #FFD700);
+            color: #000;
+            padding: 30px;
+            border-radius: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            z-index: 20000;
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.8);
+            border: 3px solid #FFF;
+            animation: goldenPulse 2s infinite alternate;
+        `;
+        
+        notification.innerHTML = `
+            <div style="font-size: 48px; margin-bottom: 10px;">👑</div>
+            <div>ULTIMATE ACHIEVEMENT!</div>
+            <div style="font-size: 18px; margin: 10px 0;">All Daily Challenges Complete</div>
+            <div style="font-size: 32px; color: #FFD700; text-shadow: 2px 2px 4px #000;">🌟 GOLDEN ANT SPAWNED! 🌟</div>
+            <div style="font-size: 14px; margin-top: 15px; opacity: 0.8;">The legendary ant with ultimate power!</div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Add pulse animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes goldenPulse {
+                0% { transform: translate(-50%, -50%) scale(1); }
+                100% { transform: translate(-50%, -50%) scale(1.05); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                document.body.removeChild(notification);
+            }
+            if (style.parentNode) {
+                document.head.removeChild(style);
+            }
+        }, 5000);
+        
+        // Play special sound if audio manager exists
+        if (IdleAnts.AudioManager) {
+            // Create golden victory sound effect
+            try {
+                const audioContext = IdleAnts.AudioManager.audioContext;
+                if (audioContext) {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+                    oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.2); // E5
+                    oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.4); // G5
+                    oscillator.frequency.setValueAtTime(1046.50, audioContext.currentTime + 0.6); // C6
+                    
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 1);
+                }
+            } catch (error) {
+                console.log('Could not play golden ant sound:', error);
+            }
+        }
+    }
+
     claimReward(challengeId) {
         const challenge = this.currentChallenges.find(c => c.id === challengeId);
         if (challenge && challenge.completed && !challenge.claimed) {
@@ -525,6 +640,9 @@ IdleAnts.Managers.DailyChallengeManager = class {
             // Update UI
             this.updateChallengeUI();
             // this.saveData(); // Disabled for now
+            
+            // Check if all challenges are now claimed (and completed)
+            this.checkAllChallengesComplete();
         }
     }
     

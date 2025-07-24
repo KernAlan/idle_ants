@@ -13,10 +13,10 @@ IdleAnts.Entities.AnteaterBoss = class extends PIXI.Container {
         this.maxHp = 20000;
         this.hp = this.maxHp;
         this.attackDamage = 200;
-        this.attackRange = 125; // Increased range proportional to size (100 * 1.25)
+        this.attackRange = 200; // Doubled range to match 2x size
         this.attackCooldown = 50;
         this._attackTimer = 0;
-        this.perceptionRange = 562; // Increased perception proportional to size (450 * 1.25)
+        this.perceptionRange = 900; // Doubled perception to match 2x size
         this.targetAnt = null;
         this.lastAttacker = null;
         this.foodValue = 5000;
@@ -27,8 +27,8 @@ IdleAnts.Entities.AnteaterBoss = class extends PIXI.Container {
         this.x = mapBounds.width / 2; // Center horizontally
         this.y = 150; // Near the top of the map for true invasion from north
         
-        // Make the Anteater HUGE - 1.25x bigger
-        this.scale.set(1.25, 1.25);
+        // Make the Anteater MASSIVE - 2x bigger
+        this.scale.set(2.0, 2.0);
         
         // --- Build the Animated Sprite ---
         this.body = new PIXI.Sprite(textures.body);
@@ -52,6 +52,10 @@ IdleAnts.Entities.AnteaterBoss = class extends PIXI.Container {
         });
         
         this.addChild(this.body); // Body on top
+
+        // --- Make the Anteater MORE REALISTIC ---
+        // Add a shadow effect for depth
+        this.createShadow();
 
         // --- Health Bar & Interactivity ---
         this.createHealthBar();
@@ -139,6 +143,17 @@ IdleAnts.Entities.AnteaterBoss = class extends PIXI.Container {
         this.healthBarTimer=1800;
         this.healthBarContainer.x = this.x;
         this.healthBarContainer.y = this.y - 20;
+    }
+    
+    
+    createShadow() {
+        // Create a dark shadow beneath the anteater
+        this.shadow = new PIXI.Graphics();
+        this.shadow.beginFill(0x000000, 0.3);
+        this.shadow.drawEllipse(0, 0, 60, 30);
+        this.shadow.endFill();
+        this.shadow.position.y = 40;
+        this.addChildAt(this.shadow, 0); // Add shadow at bottom layer
     }
 
     takeDamage(dmg, attacker = null){

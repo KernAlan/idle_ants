@@ -169,6 +169,31 @@ IdleAnts.Managers.EntityManager = class {
         }
     }
     
+    createGoldenAnt() {
+        // Check if nest position is available
+        if (!this.nestPosition || this.nestPosition.x === undefined || this.nestPosition.y === undefined) {
+            console.error("EntityManager: Nest position not available for golden ant creation");
+            return;
+        }
+        
+        // Spawn golden ant at nest position - ultimate reward!
+        const goldenAnt = new IdleAnts.Entities.GoldenAnt(
+            this.nestPosition.x,
+            this.nestPosition.y,
+            this.assetManager.getTexture('ant')
+        );
+        
+        this.entitiesContainers.ants.addChild(goldenAnt);
+        this.entities.ants.push(goldenAnt);
+        
+        // Add epic spawning effect
+        if (this.effectManager) {
+            this.effectManager.createSpawnEffect(goldenAnt.x, goldenAnt.y);
+        }
+        
+        return goldenAnt;
+    }
+    
     createFlyingAnt() {
         // Create the flying ant with nestPosition as object reference
         const flyingAnt = new IdleAnts.Entities.FlyingAnt(
