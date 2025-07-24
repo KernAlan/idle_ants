@@ -22,7 +22,7 @@ IdleAnts.Entities.GiantHornetBoss = class extends PIXI.Container {
         
         // Unique Giant Hornet properties
         this.diveBombTimer = 0;
-        this.diveBombCooldown = 240; // Dive bomb every 4 seconds
+        this.diveBombCooldown = 120; // Dive bomb every 2 seconds (much more frequent)
         this.isDiveBombing = false;
         this.diveBombTarget = null;
         this.diveBombSpeed = 4.0;
@@ -35,15 +35,15 @@ IdleAnts.Entities.GiantHornetBoss = class extends PIXI.Container {
         this.patrolTimer = 0;
         this.patrolTarget = { x: 0, y: 0 }; // Current patrol destination
         this.isPatrolling = true; // Whether moving to patrol point
-        this.speed = 2.8; // Increased base speed for zooming
-        this.maxSpeed = 4.5; // Maximum speed when zooming to targets
+        this.speed = 4.3; // Much faster base speed (+1.5)
+        this.maxSpeed = 6.0; // Increased maximum speed when zooming to targets
         this.isLanded = false; // Track if hornet has landed to attack
         this.landingTimer = 0;
         this.maxLandingTime = 180; // 3 seconds at 60fps - stay longer to attack
         
         // Random zoom-off behavior
-        this.zoomOffChance = 0.08; // 8% chance to zoom off instead of attacking (much more aggressive)
-        this.swarmEscapeChance = 0.12; // 12% chance to escape when swarmed
+        this.zoomOffChance = 0.03; // 3% chance to zoom off instead of attacking (much more aggressive)
+        this.swarmEscapeChance = 0.10; // 10% chance to escape when swarmed
         this.isZoomingOff = false; // Track if currently zooming away
         this.zoomOffTimer = 0;
         this.zoomOffDuration = 120; // 2 seconds of zooming off
@@ -464,8 +464,8 @@ IdleAnts.Entities.GiantHornetBoss = class extends PIXI.Container {
         
         // Giant Hornet becomes more aggressive and faster when damaged
         if (this.hp < this.maxHp * 0.5) {
-            this.speed = 2.2;
-            this.diveBombCooldown = 180; // Dive bomb more frequently
+            this.speed = 5.0; // Even faster when damaged
+            this.diveBombCooldown = 90; // Dive bomb even more frequently (1.5 seconds)
             this.poisonCloudCooldown = 240; // Poison clouds more frequently
         }
         
@@ -790,11 +790,11 @@ IdleAnts.Entities.GiantHornetBoss = class extends PIXI.Container {
                     const dx = target.x - this.x;
                     const dy = target.y - this.y;
                     const dist = Math.sqrt(dx * dx + dy * dy);
-                    return dist <= 150; // Only count very close threats
+                    return dist <= 100; // Only count extremely close threats
                 }).length;
                 
-                // AGGRESSIVELY go after queen - much longer range, more threats tolerated
-                if (queenDist <= 500 && nearbyThreats <= 3) {
+                // EXTREMELY aggressive queen hunting - go after queen immediately unless heavily swarmed
+                if (queenDist <= 800 && nearbyThreats <= 5) {
                     this.targetAnt = queenTarget;
                 }
             }
