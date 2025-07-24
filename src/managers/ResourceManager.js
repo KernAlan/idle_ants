@@ -487,8 +487,11 @@ IdleAnts.Managers.ResourceManager = class {
         
         // Increase larvae capacity by 1 each level
         this.stats.queenLarvaeCapacity += 1;
-        // Queen HP will be implemented later
-        // console.log(`Queen upgraded to level ${this.stats.queenUpgradeLevel}`);
+        
+        // Update queen HP based on new level
+        if (IdleAnts.app && IdleAnts.app.entityManager && IdleAnts.app.entityManager.entities.queen) {
+            IdleAnts.app.entityManager.entities.queen.updateHPFromLevel();
+        }
         
         // Update upgrade cost
         this.updateQueenUpgradeCost();

@@ -109,17 +109,11 @@ IdleAnts.Entities.CarAnt = class extends IdleAnts.Entities.AntBase {
             const worldExhaustX = this.x + (exhaustOffsetX * Math.cos(angle) - exhaustOffsetY * Math.sin(angle)) * this.scale.x;
             const worldExhaustY = this.y + (exhaustOffsetX * Math.sin(angle) + exhaustOffsetY * Math.cos(angle)) * this.scale.y;
             
-            IdleAnts.app.effectManager.createEffect( // Using a generic effect for now
+            // Use spawn effect as exhaust (grey particle effect)
+            IdleAnts.app.effectManager.createSpawnEffect(
                 worldExhaustX,
                 worldExhaustY,
-                [0xAAAAAA, 0x888888], // Greyish colors
-                10, // particle count
-                0.3, // minSize
-                0.8, // maxSize
-                0.5, // minDuration
-                1.0, // maxDuration
-                { x: -0.5, y: 0 }, // velocity (slightly backwards)
-                0.1 // spread
+                0x888888 // Grey color for exhaust
             );
         }
     }

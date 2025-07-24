@@ -11,9 +11,9 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
         // Queen-specific properties
         this.isQueen = true;
         
-        // Queen health system - high HP as she's the most important
-        this.maxHp = 1000;
-        this.hp = this.maxHp;
+        // Queen health system - scales with level
+        this.baseMaxHp = 1000; // Base HP at level 0
+        this.updateHPFromLevel();
         this.healthBarTimer = 0;
         
         // Make queen targetable by enemies
@@ -466,5 +466,28 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
         // Foreground bar
         this.healthBarFg = new PIXI.Graphics();
         this.healthBarContainer.addChild(this.healthBarFg);
+    }
+    
+    // Update queen's HP based on her upgrade level
+    updateHPFromLevel() {
+        const queenLevel = IdleAnts.app && IdleAnts.app.resourceManager ? 
+            IdleAnts.app.resourceManager.stats.queenUpgradeLevel : 0;
+        
+        // Increase HP by 300 per level (1000 -> 1300 -> 1600 -> etc)
+        const newMaxHp = this.baseMaxHp + (queenLevel * 300);
+        
+        // If HP increased, maintain current HP percentage and add the increase
+        if (newMaxHp > this.maxHp) {
+            const hpIncrease = newMaxHp - this.maxHp;
+            this.maxHp = newMaxHp;
+            this.hp = Math.min(this.maxHp, this.hp + hpIncrease); // Add the HP increase
+        } else {
+            this.maxHp = newMaxHp;
+        }
+        
+        // Update health bar to show new values
+        if (this.healthBarContainer) {
+            this.updateHealthBar();
+        }
     }
 }; 

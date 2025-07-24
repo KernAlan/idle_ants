@@ -1124,22 +1124,22 @@ IdleAnts.Managers.EntityManager = class {
         }
         
         // ---------- MINIBOSS TRIGGERS ----------
-        // Miniboss 1: Carpenter Ant Queen at 25 ants
+        // Miniboss 1: Tarantula at 25 ants
         if (antTotal >= 25 && !this.miniboss1Triggered && !this.boss && !this.bossTriggered) {
             this.miniboss1Triggered = true;
             if(typeof IdleAnts.notify === 'function'){
-                IdleAnts.notify(`A rival Carpenter Ant Queen approaches with her guards!`, 'warning');
+                IdleAnts.notify(`A massive Tarantula emerges from its lair!`, 'warning');
             }
             setTimeout(() => {
                 if (IdleAnts.game && typeof IdleAnts.game.spawnBoss === 'function') {
-                    IdleAnts.game.spawnBoss('carpenter_ant_queen');
+                    IdleAnts.game.spawnBoss('tarantula');
                 }
             }, 2000);
             return; // Skip regular enemy spawning during miniboss intro
         }
         
-        // Miniboss 2: Giant Hornet at 45 ants
-        if (antTotal >= 45 && !this.miniboss2Triggered && !this.boss && !this.bossTriggered && this.miniboss1Triggered) {
+        // Miniboss 2: Giant Hornet at 5 ants (DEBUG)
+        if (antTotal >= 5 && !this.miniboss2Triggered && !this.boss && !this.bossTriggered) {
             this.miniboss2Triggered = true;
             if(typeof IdleAnts.notify === 'function'){
                 IdleAnts.notify(`A massive Japanese Giant Hornet descends from the sky!`, 'warning');
@@ -1268,8 +1268,8 @@ IdleAnts.Managers.EntityManager = class {
             bossInstance = new IdleAnts.Entities.AnteaterBoss(textures, this.mapBounds);
         }
         
-        // Apply configuration stats
-        this.applyBossStats(bossInstance, bossConfig.defaultStats);
+        // Note: Using entity-level properties instead of overriding with BossConfigs
+        // this.applyBossStats(bossInstance, bossConfig.defaultStats);
         
         // Set custom spawn position
         bossInstance.x = spawnPos.x;

@@ -142,8 +142,8 @@ IdleAnts.AudioManager = (function() {
             currentTrackIndex = (currentTrackIndex + 1) % currentPlaylist.length;
             const nextTrackId = currentPlaylist[currentTrackIndex];
             playBGMInternal(nextTrackId, false); // Don't reset playlist
-        } else if (bgmTrack && sounds[bgmTrack]) {
-            // Single track looping
+        } else if (bgmTrack && sounds[bgmTrack] && sounds[bgmTrack].loop !== false) {
+            // Single track looping (only if loop is not explicitly false)
             sounds[bgmTrack].audio.currentTime = 0;
             sounds[bgmTrack].audio.play().catch(e => {
                 console.warn(`Failed to loop track ${bgmTrack}:`, e);
@@ -202,7 +202,8 @@ IdleAnts.AudioManager = (function() {
                 // Reset playlist when manually changing tracks
                 currentPlaylist = null;
                 playlistLooping = false;
-                sound.audio.loop = true; // Enable native looping for single tracks
+                // Respect the loop setting from the asset definition
+                sound.audio.loop = sound.loop !== undefined ? sound.loop : true;
             } else {
                 sound.audio.loop = false; // Disable native looping for playlist tracks
             }

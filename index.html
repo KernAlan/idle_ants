@@ -414,7 +414,7 @@
     <script src="src/entities/HerculesBeetleEnemy.js"></script>
     <script src="src/entities/FrogEnemy.js"></script>
     '''    <script src="src/entities/AnteaterBoss.js"></script>
-    <script src="src/entities/CarpenterAntQueenBoss.js"></script>
+    <script src="src/entities/TarantulaBoss.js"></script>
     <script src="src/entities/GiantHornetBoss.js"></script>''
     <!-- Game Core -->
     <script src="src/Game.js"></script>
@@ -449,6 +449,12 @@
         
         // Modal System Functions
         function openModal(modalId, triggerElement) {
+            // First, close any currently open modal
+            const openModal = document.querySelector('.modal-backdrop.show');
+            if (openModal && openModal.id !== modalId) {
+                closeModal(openModal.id);
+            }
+            
             const modal = document.getElementById(modalId);
             if (modal) {
                 // Position modal near the trigger button
@@ -515,6 +521,7 @@
                 const button = document.getElementById(buttonId);
                 if (button) {
                     button.addEventListener('click', (event) => {
+                        event.stopPropagation(); // Prevent the click from bubbling to document
                         openModal(modalId, event.target.closest('button'));
                     });
                 }
@@ -525,11 +532,10 @@
                 // Check if any modal is open
                 const openModal = document.querySelector('.modal-backdrop.show');
                 if (openModal) {
-                    // Check if the click was outside the modal and not on an action button
+                    // Check if the click was outside the modal
                     const isClickInsideModal = openModal.contains(event.target);
-                    const isClickOnActionButton = event.target.closest('.action-btn');
                     
-                    if (!isClickInsideModal && !isClickOnActionButton) {
+                    if (!isClickInsideModal) {
                         closeModal(openModal.id);
                     }
                 }
@@ -569,29 +575,30 @@
             const modalDailyChallenge = document.getElementById('modal-daily-challenge');
             
             // Link modal buttons to original buttons
-            if (modalBuyAnt) modalBuyAnt.addEventListener('click', () => simulateClick('buy-ant'));
-            if (modalExpandColony) modalExpandColony.addEventListener('click', () => simulateClick('expand-colony'));
-            if (modalUnlockQueen) modalUnlockQueen.addEventListener('click', () => simulateClick('unlock-queen'));
-            if (modalUpgradeQueen) modalUpgradeQueen.addEventListener('click', () => simulateClick('upgrade-queen'));
-            if (modalUnlockFlying) modalUnlockFlying.addEventListener('click', () => simulateClick('unlock-flying-ants'));
-            if (modalBuyFlying) modalBuyFlying.addEventListener('click', () => simulateClick('buy-flying-ant'));
-            if (modalExpandFlying) modalExpandFlying.addEventListener('click', () => simulateClick('expand-flying-ants'));
-            if (modalUnlockCar) modalUnlockCar.addEventListener('click', () => simulateClick('unlock-car-ants'));
-            if (modalBuyCar) modalBuyCar.addEventListener('click', () => simulateClick('buy-car-ant'));
-            if (modalExpandCar) modalExpandCar.addEventListener('click', () => simulateClick('expand-car-ants'));
-            if (modalUnlockFire) modalUnlockFire.addEventListener('click', () => simulateClick('unlock-fire-ants'));
-            if (modalBuyFire) modalBuyFire.addEventListener('click', () => simulateClick('buy-fire-ant'));
-            if (modalExpandFire) modalExpandFire.addEventListener('click', () => simulateClick('expand-fire-ants'));
+            if (modalBuyAnt) modalBuyAnt.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-ant'); });
+            if (modalExpandColony) modalExpandColony.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('expand-colony'); });
+            if (modalUnlockQueen) modalUnlockQueen.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-queen'); });
+            if (modalUpgradeQueen) modalUpgradeQueen.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('upgrade-queen'); });
+            if (modalUnlockFlying) modalUnlockFlying.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-flying-ants'); });
+            if (modalBuyFlying) modalBuyFlying.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-flying-ant'); });
+            if (modalExpandFlying) modalExpandFlying.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('expand-flying-ants'); });
+            if (modalUnlockCar) modalUnlockCar.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-car-ants'); });
+            if (modalBuyCar) modalBuyCar.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-car-ant'); });
+            if (modalExpandCar) modalExpandCar.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('expand-car-ants'); });
+            if (modalUnlockFire) modalUnlockFire.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-fire-ants'); });
+            if (modalBuyFire) modalBuyFire.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-fire-ant'); });
+            if (modalExpandFire) modalExpandFire.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('expand-fire-ants'); });
             
-            if (modalUpgradeFood) modalUpgradeFood.addEventListener('click', () => simulateClick('upgrade-food'));
-            if (modalUpgradeSpeed) modalUpgradeSpeed.addEventListener('click', () => simulateClick('upgrade-speed'));
-            if (modalUpgradeStrength) modalUpgradeStrength.addEventListener('click', () => simulateClick('upgrade-strength'));
+            if (modalUpgradeFood) modalUpgradeFood.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('upgrade-food'); });
+            if (modalUpgradeSpeed) modalUpgradeSpeed.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('upgrade-speed'); });
+            if (modalUpgradeStrength) modalUpgradeStrength.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('upgrade-strength'); });
             
-            if (modalUnlockAutofeeder) modalUnlockAutofeeder.addEventListener('click', () => simulateClick('unlock-autofeeder'));
-            if (modalUpgradeAutofeeder) modalUpgradeAutofeeder.addEventListener('click', () => simulateClick('upgrade-autofeeder'));
+            if (modalUnlockAutofeeder) modalUnlockAutofeeder.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-autofeeder'); });
+            if (modalUpgradeAutofeeder) modalUpgradeAutofeeder.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('upgrade-autofeeder'); });
             
-            if (modalToggleSound) modalToggleSound.addEventListener('click', () => simulateClick('toggle-sound'));
-            if (modalDailyChallenge) modalDailyChallenge.addEventListener('click', () => {
+            if (modalToggleSound) modalToggleSound.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('toggle-sound'); });
+            if (modalDailyChallenge) modalDailyChallenge.addEventListener('click', (e) => {
+                e.stopPropagation();
                 console.log('Daily challenge button clicked');
                 if (IdleAnts.game && IdleAnts.game.dailyChallengeManager) {
                     console.log('Found dailyChallengeManager, calling showModal');
@@ -608,7 +615,15 @@
             const originalButton = document.getElementById(originalButtonId);
             if (originalButton) {
                 console.log(`Found button ${originalButtonId}, clicking it`);
-                originalButton.click();
+                
+                // Create a custom event that doesn't bubble
+                const clickEvent = new MouseEvent('click', {
+                    bubbles: false,
+                    cancelable: true,
+                    view: window
+                });
+                originalButton.dispatchEvent(clickEvent);
+                
                 // Update modal content after click
                 setTimeout(() => {
                     const openModal = document.querySelector('.modal-backdrop.show');
@@ -670,46 +685,55 @@
         }
         
         function updateModalButtonStates(modalId) {
+            // Helper function to sync button states
+            const syncButtonState = (originalId, modalId) => {
+                const originalBtn = document.getElementById(originalId);
+                const modalBtn = document.getElementById(modalId);
+                if (originalBtn && modalBtn) {
+                    // Sync visibility
+                    modalBtn.style.display = originalBtn.style.display;
+                    
+                    // Sync disabled state
+                    modalBtn.disabled = originalBtn.disabled;
+                    
+                    // Sync classes (hidden, disabled, etc.)
+                    modalBtn.className = originalBtn.className.replace(/^/, 'modal-btn ');
+                    
+                    // Keep modal-btn class
+                    if (!modalBtn.classList.contains('modal-btn')) {
+                        modalBtn.classList.add('modal-btn');
+                    }
+                }
+            };
+            
             // Colony modal button states
             if (modalId === 'colony-modal') {
-                const originalUnlockQueen = document.getElementById('unlock-queen');
-                const modalUnlockQueen = document.getElementById('modal-unlock-queen');
-                if (originalUnlockQueen && modalUnlockQueen) {
-                    modalUnlockQueen.style.display = originalUnlockQueen.style.display;
-                }
-                
-                const originalBuyFlying = document.getElementById('buy-flying-ant');
-                const modalBuyFlying = document.getElementById('modal-buy-flying-ant');
-                if (originalBuyFlying && modalBuyFlying) {
-                    if (originalBuyFlying.classList.contains('hidden')) {
-                        modalBuyFlying.classList.add('hidden');
-                    } else {
-                        modalBuyFlying.classList.remove('hidden');
-                    }
-                }
-                
-                const originalExpandFlying = document.getElementById('expand-flying-ants');
-                const modalExpandFlying = document.getElementById('modal-expand-flying-ants');
-                if (originalExpandFlying && modalExpandFlying) {
-                    if (originalExpandFlying.classList.contains('hidden')) {
-                        modalExpandFlying.classList.add('hidden');
-                    } else {
-                        modalExpandFlying.classList.remove('hidden');
-                    }
-                }
+                syncButtonState('buy-ant', 'modal-buy-ant');
+                syncButtonState('expand-colony', 'modal-expand-colony');
+                syncButtonState('unlock-queen', 'modal-unlock-queen');
+                syncButtonState('upgrade-queen', 'modal-upgrade-queen');
+                syncButtonState('unlock-flying-ants', 'modal-unlock-flying-ants');
+                syncButtonState('buy-flying-ant', 'modal-buy-flying-ant');
+                syncButtonState('expand-flying-ants', 'modal-expand-flying-ants');
+                syncButtonState('unlock-car-ants', 'modal-unlock-car-ants');
+                syncButtonState('buy-car-ant', 'modal-buy-car-ant');
+                syncButtonState('expand-car-ants', 'modal-expand-car-ants');
+                syncButtonState('unlock-fire-ants', 'modal-unlock-fire-ants');
+                syncButtonState('buy-fire-ant', 'modal-buy-fire-ant');
+                syncButtonState('expand-fire-ants', 'modal-expand-fire-ants');
+            }
+            
+            // Upgrades modal button states
+            if (modalId === 'upgrades-modal') {
+                syncButtonState('upgrade-food', 'modal-upgrade-food');
+                syncButtonState('upgrade-speed', 'modal-upgrade-speed');
+                syncButtonState('upgrade-strength', 'modal-upgrade-strength');
             }
             
             // Automation modal button states
             if (modalId === 'automation-modal') {
-                const originalUpgradeAutofeeder = document.getElementById('upgrade-autofeeder');
-                const modalUpgradeAutofeeder = document.getElementById('modal-upgrade-autofeeder');
-                if (originalUpgradeAutofeeder && modalUpgradeAutofeeder) {
-                    if (originalUpgradeAutofeeder.classList.contains('hidden')) {
-                        modalUpgradeAutofeeder.classList.add('hidden');
-                    } else {
-                        modalUpgradeAutofeeder.classList.remove('hidden');
-                    }
-                }
+                syncButtonState('unlock-autofeeder', 'modal-unlock-autofeeder');
+                syncButtonState('upgrade-autofeeder', 'modal-upgrade-autofeeder');
             }
             
             // Settings modal - update sound button text

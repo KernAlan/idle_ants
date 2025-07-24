@@ -158,41 +158,41 @@ IdleAnts.Data.BossConfigs = {
         }
     },
 
-    // Miniboss 4: Rival Carpenter Ant Queen
-    CARPENTER_ANT_QUEEN: {
-        id: 'carpenter_ant_queen',
-        name: 'Carpenter Ant Queen',
-        className: 'CarpenterAntQueenBoss',
+    // Miniboss 4: Tarantula
+    TARANTULA: {
+        id: 'tarantula',
+        name: 'Tarantula',
+        className: 'TarantulaBoss',
         defaultStats: {
-            maxHp: 15000,
-            attackDamage: 100,
-            attackRange: 90,
-            speed: 0.7,
-            perceptionRange: 400,
-            foodValue: 3500
+            maxHp: 12000,
+            attackDamage: 800,
+            attackRange: 120,
+            speed: 0.8,
+            perceptionRange: 1200,
+            foodValue: 4000
         },
         textures: {
-            body: 'carpenter_ant_queen_body',
-            head: 'carpenter_ant_queen_head'
+            body: 'tarantula_body',
+            head: 'tarantula_head'
         },
         audio: {
             theme: 'MINIBOSS_THEME'
         },
         spawnPosition: {
-            x: 'left',
-            y: 250
+            x: 'center',
+            y: 200
         },
         cinematic: {
             enabled: true,
             cameraPrePosition: true,
             dramaPause: true,
-            arrivalText: "A RIVAL QUEEN INVADES",
+            arrivalText: "A VENOMOUS PREDATOR LURKS",
             bossTitle: "◆ MINIBOSS ◆",
-            bossName: "CARPENTER MATRIARCH",
-            bossSubtitle: "Her throne must be protected",
-            titleColor: "#8B4513",
-            nameColor: "#D2691E",
-            subtitleColor: "#A0522D"
+            bossName: "GIANT TARANTULA",
+            bossSubtitle: "Web weaver of death",
+            titleColor: "#2C1810",
+            nameColor: "#8B4513",
+            subtitleColor: "#654321"
         }
     },
 
@@ -202,8 +202,8 @@ IdleAnts.Data.BossConfigs = {
         name: 'Japanese Giant Hornet',
         className: 'GiantHornetBoss',
         defaultStats: {
-            maxHp: 9000,
-            attackDamage: 300,
+            maxHp: 3000,
+            attackDamage: 120,
             attackRange: 150,
             speed: 1.8,
             perceptionRange: 600,
@@ -218,7 +218,7 @@ IdleAnts.Data.BossConfigs = {
             theme: 'MINIBOSS_THEME'
         },
         spawnPosition: {
-            x: 'right',
+            x: 'center',
             y: 100
         },
         cinematic: {

@@ -19,8 +19,8 @@ console.log('   spawnBoss("spider", 5000)');
 '''console.log('5. Powerful mantis with stat multipliers:');
 console.log('   spawnBoss("mantis", {hp: 2.0, damage: 1.5})');
 
-console.log('6. Carpenter Ant Queen miniboss:');
-console.log('   spawnBoss("carpenter_ant_queen")');
+console.log('6. Tarantula miniboss:');
+console.log('   spawnBoss("tarantula")');'
 
 console.log('7. Japanese Giant Hornet miniboss:');
 console.log('   spawnBoss("giant_hornet")');''
@@ -43,10 +43,10 @@ function testAllMinibosses() {
             spawnBoss('mantis', {hp: 1.5, damage: 2.0});
         }, 30000);
 
-        // Wait another 15 seconds then spawn carpenter ant queen
+        // Wait another 15 seconds then spawn tarantula
         setTimeout(() => {
-            console.log('Testing Carpenter Ant Queen miniboss...');
-            spawnBoss('carpenter_ant_queen');
+            console.log('Testing Tarantula miniboss...');
+            spawnBoss('tarantula');
         }, 45000);
 
         // Wait another 15 seconds then spawn japanese giant hornet
@@ -76,8 +76,8 @@ function testSpawnPositions() {
         }, 30000);
 
         setTimeout(() => {
-            console.log('Testing spawn from left (Carpenter Ant Queen)...');
-            spawnBoss('carpenter_ant_queen');
+            console.log('Testing spawn from left (Tarantula)...');
+            spawnBoss('tarantula');
         }, 45000);
 
         setTimeout(() => {
