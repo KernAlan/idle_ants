@@ -1124,29 +1124,29 @@ IdleAnts.Managers.EntityManager = class {
         }
         
         // ---------- MINIBOSS TRIGGERS ----------
-        // Miniboss 1: Tarantula at 25 ants
+        // Miniboss 1: Giant Hornet at 25 ants
         if (antTotal >= 25 && !this.miniboss1Triggered && !this.boss && !this.bossTriggered) {
             this.miniboss1Triggered = true;
-            if(typeof IdleAnts.notify === 'function'){
-                IdleAnts.notify(`A massive Tarantula emerges from its lair!`, 'warning');
-            }
-            setTimeout(() => {
-                if (IdleAnts.game && typeof IdleAnts.game.spawnBoss === 'function') {
-                    IdleAnts.game.spawnBoss('tarantula');
-                }
-            }, 2000);
-            return; // Skip regular enemy spawning during miniboss intro
-        }
-        
-        // Miniboss 2: Giant Hornet at 5 ants (DEBUG)
-        if (antTotal >= 5 && !this.miniboss2Triggered && !this.boss && !this.bossTriggered) {
-            this.miniboss2Triggered = true;
             if(typeof IdleAnts.notify === 'function'){
                 IdleAnts.notify(`A massive Japanese Giant Hornet descends from the sky!`, 'warning');
             }
             setTimeout(() => {
                 if (IdleAnts.game && typeof IdleAnts.game.spawnBoss === 'function') {
                     IdleAnts.game.spawnBoss('giant_hornet');
+                }
+            }, 2000);
+            return; // Skip regular enemy spawning during miniboss intro
+        }
+        
+        // Miniboss 2: Tarantula at 35 ants
+        if (antTotal >= 35 && !this.miniboss2Triggered && !this.boss && !this.bossTriggered) {
+            this.miniboss2Triggered = true;
+            if(typeof IdleAnts.notify === 'function'){
+                IdleAnts.notify(`A massive Tarantula emerges from its lair!`, 'warning');
+            }
+            setTimeout(() => {
+                if (IdleAnts.game && typeof IdleAnts.game.spawnBoss === 'function') {
+                    IdleAnts.game.spawnBoss('tarantula');
                 }
             }, 2000);
             return; // Skip regular enemy spawning during miniboss intro

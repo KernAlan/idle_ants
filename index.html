@@ -108,6 +108,10 @@
                     <i class="fas fa-cog"></i>
                     <span>Automation</span>
                 </button>
+                <button id="challenges-btn" class="action-btn">
+                    <i class="fas fa-trophy"></i>
+                    <span>Challenges</span>
+                </button>
                 <button id="settings-btn" class="action-btn">
                     <i class="fas fa-sliders-h"></i>
                     <span>Settings</span>
@@ -278,12 +282,6 @@
                             <h3>Audio</h3>
                             <button id="modal-toggle-sound" class="modal-btn">
                                 <span><i class="fas fa-volume-up"></i>Sound: ON</span>
-                            </button>
-                        </div>
-                        <div class="modal-section">
-                            <h3>Daily Challenge</h3>
-                            <button id="modal-daily-challenge" class="modal-btn">
-                                <span><i class="fas fa-trophy"></i>View Challenges</span>
                             </button>
                         </div>
                     </div>
@@ -527,6 +525,21 @@
                 }
             }
             
+            // Special handler for challenges button (doesn't open a modal)
+            const challengesBtn = document.getElementById('challenges-btn');
+            if (challengesBtn) {
+                challengesBtn.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    console.log('Challenges button clicked');
+                    if (IdleAnts.game && IdleAnts.game.dailyChallengeManager) {
+                        console.log('Found dailyChallengeManager, calling showModal');
+                        IdleAnts.game.dailyChallengeManager.showModal();
+                    } else {
+                        console.log('dailyChallengeManager not found');
+                    }
+                });
+            }
+            
             // Add click-away functionality to close modals
             document.addEventListener('click', (event) => {
                 // Check if any modal is open
@@ -572,7 +585,6 @@
             
             // Settings Modal Buttons
             const modalToggleSound = document.getElementById('modal-toggle-sound');
-            const modalDailyChallenge = document.getElementById('modal-daily-challenge');
             
             // Link modal buttons to original buttons
             if (modalBuyAnt) modalBuyAnt.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-ant'); });
@@ -597,17 +609,6 @@
             if (modalUpgradeAutofeeder) modalUpgradeAutofeeder.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('upgrade-autofeeder'); });
             
             if (modalToggleSound) modalToggleSound.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('toggle-sound'); });
-            if (modalDailyChallenge) modalDailyChallenge.addEventListener('click', (e) => {
-                e.stopPropagation();
-                console.log('Daily challenge button clicked');
-                if (IdleAnts.game && IdleAnts.game.dailyChallengeManager) {
-                    console.log('Found dailyChallengeManager, calling showModal');
-                    IdleAnts.game.dailyChallengeManager.showModal();
-                } else {
-                    console.log('dailyChallengeManager not found');
-                }
-                closeModal('settings-modal');
-            });
         }
         
         function simulateClick(originalButtonId) {

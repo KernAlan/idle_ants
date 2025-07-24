@@ -13,10 +13,10 @@ IdleAnts.Entities.AnteaterBoss = class extends PIXI.Container {
         this.maxHp = 20000;
         this.hp = this.maxHp;
         this.attackDamage = 200;
-        this.attackRange = 100; // Increased range
+        this.attackRange = 125; // Increased range proportional to size (100 * 1.25)
         this.attackCooldown = 50;
         this._attackTimer = 0;
-        this.perceptionRange = 450;
+        this.perceptionRange = 562; // Increased perception proportional to size (450 * 1.25)
         this.targetAnt = null;
         this.lastAttacker = null;
         this.foodValue = 5000;
@@ -26,6 +26,9 @@ IdleAnts.Entities.AnteaterBoss = class extends PIXI.Container {
         // Position boss at the actual top of the map for dramatic invasion entrance
         this.x = mapBounds.width / 2; // Center horizontally
         this.y = 150; // Near the top of the map for true invasion from north
+        
+        // Make the Anteater HUGE - 1.25x bigger
+        this.scale.set(1.25, 1.25);
         
         // --- Build the Animated Sprite ---
         this.body = new PIXI.Sprite(textures.body);
