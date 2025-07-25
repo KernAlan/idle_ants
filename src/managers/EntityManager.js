@@ -252,7 +252,6 @@ IdleAnts.Managers.EntityManager = class {
             // Using a generic spawn effect for now, could be customized for cars (e.g., tire screech, engine rev)
             this.effectManager.createSpawnEffect(carAnt.x, carAnt.y, false, { R: 255, G: 0, B: 0 }); // Red spawn effect
         }
-        console.log("Car Ant created at:", carAnt.x, carAnt.y);
     }
     
     createFireAnt() {
@@ -387,7 +386,6 @@ IdleAnts.Managers.EntityManager = class {
             
             // If the larvae is no longer active (hatched), remove it
             if (!isActive) {
-                console.log(`EntityManager: Removing larvae at (${larvae.x}, ${larvae.y})`);
                 this.entities.larvae.splice(i, 1);
             }
         }
@@ -839,7 +837,6 @@ IdleAnts.Managers.EntityManager = class {
             antEntities[i].config.canStackFood = antEntities[i].capacity > 1;
             
             // Log capacity and canStackFood status
-            // console.log(`Updating ant strength: capacity=${antEntities[i].capacity}, canStackFood=${antEntities[i].config.canStackFood}`);
             
             // If the ant is already carrying food but not at full capacity with the new strength,
             // allow it to collect more food
@@ -932,11 +929,9 @@ IdleAnts.Managers.EntityManager = class {
     createAntFromLarvae(x, y) {
         // Check if we can add more ants
         if (this.entities.ants.length >= this.resourceManager.stats.maxAnts) {
-            console.log(`Cannot create more ants, colony at capacity (${this.entities.ants.length}/${this.resourceManager.stats.maxAnts})`);
             return;
         }
         
-        console.log(`Creating ant from larvae. Colony size: ${this.entities.ants.length}/${this.resourceManager.stats.maxAnts}`);
         
         // Create the ant
         const ant = new IdleAnts.Entities.Ant(
@@ -949,11 +944,9 @@ IdleAnts.Managers.EntityManager = class {
         if (x !== undefined && y !== undefined) {
             ant.x = x;
             ant.y = y;
-            console.log(`Creating ant from larvae at position (${x}, ${y})`);
         } else {
             ant.x = this.nestPosition.x;
             ant.y = this.nestPosition.y;
-            console.log('Creating ant from larvae at nest position');
         }
         
         // Add to container and array
@@ -971,7 +964,6 @@ IdleAnts.Managers.EntityManager = class {
         // Decrement larvae count on queen
         if (this.entities.queen) {
             this.entities.queen.currentLarvae--;
-            console.log(`Queen now has ${this.entities.queen.currentLarvae} larvae after ant creation`);
         }
         
         return ant;
@@ -1003,7 +995,6 @@ IdleAnts.Managers.EntityManager = class {
     produceQueenLarvae(capacity) {
         // Check if we have a queen
         if (!this.entities.queen) {
-            console.log('No queen ant found to produce larvae');
             return;
         }
         
@@ -1244,20 +1235,17 @@ IdleAnts.Managers.EntityManager = class {
             // Create the larvae
             this.createLarvae(larvaeX, larvaeY);
             
-            console.log(`Created initial larvae at (${larvaeX}, ${larvaeY}) near nest`);
         }
     }
 
     // Spawn the anteater boss and return reference
     spawnAnteaterBoss() {
         if (this.boss && !this.boss.isDead) return this.boss;
-        console.log('Creating new Anteater Boss...');
         const textures = {
             body: this.assetManager.getTexture('anteater_boss_body'),
             front_leg: this.assetManager.getTexture('anteater_boss_leg_front'),
             back_leg: this.assetManager.getTexture('anteater_boss_leg_back')
         };
-        console.log("Retrieved boss textures:", textures);
         this.boss = new IdleAnts.Entities.AnteaterBoss(textures, { width: this.mapBounds.width, height: this.mapBounds.height });
         this.bossDefeated = false;
         this.entitiesContainers.enemies.addChild(this.boss);
@@ -1269,7 +1257,6 @@ IdleAnts.Managers.EntityManager = class {
     spawnBossWithConfig(bossConfig) {
         if (this.boss && !this.boss.isDead) return this.boss;
         
-        console.log(`Creating boss: ${bossConfig.name}...`);
         
         // Calculate spawn position
         const spawnPos = IdleAnts.Data.BossConfigUtils.calculateSpawnPosition(bossConfig, this.mapBounds);
@@ -1279,7 +1266,6 @@ IdleAnts.Managers.EntityManager = class {
         for (const [key, textureName] of Object.entries(bossConfig.textures)) {
             textures[key] = this.assetManager.getTexture(textureName);
         }
-        console.log("Retrieved boss textures:", textures);
         
         // Create boss instance based on className
         let bossInstance;
@@ -1305,7 +1291,6 @@ IdleAnts.Managers.EntityManager = class {
         this.entitiesContainers.enemies.addChild(this.boss);
         this.entities.enemies.push(this.boss);
         
-        console.log(`Boss ${bossConfig.name} spawned at (${spawnPos.x}, ${spawnPos.y})`);
         return this.boss;
     }
 
@@ -1321,7 +1306,6 @@ IdleAnts.Managers.EntityManager = class {
         if (stats.perceptionRange !== undefined) bossInstance.perceptionRange = stats.perceptionRange;
         if (stats.foodValue !== undefined) bossInstance.foodValue = stats.foodValue;
         
-        console.log(`Applied boss stats:`, stats);
     }
 
     // Remove all current enemies except the boss (used before boss intro)
@@ -1430,6 +1414,5 @@ IdleAnts.Managers.EntityManager = class {
         this.createInitialAnt();
         this.createQueenAnt();
         
-        console.log('EntityManager reset completed');
     }
 } 

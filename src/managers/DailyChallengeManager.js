@@ -402,7 +402,6 @@ IdleAnts.Managers.DailyChallengeManager = class {
             // Update resource manager stats
             IdleAnts.game.resourceManager.stats.ants += 1;
             
-            console.log('🌟 GOLDEN ANT SPAWNED! All daily challenges completed!');
         }
     }
     
@@ -481,7 +480,6 @@ IdleAnts.Managers.DailyChallengeManager = class {
                     oscillator.stop(audioContext.currentTime + 1);
                 }
             } catch (error) {
-                console.log('Could not play golden ant sound:', error);
             }
         }
     }
@@ -924,11 +922,9 @@ IdleAnts.Managers.DailyChallengeManager = class {
     
     showModal() {
         try {
-            console.log('showModal called');
             this.isModalOpen = true;
             const backdrop = document.getElementById('challenge-modal-backdrop');
             if (backdrop) {
-                console.log('Adding show class to backdrop');
                 backdrop.classList.add('show');
             } else {
                 console.error('Challenge modal backdrop not found');
@@ -936,9 +932,7 @@ IdleAnts.Managers.DailyChallengeManager = class {
             }
             
             // Update the challenge list when modal opens
-            console.log('Updating challenge UI');
             this.updateChallengeUI();
-            console.log('Modal should now be visible');
         } catch (error) {
             console.error('Error in showModal:', error);
             alert('Failed to open challenges modal. Error: ' + error.message);

@@ -446,7 +446,6 @@ IdleAnts.Managers.AchievementManager = class {
                 this.progress = { ...this.progress, ...data.progress };
                 
                 // Reset session-based tracking (food collected should be per-session)
-                console.log('Resetting session-based progress for new session');
                 this.progress.foodCollected = 0;
             } catch (error) {
                 console.error('Error loading achievement data:', error);

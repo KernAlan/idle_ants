@@ -198,6 +198,5 @@ IdleAnts.Managers.EffectManager = class {
         });
         this.effects = [];
         
-        console.log('EffectManager reset completed');
     }
 } 

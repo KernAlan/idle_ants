@@ -207,18 +207,19 @@ html {
 
 .upgrade-btn:disabled,
 .upgrade-btn.disabled {
-    background: linear-gradient(to bottom, #cccccc, #aaaaaa) !important;
-    cursor: not-allowed !important;
-    transform: none !important;
-    box-shadow: none !important;
-    opacity: 0.7 !important;
+    background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.7;
     pointer-events: none;
 }
 
 .upgrade-btn.disabled:hover {
-    background: linear-gradient(to bottom, #cccccc, #aaaaaa) !important;
-    transform: none !important;
+    background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+    transform: none;
 }
+
 
 #game-canvas-container {
     position: fixed;
@@ -298,12 +299,50 @@ canvas {
     background: linear-gradient(to bottom, #836FFF, #6959CD);
 }
 
+/* Override for disabled special buttons - must come after regular styles */
+.special-btn:disabled,
+.special-btn.disabled {
+    background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.7;
+    pointer-events: none;
+    color: #666;
+}
+
+.special-btn:disabled:hover,
+.special-btn.disabled:hover {
+    background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+    transform: none;
+    box-shadow: none;
+}
+
 .automation-btn {
     background: linear-gradient(to bottom, #FF8C00, #D2691E);
 }
 
 .automation-btn:hover {
     background: linear-gradient(to bottom, #FFA500, #FF8C00);
+}
+
+/* Override for disabled automation buttons - must come after regular styles */
+.automation-btn:disabled,
+.automation-btn.disabled {
+    background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.7;
+    pointer-events: none;
+    color: #666;
+}
+
+.automation-btn:disabled:hover,
+.automation-btn.disabled:hover {
+    background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+    transform: none;
+    box-shadow: none;
 }
 
 .hidden {
@@ -812,6 +851,25 @@ input, textarea {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
 
+/* Override for disabled action buttons - must come after regular styles */
+.action-btn:disabled,
+.action-btn.disabled {
+    background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.7;
+    pointer-events: none;
+    color: #666;
+}
+
+.action-btn:disabled:hover,
+.action-btn.disabled:hover {
+    background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+    transform: none;
+    box-shadow: none;
+}
+
 /* Modal Backdrop */
 .modal-backdrop {
     position: fixed;
@@ -925,17 +983,25 @@ input, textarea {
 }
 
 .modal-btn:disabled,
-.modal-btn.disabled {
+.modal-btn.disabled,
+button.modal-btn:disabled,
+button.modal-btn.disabled {
     background: linear-gradient(to bottom, #cccccc, #aaaaaa) !important;
     cursor: not-allowed !important;
     transform: none !important;
     opacity: 0.7 !important;
-    pointer-events: none;
+    pointer-events: none !important;
+    color: #666 !important;
+    box-shadow: none !important;
 }
 
-.modal-btn.disabled:hover {
+.modal-btn.disabled:hover,
+.modal-btn:disabled:hover,
+button.modal-btn.disabled:hover,
+button.modal-btn:disabled:hover {
     background: linear-gradient(to bottom, #cccccc, #aaaaaa) !important;
     transform: none !important;
+    box-shadow: none !important;
 }
 
 .modal-stats {
@@ -962,29 +1028,183 @@ input, textarea {
     }
     
     .modal-backdrop {
-        top: 60px;
-        left: 10px;
-        width: calc(100vw - 20px);
-        max-width: 350px;
-        max-height: calc(100vh - 80px);
+        position: fixed !important;
+        top: 5px !important;
+        left: 5px !important;
+        right: 5px !important;
+        bottom: 5px !important;
+        width: auto !important;
+        height: auto !important;
+        max-width: none !important;
+        max-height: none !important;
+        overflow: visible !important;
+        z-index: 1000 !important;
     }
     
     .modal-container {
-        padding: 15px;
+        padding: 15px !important;
+        margin: 0 !important;
+        border-radius: 15px !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        overflow-y: auto !important;
+        box-sizing: border-box !important;
+    }
+    
+    .modal-header {
+        position: sticky !important;
+        top: 0 !important;
+        background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%) !important;
+        z-index: 10 !important;
+        margin-bottom: 15px !important;
+        padding-bottom: 10px !important;
     }
     
     .modal-title {
-        font-size: 18px;
+        font-size: 18px !important;
+        text-align: center !important;
+        margin-bottom: 0 !important;
     }
     
     .modal-content {
-        grid-template-columns: 1fr;
-        gap: 10px;
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+        padding-bottom: 20px !important;
+    }
+    
+    .modal-section {
+        padding: 12px !important;
+        border-radius: 12px !important;
+        margin-bottom: 8px !important;
+    }
+    
+    .modal-section h3 {
+        font-size: 16px !important;
+        margin-bottom: 10px !important;
     }
     
     .modal-btn {
-        font-size: 11px;
-        padding: 8px;
+        font-size: 14px !important;
+        padding: 12px 8px !important;
+        min-height: 48px !important;
+        border-radius: 10px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        margin: 4px 0 !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+    }
+    
+    .modal-btn span {
+        display: block !important;
+    }
+    
+    .modal-close {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 16px !important;
+        flex-shrink: 0 !important;
+    }
+    
+    .modal-stats {
+        font-size: 12px !important;
+        line-height: 1.4 !important;
+        padding: 8px !important;
+        margin-top: 8px !important;
+    }
+    
+    /* Disabled button states - must override mobile styles */
+    .modal-btn:disabled,
+    .modal-btn.disabled {
+        background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+        cursor: not-allowed;
+        transform: none;
+        opacity: 0.7;
+        pointer-events: none;
+        color: #666;
+    }
+    
+    .modal-btn:disabled:hover,
+    .modal-btn.disabled:hover {
+        background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .upgrade-btn:disabled,
+    .upgrade-btn.disabled {
+        background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+        cursor: not-allowed;
+        transform: none;
+        opacity: 0.7;
+        pointer-events: none;
+        color: #666;
+    }
+    
+    .upgrade-btn:disabled:hover,
+    .upgrade-btn.disabled:hover {
+        background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+        transform: none;
+        box-shadow: none;
+    }
+    
+    /* Mobile disabled styles for action buttons */
+    .action-btn:disabled,
+    .action-btn.disabled {
+        background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+        cursor: not-allowed;
+        transform: none;
+        opacity: 0.7;
+        pointer-events: none;
+        color: #666;
+        box-shadow: none;
+    }
+
+    .action-btn:disabled:hover,
+    .action-btn.disabled:hover {
+        background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+        transform: none;
+        box-shadow: none;
+    }
+    
+    /* Mobile disabled styles for special buttons */
+    .special-btn:disabled,
+    .special-btn.disabled {
+        background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+        cursor: not-allowed;
+        transform: none;
+        opacity: 0.7;
+        pointer-events: none;
+        color: #666;
+        box-shadow: none;
+    }
+
+    .special-btn:disabled:hover,
+    .special-btn.disabled:hover {
+        background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+        transform: none;
+        box-shadow: none;
+    }
+    
+    /* Mobile disabled styles for automation buttons */
+    .automation-btn:disabled,
+    .automation-btn.disabled {
+        background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+        cursor: not-allowed;
+        transform: none;
+        opacity: 0.7;
+        pointer-events: none;
+        color: #666;
+        box-shadow: none;
+    }
+
+    .automation-btn:disabled:hover,
+    .automation-btn.disabled:hover {
+        background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+        transform: none;
+        box-shadow: none;
     }
 }
 

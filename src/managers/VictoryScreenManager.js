@@ -810,23 +810,73 @@ class VictoryScreenManager {
             }
             
             @media (max-width: 768px) {
+                .victory-screen-overlay {
+                    padding: 10px;
+                }
+                
                 .victory-screen-container {
                     padding: 20px;
-                    margin: 10px;
+                    margin: 0;
+                    max-width: none;
+                    width: 100%;
+                    max-height: calc(100vh - 20px);
+                    overflow-y: auto;
+                    border-radius: 20px;
                 }
                 
                 .victory-title {
-                    font-size: 2em;
+                    font-size: 1.8em;
+                    margin-bottom: 15px;
+                }
+                
+                .victory-subtitle {
+                    font-size: 1em;
+                    margin-bottom: 20px;
                 }
                 
                 .victory-stats-grid {
                     grid-template-columns: 1fr;
                     gap: 15px;
+                    margin: 20px 0;
+                }
+                
+                .stat-category {
+                    padding: 15px;
+                    border-radius: 15px;
+                }
+                
+                .stat-category h3 {
+                    font-size: 1.1em;
+                    margin-bottom: 12px;
+                }
+                
+                .stat-row {
+                    flex-direction: column;
+                    text-align: center;
+                    gap: 5px;
+                    margin: 10px 0;
+                    padding: 8px 0;
+                }
+                
+                .stat-value {
+                    font-size: 1.2em;
+                    font-weight: bold;
+                }
+                
+                .victory-score-section {
+                    margin: 20px 0;
+                    padding: 15px;
+                    border-radius: 15px;
+                }
+                
+                .score-value {
+                    font-size: 2em;
                 }
                 
                 .ranking-display {
                     flex-direction: column;
                     gap: 20px;
+                    margin: 20px 0;
                 }
                 
                 .rank-circle {
@@ -838,23 +888,82 @@ class VictoryScreenManager {
                     font-size: 2.5em;
                 }
                 
+                .rank-description h2 {
+                    font-size: 1.3em;
+                    margin-bottom: 10px;
+                }
+                
+                .submission-content {
+                    margin: 20px 0;
+                }
+                
+                .score-highlight {
+                    padding: 15px;
+                    margin-bottom: 20px;
+                    border-radius: 15px;
+                }
+                
                 .name-input-section input {
-                    width: 250px;
+                    width: 100%;
+                    max-width: 300px;
+                    padding: 15px;
+                    font-size: 16px; /* Prevents zoom on iOS */
+                    border-radius: 10px;
+                }
+                
+                .leaderboard-content {
+                    margin: 20px 0;
+                    max-height: 300px;
                 }
                 
                 .leaderboard-entry {
                     grid-template-columns: 40px 1fr 100px;
                     gap: 10px;
-                    padding: 10px;
+                    padding: 12px;
+                    margin: 8px 0;
+                    border-radius: 10px;
+                }
+                
+                .leaderboard-entry .rank {
+                    font-size: 1.1em;
+                }
+                
+                .leaderboard-entry .player-name {
+                    font-size: 1em;
+                }
+                
+                .leaderboard-entry .score {
+                    font-size: 0.9em;
                 }
                 
                 .victory-buttons {
                     flex-direction: column;
                     align-items: center;
+                    gap: 12px;
+                    margin-top: 20px;
                 }
                 
                 .victory-btn {
-                    width: 200px;
+                    width: 100%;
+                    max-width: 280px;
+                    padding: 15px 20px;
+                    font-size: 16px;
+                    min-height: 50px;
+                    border-radius: 12px;
+                }
+                
+                .golden-ant-display {
+                    flex-direction: column;
+                    text-align: center;
+                    gap: 15px;
+                }
+                
+                .golden-ant-icon {
+                    font-size: 3em;
+                }
+                
+                .golden-ant-title {
+                    font-size: 1.2em;
                 }
             }
         `;

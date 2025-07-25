@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body { padding: 20px; font-family: Arial, sans-serif; }
+        .test { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+        .debug { background: #f0f0f0; padding: 5px; margin: 5px 0; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>DEBUG: Button Disabled States</h1>
+    
+    <div class="test">
+        <h3>Test 1: Modal Button (like colony management)</h3>
+        <button id="test-modal-btn" class="modal-btn">
+            <span><i class="fas fa-plus"></i>Buy Ant</span>
+            <span>10 food</span>
+        </button>
+        <button onclick="toggleModal()">Toggle Disabled</button>
+        <div class="debug" id="modal-debug">Classes: </div>
+    </div>
+    
+    <div class="test">
+        <h3>Test 2: Upgrade Button (like main UI)</h3>
+        <button id="test-upgrade-btn" class="upgrade-btn">
+            <i class="fas fa-plus"></i>Buy Ant (10 food)
+        </button>
+        <button onclick="toggleUpgrade()">Toggle Disabled</button>
+        <div class="debug" id="upgrade-debug">Classes: </div>
+    </div>
+    
+    <div class="test">
+        <h3>Test 3: Special Button</h3>
+        <button id="test-special-btn" class="upgrade-btn special-btn">
+            <i class="fas fa-feather-alt"></i>Flying Ants (500 food)
+        </button>
+        <button onclick="toggleSpecial()">Toggle Disabled</button>
+        <div class="debug" id="special-debug">Classes: </div>
+    </div>
+    
+    <script>
+        function updateDebug(buttonId, debugId) {
+            const button = document.getElementById(buttonId);
+            const debug = document.getElementById(debugId);
+            debug.innerHTML = `Classes: ${button.className}<br>Disabled attr: ${button.disabled}<br>Computed styles: ${getComputedStyle(button).background}`;
+        }
+        
+        function toggleModal() {
+            const btn = document.getElementById('test-modal-btn');
+            btn.disabled = !btn.disabled;
+            if (btn.disabled) {
+                btn.classList.add('disabled');
+            } else {
+                btn.classList.remove('disabled');
+            }
+            updateDebug('test-modal-btn', 'modal-debug');
+        }
+        
+        function toggleUpgrade() {
+            const btn = document.getElementById('test-upgrade-btn');
+            btn.disabled = !btn.disabled;
+            if (btn.disabled) {
+                btn.classList.add('disabled');
+            } else {
+                btn.classList.remove('disabled');
+            }
+            updateDebug('test-upgrade-btn', 'upgrade-debug');
+        }
+        
+        function toggleSpecial() {
+            const btn = document.getElementById('test-special-btn');
+            btn.disabled = !btn.disabled;
+            if (btn.disabled) {
+                btn.classList.add('disabled');
+            } else {
+                btn.classList.remove('disabled');
+            }
+            updateDebug('test-special-btn', 'special-debug');
+        }
+        
+        // Initial debug info
+        setTimeout(() => {
+            updateDebug('test-modal-btn', 'modal-debug');
+            updateDebug('test-upgrade-btn', 'upgrade-debug');
+            updateDebug('test-special-btn', 'special-debug');
+        }, 100);
+    </script>
+</body>
+</html>

@@ -299,12 +299,13 @@ class LeaderboardManager {
                 align-items: center;
                 justify-content: center;
                 font-family: Arial, sans-serif;
+                padding: 10px;
             }
             
             .victory-screen-container {
                 background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
                 border: 3px solid #FFD700;
-                border-radius: 15px;
+                border-radius: 20px;
                 padding: 30px;
                 max-width: 90vw;
                 max-height: 90vh;
@@ -312,6 +313,7 @@ class LeaderboardManager {
                 color: white;
                 text-align: center;
                 box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+                width: 100%;
             }
             
             .victory-title {
@@ -335,10 +337,10 @@ class LeaderboardManager {
                 display: grid;
                 grid-template-columns: 50px 1fr 120px;
                 gap: 15px;
-                padding: 12px;
-                margin: 5px 0;
+                padding: 15px;
+                margin: 8px 0;
                 background: rgba(255, 255, 255, 0.05);
-                border-radius: 8px;
+                border-radius: 12px;
                 align-items: center;
             }
             
@@ -382,17 +384,19 @@ class LeaderboardManager {
                 display: flex;
                 gap: 15px;
                 justify-content: center;
+                flex-wrap: wrap;
             }
             
             .victory-btn {
-                padding: 12px 25px;
+                padding: 15px 25px;
                 font-size: 1.1em;
                 font-weight: bold;
                 border: none;
-                border-radius: 8px;
+                border-radius: 12px;
                 cursor: pointer;
                 transition: all 0.3s ease;
                 min-width: 150px;
+                min-height: 50px;
             }
             
             .victory-btn.secondary {
@@ -403,6 +407,74 @@ class LeaderboardManager {
             
             .victory-btn.secondary:hover {
                 background: linear-gradient(135deg, #777 0%, #555 100%);
+            }
+            
+            @media (max-width: 768px) {
+                .victory-screen-overlay {
+                    padding: 10px;
+                    align-items: flex-start;
+                    padding-top: 20px;
+                }
+                
+                .victory-screen-container {
+                    padding: 20px;
+                    margin: 0;
+                    max-width: none;
+                    width: 100%;
+                    max-height: calc(100vh - 40px);
+                    border-radius: 20px;
+                }
+                
+                .victory-title {
+                    font-size: 1.8em;
+                    margin-bottom: 20px;
+                }
+                
+                .leaderboard-content {
+                    margin: 20px 0;
+                    max-height: calc(100vh - 200px);
+                }
+                
+                .leaderboard-entry {
+                    grid-template-columns: 40px 1fr 100px;
+                    gap: 10px;
+                    padding: 12px;
+                    margin: 6px 0;
+                    border-radius: 10px;
+                }
+                
+                .leaderboard-entry .rank {
+                    font-size: 1.1em;
+                }
+                
+                .leaderboard-entry .player-name {
+                    font-size: 1em;
+                }
+                
+                .leaderboard-entry .score {
+                    font-size: 0.9em;
+                }
+                
+                .leaderboard-entry .stats {
+                    font-size: 0.8em;
+                    margin-top: 3px;
+                }
+                
+                .victory-buttons {
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 12px;
+                    margin-top: 20px;
+                }
+                
+                .victory-btn {
+                    width: 100%;
+                    max-width: 280px;
+                    padding: 15px 20px;
+                    font-size: 16px;
+                    min-height: 50px;
+                    border-radius: 12px;
+                }
             }
         `;
         
