@@ -263,11 +263,6 @@ IdleAnts.Game = class {
             uiContainer.style.display = 'none';
         }
         
-        // Hide audio start overlay
-        const audioOverlay = document.getElementById('start-audio-overlay');
-        if (audioOverlay) {
-            audioOverlay.style.display = 'none';
-        }
     }
     
     showUIElements() {
@@ -277,11 +272,6 @@ IdleAnts.Game = class {
             uiContainer.style.display = 'flex';
         }
         
-        // Show audio start overlay if it should be shown
-        const audioOverlay = document.getElementById('start-audio-overlay');
-        if (audioOverlay) {
-            audioOverlay.style.display = 'block';
-        }
     }
     
     // Setup audio resume on user interaction

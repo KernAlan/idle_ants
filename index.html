@@ -70,12 +70,6 @@
         </audio>
     </div>
     
-    <!-- Audio start overlay -->
-    <div id="start-audio-overlay">
-        <button id="start-audio-button">
-            <i class="fas fa-music"></i> Click to Start Game with Music
-        </button>
-    </div>
 
     <div id="game-container">
         <button id="ui-toggle" title="Toggle UI"><i class="fas fa-chevron-up"></i></button>
@@ -451,25 +445,6 @@
                 if (debugChallengesBtn) debugChallengesBtn.style.display = 'block';
             }
             
-            const startAudioButton = document.getElementById('start-audio-button');
-            const startAudioOverlay = document.getElementById('start-audio-overlay');
-            
-            if (startAudioButton && startAudioOverlay) {
-                startAudioButton.addEventListener('click', function() {
-                    // Hide the overlay
-                    startAudioOverlay.style.display = 'none';
-                    
-                    // Resume audio context and start playing music
-                    if (IdleAnts.AudioManager) {
-                        IdleAnts.AudioManager.resumeAudioContext();
-                        
-                        // Start playing background music
-                        if (IdleAnts.AudioAssets && IdleAnts.AudioAssets.BGM && IdleAnts.AudioAssets.BGM.MAIN_THEME) {
-                            IdleAnts.AudioManager.playBGM(IdleAnts.AudioAssets.BGM.MAIN_THEME.id);
-                        }
-                    }
-                });
-            }
             
             // Modal System Setup
             setupModalSystem();
