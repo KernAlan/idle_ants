@@ -874,9 +874,12 @@ input, textarea {
 /* Modal Backdrop */
 .modal-backdrop {
     position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: 320px;
-    max-height: calc(100vh - 120px);
-    z-index: 1000;
+    max-height: calc(100vh - 40px);
+    z-index: 9999;
     display: none;
 }
 
@@ -1039,7 +1042,8 @@ button.modal-btn:disabled:hover {
         max-width: none !important;
         max-height: none !important;
         overflow: visible !important;
-        z-index: 1000 !important;
+        z-index: 9999 !important;
+        transform: none !important;
     }
     
     .modal-container {
