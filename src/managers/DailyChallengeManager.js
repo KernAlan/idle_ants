@@ -246,10 +246,10 @@ IdleAnts.Managers.DailyChallengeManager = class {
             return result;
         };
         
-        // Periodically update all challenge progress
+        // Periodically update all challenge progress (every 5 seconds)
         setInterval(() => {
             this.updateTracking();
-        }, 1000);
+        }, 5000);
     }
     
     // Called by game when specific actions occur
@@ -309,8 +309,8 @@ IdleAnts.Managers.DailyChallengeManager = class {
         this.updateChallengeProgress('firstMilestone', totalFoodCollected);
         this.updateChallengeProgress('foodHoarder', totalFoodCollected);
         
-        // Track efficiency milestones using actual food rate
-        const actualFoodPerSecond = this.resourceManager.getActualFoodRate() || 0;
+        // Track efficiency milestones using actual food rate (rounded to whole numbers)
+        const actualFoodPerSecond = Math.floor(this.resourceManager.getActualFoodRate() || 0);
         this.updateChallengeProgress('efficiency100', actualFoodPerSecond);
         this.updateChallengeProgress('efficiency800', actualFoodPerSecond);
     }
@@ -337,8 +337,8 @@ IdleAnts.Managers.DailyChallengeManager = class {
         this.updateChallengeProgress('firstMilestone', totalFoodCollected);
         this.updateChallengeProgress('foodHoarder', totalFoodCollected);
         
-        // Check efficiency milestones using actual food rate
-        const actualFoodPerSecond = this.resourceManager.getActualFoodRate() || 0;
+        // Check efficiency milestones using actual food rate (rounded to whole numbers)
+        const actualFoodPerSecond = Math.floor(this.resourceManager.getActualFoodRate() || 0);
         this.updateChallengeProgress('efficiency100', actualFoodPerSecond);
         this.updateChallengeProgress('efficiency800', actualFoodPerSecond);
         
