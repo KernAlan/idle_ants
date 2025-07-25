@@ -130,12 +130,8 @@ IdleAnts.Game = class {
         this.titleSprite.scale.set(scale);
         this.titleSprite.x = this.app.screen.width / 2;  // Center horizontally
         
-        // Different positioning for mobile vs desktop
-        if (isPhone || isMobile) {
-            this.titleSprite.y = this.app.screen.height * 0.35; // Position higher on mobile for text
-        } else {
-            this.titleSprite.y = this.app.screen.height / 2; // Center vertically on desktop
-        }
+        // Center vertically for all devices
+        this.titleSprite.y = this.app.screen.height / 2;
         this.titleContainer.addChild(this.titleSprite);
         
         // Add "Press any key to start" text with responsive sizing
@@ -177,14 +173,10 @@ IdleAnts.Game = class {
         this.titleText.anchor.set(0.5);
         this.titleText.x = this.app.screen.width / 2;
         
-        // Position text appropriately for each screen type
-        if (isPhone || isMobile) {
-            this.titleText.y = this.app.screen.height * 0.7;
-        } else {
-            // For desktop, position below the centered logo
-            const logoBottom = this.titleSprite.y + (this.titleSprite.height * this.titleSprite.scale.y) / 2;
-            this.titleText.y = logoBottom + 80;
-        }
+        // Position text below the centered logo for all devices
+        const logoBottom = this.titleSprite.y + (this.titleSprite.height * this.titleSprite.scale.y) / 2;
+        const textMargin = isPhone ? 40 : isMobile ? 60 : 80;
+        this.titleText.y = logoBottom + textMargin;
         
         this.titleContainer.addChild(this.titleText);
         
@@ -578,25 +570,17 @@ IdleAnts.Game = class {
             this.titleSprite.scale.set(scale);
             this.titleSprite.x = newWidth / 2;
             
-            // Different positioning for mobile vs desktop
-            if (isPhone || isMobile) {
-                this.titleSprite.y = newHeight * 0.35;
-            } else {
-                this.titleSprite.y = newHeight / 2;
-            }
+            // Center vertically for all devices
+            this.titleSprite.y = newHeight / 2;
             
             // Also reposition the title text when screen resizes
             if (this.titleText) {
                 this.titleText.x = newWidth / 2;
                 
-                // Position text appropriately for each screen type
-                if (isPhone || isMobile) {
-                    this.titleText.y = newHeight * 0.7;
-                } else {
-                    // For desktop, position below the centered logo
-                    const logoBottom = this.titleSprite.y + (this.titleSprite.height * this.titleSprite.scale.y) / 2;
-                    this.titleText.y = logoBottom + 80;
-                }
+                // Position text below the centered logo for all devices
+                const logoBottom = this.titleSprite.y + (this.titleSprite.height * this.titleSprite.scale.y) / 2;
+                const textMargin = isPhone ? 40 : isMobile ? 60 : 80;
+                this.titleText.y = logoBottom + textMargin;
             }
         }
         
