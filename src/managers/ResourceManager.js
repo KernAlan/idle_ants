@@ -113,6 +113,14 @@ IdleAnts.Managers.ResourceManager = class {
         }
     }
     
+    // Add food without affecting the food per second rate tracking (used for challenge rewards)
+    addFoodSilent(amount) {
+        // Always round food amounts to whole numbers
+        const roundedAmount = Math.round(amount);
+        this.resources.food += roundedAmount;
+        // Note: Intentionally NOT calling trackFoodCollection to avoid affecting rate calculations
+    }
+    
     // Track food collection for rate calculation
     trackFoodCollection(amount) {
         const now = Date.now();

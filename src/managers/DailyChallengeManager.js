@@ -489,9 +489,9 @@ IdleAnts.Managers.DailyChallengeManager = class {
         if (challenge && challenge.completed && !challenge.claimed) {
             challenge.claimed = true;
             
-            // Award reward
+            // Award reward (use silent method to avoid affecting food per second tracking)
             if (challenge.reward.type === 'food') {
-                this.resourceManager.addFood(challenge.reward.amount);
+                this.resourceManager.addFoodSilent(challenge.reward.amount);
             }
             
             // Show reward notification
