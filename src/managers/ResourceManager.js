@@ -86,7 +86,8 @@ IdleAnts.Managers.ResourceManager = class {
             trackingPeriod: 10, // Number of seconds to track for moving average
             actualFoodRate: 0, // Current calculated food collection rate
             lastFoodAmount: this.resources.food, // Last recorded food amount
-            lastUpdateTime: Date.now() // Last time the rate was updated
+            lastUpdateTime: Date.now(), // Last time the rate was updated
+            updateInterval: 3000 // Update rate calculation every 3 seconds (in milliseconds)
         };
     }
     
@@ -125,11 +126,15 @@ IdleAnts.Managers.ResourceManager = class {
     trackFoodCollection(amount) {
         const now = Date.now();
         
-        // Add this collection to the recent collections array
-        this.foodRateTracking.recentCollections.push({
-            amount: amount,
-            timestamp: now
-        });
+        // Filter out large amounts that are likely from rewards/cheats to avoid rate spikes
+        // Only track amounts under 500 to ensure we're measuring actual gameplay collection rates
+        if (amount < 500) {
+            // Add this collection to the recent collections array
+            this.foodRateTracking.recentCollections.push({
+                amount: amount,
+                timestamp: now
+            });
+        }
         
         // Remove collections older than the tracking period
         const cutoffTime = now - (this.foodRateTracking.trackingPeriod * 1000);
@@ -137,8 +142,10 @@ IdleAnts.Managers.ResourceManager = class {
             collection => collection.timestamp >= cutoffTime
         );
         
-        // Calculate the actual food rate based on recent collections
-        this.updateActualFoodRate();
+        // Only update the actual food rate every 3 seconds to avoid too frequent updates
+        if (now - this.foodRateTracking.lastUpdateTime >= this.foodRateTracking.updateInterval) {
+            this.updateActualFoodRate();
+        }
     }
     
     // Calculate the actual food collection rate based on recent collections
