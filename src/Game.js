@@ -1592,6 +1592,15 @@ IdleAnts.Game = class {
             this.uiManager.updateUI();
             this.uiManager.updateButtonStates();
             
+            // Update modal content if colony modal is open
+            const colonyModal = document.getElementById('colony-modal');
+            if (colonyModal && colonyModal.classList.contains('show')) {
+                // Sync modal values with main UI
+                if (typeof updateModalContent === 'function') {
+                    updateModalContent('colony-modal');
+                }
+            }
+            
             return true;
         }
         return false;

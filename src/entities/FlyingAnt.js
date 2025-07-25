@@ -17,6 +17,16 @@ IdleAnts.Entities.FlyingAnt = class extends IdleAnts.Entities.AntBase {
         
         // Initialize stuck prevention with shorter delay for flying ants since they move faster
         this.stuckPrevention = { active: false, delay: 5 }; // Shorter delay than regular ants
+        
+        // Override combat stats - double HP and attack
+        const baseHp = 100; // 2x the base 50 HP
+        const strengthMultiplier = IdleAnts.app && IdleAnts.app.resourceManager ? 
+            IdleAnts.app.resourceManager.stats.strengthMultiplier : 1;
+        this.maxHp = baseHp + (strengthMultiplier - 1) * 50; // Doubled HP scaling per strength level
+        this.hp = this.maxHp;
+        this.updateHealthBar();
+        
+        this.attackDamage = 10; // 2x the base 5 attack power
     }
     
     // Override base scale for flying ants

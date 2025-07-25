@@ -62,6 +62,7 @@ IdleAnts.Managers.UIManager = class {
             autofeederUpgradeCost: document.getElementById('autofeeder-upgrade-cost'),
             autofeederLevel: document.getElementById('autofeeder-level'),
             upgradeQueenCost: document.getElementById('upgrade-queen-cost'),
+            modalUpgradeQueenCost: document.getElementById('modal-upgrade-queen-cost'),
             queenLevel: document.getElementById('queen-level'),
             queenLevelDisplay: document.getElementById('queen-level-display'),
             modalQueenLevelDisplay: document.getElementById('modal-queen-level-display'),
@@ -308,6 +309,7 @@ IdleAnts.Managers.UIManager = class {
                 
                 // Update queen stats using cached elements
                 updateCachedElementText(this.elements.upgradeQueenCost, this.resourceManager.stats.queenUpgradeCost);
+                updateCachedElementText(this.elements.modalUpgradeQueenCost, this.resourceManager.stats.queenUpgradeCost);
                 updateCachedElementText(this.elements.queenLevel, this.resourceManager.stats.queenUpgradeLevel);
                 updateCachedElementText(this.elements.queenLevelDisplay, this.resourceManager.stats.queenUpgradeLevel);
                 updateCachedElementText(this.elements.modalQueenLevelDisplay, this.resourceManager.stats.queenUpgradeLevel);

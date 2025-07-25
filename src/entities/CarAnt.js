@@ -16,7 +16,17 @@ IdleAnts.Entities.CarAnt = class extends IdleAnts.Entities.AntBase {
         this.wheelRotationSpeed = 0.5; // Radians per frame
 
         // Car ants might have a more fixed or different turn speed
-        this.turnSpeed = 0.2; 
+        this.turnSpeed = 0.2;
+        
+        // Override combat stats - nearly as powerful as Fire Ants
+        const baseHp = 250; // Slightly less than Fire Ant's 300 HP
+        const strengthMultiplier = IdleAnts.app && IdleAnts.app.resourceManager ? 
+            IdleAnts.app.resourceManager.stats.strengthMultiplier : 1;
+        this.maxHp = baseHp + (strengthMultiplier - 1) * 125; // High HP scaling per strength level
+        this.hp = this.maxHp;
+        this.updateHealthBar();
+        
+        this.attackDamage = 20; // Slightly less than Fire Ant's 25 attack power 
     }
 
     // Override to set a potentially different base scale for CarAnt

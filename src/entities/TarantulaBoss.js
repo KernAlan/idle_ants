@@ -7,7 +7,7 @@ IdleAnts.Entities.TarantulaBoss = class extends PIXI.Container {
         this.mapBounds = mapBounds;
         this.speed = 10; // 5x regular enemy speed (regular enemies: ~1.5, this: 8)
         this.vx = 0; this.vy = 0;
-        this.maxHp = 12000;
+        this.maxHp = 8000; // Decreased from 12000
         this.hp = this.maxHp;
         this.attackDamage = 200;
         this.attackRange = 120;

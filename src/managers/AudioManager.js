@@ -55,7 +55,7 @@ IdleAnts.AudioManager = (function() {
                             isMusic: true,
                             audio: audioElement,
                             volume: asset.volume || 0.5,
-                            loop: true
+                            loop: asset.loop !== undefined ? asset.loop : true
                         };
                         
                         // Set volume and loop properties
