@@ -1388,16 +1388,12 @@ IdleAnts.Game = class {
     adjustSettingsForMobile() {
         // Adjust game settings for better mobile experience
         
-        // Auto-collapse UI on phones for maximum game space
+        // Add condensed class for ultra-small phones but keep UI expanded
         if (window.innerWidth <= 480) {
             // Add condensed class for ultra-small phones
             document.body.classList.add('phone-condensed');
             
-            // Auto-collapse UI on phones to maximize game space
-            const gameContainer = document.getElementById('game-container');
-            if (gameContainer) {
-                gameContainer.classList.add('ui-collapsed');
-            }
+            // UI now stays expanded by default on mobile for better accessibility
         }
         
         // Store mobile detection for title screen usage

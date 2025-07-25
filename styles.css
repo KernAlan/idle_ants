@@ -660,9 +660,10 @@ canvas {
 /* Improve button tap targets on mobile */
 @media (max-width: 768px) {
     .upgrade-btn {
-        min-height: 36px; /* Match the new height */
-        padding: 2px;
-        margin: 3px;
+        min-height: 42px; /* Increased from 36px for better mobile usability */
+        padding: 4px;
+        margin: 4px;
+        min-width: 95px; /* Slightly wider for easier tapping */
     }
     
     /* Ensure buttons have enough space between them */
@@ -786,12 +787,12 @@ input, textarea {
     .upgrade-btn span {
         display: inline;
         text-align: center;
-        line-height: 1.1;
-        font-size: 8px;
+        line-height: 1.2;
+        font-size: 9px; /* Increased from 8px for better readability */
     }
     
     .upgrade-btn i {
-        font-size: 10px;
+        font-size: 11px; /* Increased from 10px for better visibility */
         margin-right: 4px;
         margin-bottom: 0;
     }
@@ -1016,10 +1017,10 @@ button.modal-btn:disabled:hover {
 /* Mobile Modal Adjustments - Ultra condensed */
 @media (max-width: 768px) {
     .action-btn {
-        min-width: 45px; /* Much smaller buttons */
-        height: 32px; /* Reduced height */
-        font-size: 8px; /* Smaller text */
-        padding: 2px; /* Tighter padding */
+        min-width: 52px; /* Increased from 45px for better mobile tapping */
+        height: 38px; /* Increased from 32px for better usability */
+        font-size: 9px; /* Slightly larger text */
+        padding: 3px; /* More padding for better touch targets */
     }
     
     .action-btn i {
