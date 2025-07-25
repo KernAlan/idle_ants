@@ -203,21 +203,35 @@ IdleAnts.Entities.AnteaterBoss = class extends PIXI.Container {
     }
 
     update(ants) {
-        // Handle attack animation
+        // Handle attack animation - nose whip
         if (this.isAttacking) {
             this.animationTimer++;
-            const duration = 30; // 0.5s slam
+            const duration = 30; // 0.5s whip
             
-            if (this.animationTimer < duration / 2) {
-                // Rear back
-                this.rotation = -0.3 * (this.animationTimer / (duration / 2));
-            } else if (this.animationTimer < duration) {
-                // Slam down
-                this.rotation = -0.3 + 0.4 * ((this.animationTimer - duration / 2) / (duration / 2));
+            if (this.animationTimer < duration / 3) {
+                // Draw back - slight backward rotation and scale preparation
+                const progress = this.animationTimer / (duration / 3);
+                this.rotation = -0.15 * progress;
+                this.body.scale.x = 1 + 0.1 * progress; // Slight horizontal stretch back
+            } else if (this.animationTimer < (duration * 2) / 3) {
+                // Quick whip forward - emphasize the snout motion
+                const progress = (this.animationTimer - duration / 3) / (duration / 3);
+                this.rotation = -0.15 + 0.25 * progress; // Quick forward snap
+                this.body.scale.x = 1.1 - 0.2 * progress; // Compress then extend
+                this.body.scale.y = 1 - 0.05 * Math.sin(progress * Math.PI); // Slight vertical compression during whip
             } else {
-                // End attack animation
-                this.isAttacking = false;
-                this.rotation = 0;
+                // Return to normal - settle back
+                const progress = (this.animationTimer - (duration * 2) / 3) / (duration / 3);
+                this.rotation = 0.1 - 0.1 * progress;
+                this.body.scale.x = 0.9 + 0.1 * progress;
+                this.body.scale.y = 0.95 + 0.05 * progress;
+                
+                if (this.animationTimer >= duration) {
+                    // End attack animation
+                    this.isAttacking = false;
+                    this.rotation = 0;
+                    this.body.scale.set(1, 1);
+                }
             }
         } else {
             // Walk or Idle animation

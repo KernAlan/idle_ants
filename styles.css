@@ -877,8 +877,8 @@ input, textarea {
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
-    width: 320px;
-    max-width: 90vw;
+    width: 350px;
+    max-width: 95vw;
     max-height: calc(100vh - 40px);
     z-index: 9999;
     display: none;
@@ -895,7 +895,7 @@ input, textarea {
     border-radius: 15px;
     padding: 15px;
     width: 100%;
-    max-height: calc(100vh - 60px);
+    max-height: calc(100vh - 80px);
     overflow-y: auto;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     color: white;
@@ -941,8 +941,8 @@ input, textarea {
 }
 
 .modal-content {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    display: flex;
+    flex-direction: column;
     gap: 12px;
 }
 
@@ -976,16 +976,34 @@ input, textarea {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    text-align: left;
 }
 
 .modal-btn i {
     margin-right: 8px;
 }
 
+.modal-btn span:first-child {
+    text-align: left !important;
+    flex: 1;
+    margin-right: 10px;
+}
+
+.modal-btn span:last-child {
+    text-align: right !important;
+    flex-shrink: 0;
+    min-width: 50px;
+}
+
 .modal-btn:hover {
     background: linear-gradient(135deg, #FF8E8E 0%, #66D9D6 50%, #67C3F3 100%);
     transform: scale(1.02);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.modal-btn:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .modal-btn:disabled,
@@ -1075,7 +1093,6 @@ button.modal-btn:disabled:hover {
     }
     
     .modal-content {
-        grid-template-columns: 1fr !important;
         gap: 12px !important;
         padding-bottom: 20px !important;
     }
@@ -1106,6 +1123,18 @@ button.modal-btn:disabled:hover {
     
     .modal-btn span {
         display: block !important;
+    }
+    
+    .modal-btn span:first-child {
+        text-align: left !important;
+        flex: 1 !important;
+        margin-right: 10px !important;
+    }
+    
+    .modal-btn span:last-child {
+        text-align: right !important;
+        flex-shrink: 0 !important;
+        min-width: 50px !important;
     }
     
     .modal-close {

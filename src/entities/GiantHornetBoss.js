@@ -9,7 +9,7 @@ IdleAnts.Entities.GiantHornetBoss = class extends PIXI.Container {
         this.vx = 0; this.vy = 0;
         this.maxHp = 3000;
         this.hp = this.maxHp;
-        this.attackDamage = 120;
+        this.attackDamage = 60; // Halved from 120
         this.attackRange = 150;
         this.attackCooldown = 45;
         this._attackTimer = 0;

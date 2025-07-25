@@ -12,9 +12,17 @@ IdleAnts.Entities.FireAnt = class extends IdleAnts.Entities.AntBase {
         this.tint = 0xFF0000;
 
         // Combat-related placeholders (future implementation)
-        this.attackDamage = 6; // nerfed damage
+        this.attackDamage = 12; // 2x attack power
         this.attackCooldown = 60; // frames
         this._attackTimer = 0;
+
+        // Override HP calculation for 1.5x health
+        const baseHp = 75; // 1.5x the base 50 HP
+        const strengthMultiplier = IdleAnts.app && IdleAnts.app.resourceManager ? 
+            IdleAnts.app.resourceManager.stats.strengthMultiplier : 1;
+        this.maxHp = baseHp + (strengthMultiplier - 1) * 37.5; // 1.5x HP scaling per strength level
+        this.hp = this.maxHp;
+        this.updateHealthBar();
 
         // Leg animation setup (reuse regular ant behaviour)
         this.legPhase = Math.random() * Math.PI * 2;

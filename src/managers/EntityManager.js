@@ -662,10 +662,8 @@ IdleAnts.Managers.EntityManager = class {
                 this.entities.foods.splice(foodIndex, 1);
             }
             
-            // Add a new food source at a certain chance on harvest
-            if (Math.random() < 0.8) {
-                this.createFood();
-            }
+            // Removed dynamic food spawning on harvest to prevent performance issues
+            // Food spawning is now only handled by the periodic timer in handleFoodSpawning()
         } else {
             // Food is not being removed - this ant's share is determined proportionally
             // Get the ant's contribution percentage from the food item
@@ -1081,8 +1079,8 @@ IdleAnts.Managers.EntityManager = class {
         if (this.foodSpawnCounter >= this.foodSpawnInterval) {
             this.foodSpawnCounter = 0;
             
-            // Spawn 1-3 food items at random
-            const foodCount = 1 + Math.floor(Math.random() * 3);
+            // Spawn a constant 2 food items to maintain consistent performance
+            const foodCount = 2;
             this.createFood(foodCount);
         }
     }

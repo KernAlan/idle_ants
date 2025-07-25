@@ -149,23 +149,7 @@
                             </button>
                         </div>
                         <div class="modal-section">
-                            <h3>Queen</h3>
-                            <button id="modal-unlock-queen" class="modal-btn" style="display: none;">
-                                <span><i class="fas fa-crown"></i>Unlock Queen</span>
-                                <span id="modal-unlock-queen-cost">1000</span>
-                            </button>
-                            <button id="modal-upgrade-queen" class="modal-btn">
-                                <span><i class="fas fa-arrow-up"></i>Upgrade Queen</span>
-                                <span id="modal-upgrade-queen-cost">2000</span>
-                            </button>
-                            <div id="modal-queen-stats" class="modal-stats">
-                                Level: <span id="modal-queen-level">0</span>/5 | 
-                                Spawn: <span id="modal-queen-larvae-capacity">1 per spawn</span> | 
-                                Rate: <span id="modal-queen-larvae-rate">60-120</span>s
-                            </div>
-                        </div>
-                        <div class="modal-section">
-                            <h3>Flying Ants</h3>
+                            <h3>Special Ants</h3>
                             <button id="modal-unlock-flying-ants" class="modal-btn">
                                 <span><i class="fas fa-feather-alt"></i>Unlock Flying Ants</span>
                                 <span id="modal-flying-ant-unlock-cost">500</span>
@@ -178,11 +162,8 @@
                                 <span><i class="fas fa-expand"></i>Expand Flying</span>
                                 <span id="modal-expand-flying-cost">150</span>
                             </button>
-                        </div>
-                        <div class="modal-section">
-                            <h3>Super Ants</h3>
                             <button id="modal-unlock-car-ants" class="modal-btn">
-                                <span><i class="fas fa-car"></i>Car Ants</span>
+                                <span><i class="fas fa-car"></i>Unlock Car Ants</span>
                                 <span id="modal-car-ant-unlock-cost">10000</span>
                             </button>
                             <button id="modal-buy-car-ant" class="modal-btn hidden">
@@ -194,7 +175,7 @@
                                 <span id="modal-expand-car-ant-cost">5000</span>
                             </button>
                             <button id="modal-unlock-fire-ants" class="modal-btn">
-                                <span><i class="fas fa-fire"></i>Fire Ants</span>
+                                <span><i class="fas fa-fire"></i>Unlock Fire Ants</span>
                                 <span id="modal-fire-ant-unlock-cost">20000</span>
                             </button>
                             <button id="modal-buy-fire-ant" class="modal-btn hidden">
@@ -236,6 +217,17 @@
                             <button id="modal-upgrade-strength" class="modal-btn">
                                 <span><i class="fas fa-dumbbell"></i>Ant Strength</span>
                                 <span id="modal-strength-upgrade-cost">100</span>
+                            </button>
+                        </div>
+                        <div class="modal-section">
+                            <h3>Queen Upgrades</h3>
+                            <button id="modal-unlock-queen" class="modal-btn" style="display: none;">
+                                <span><i class="fas fa-crown"></i>Unlock Queen</span>
+                                <span id="modal-unlock-queen-cost">1000</span>
+                            </button>
+                            <button id="modal-upgrade-queen" class="modal-btn">
+                                <span><i class="fas fa-arrow-up"></i>Upgrade Queen <span id="modal-queen-level-display">0</span>/5</span>
+                                <span id="modal-upgrade-queen-cost">2000</span>
                             </button>
                         </div>
                     </div>
@@ -315,7 +307,7 @@
                     <button id="expand-flying-ants" class="upgrade-btn special-btn hidden"><i class="fas fa-expand"></i>Expand Flying (<span id="expand-flying-cost">150</span>)</button>
                     <button id="unlock-queen" class="upgrade-btn queen-btn" style="display: none;"><i class="fas fa-crown"></i>Queen Ant (<span id="unlock-queen-cost">1000</span>)</button>
                     <button id="buy-queen" class="upgrade-btn queen-btn" style="display: none;"><i class="fas fa-plus"></i>Buy Queen</button>
-                    <button id="upgrade-queen" class="upgrade-btn queen-btn"><i class="fas fa-arrow-up"></i>Upgrade Queen (<span id="upgrade-queen-cost">2000</span>)</button>
+                    <button id="upgrade-queen" class="upgrade-btn queen-btn"><i class="fas fa-arrow-up"></i>Upgrade Queen <span id="queen-level-display">0</span>/5 (<span id="upgrade-queen-cost">2000</span>)</button>
                     <div id="queen-stats" style="font-size: 0.8em; margin-top: 5px;">
                         Level: <span id="queen-level">0</span>/5 | 
                         Spawn: <span id="queen-larvae-capacity">1 per spawn</span> | 

@@ -12,7 +12,7 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
         this.isQueen = true;
         
         // Queen health system - scales with level
-        this.baseMaxHp = 1000; // Base HP at level 0
+        this.baseMaxHp = 1200; // Base HP at level 0 (1.2x increase)
         this.updateHPFromLevel();
         this.healthBarTimer = 0;
         
@@ -473,8 +473,8 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
         const queenLevel = IdleAnts.app && IdleAnts.app.resourceManager ? 
             IdleAnts.app.resourceManager.stats.queenUpgradeLevel : 0;
         
-        // Increase HP by 300 per level (1000 -> 1300 -> 1600 -> etc)
-        const newMaxHp = this.baseMaxHp + (queenLevel * 300);
+        // Increase HP by 360 per level (1200 -> 1560 -> 1920 -> etc) - 1.2x scaling
+        const newMaxHp = this.baseMaxHp + (queenLevel * 360);
         
         // If HP increased, maintain current HP percentage and add the increase
         if (newMaxHp > this.maxHp) {

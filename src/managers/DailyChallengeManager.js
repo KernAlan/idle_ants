@@ -63,17 +63,6 @@ IdleAnts.Managers.DailyChallengeManager = class {
                 icon: '🚁',
                 category: 'milestone'
             },
-            spiderSlayer: {
-                id: 'spiderSlayer',
-                name: '🕷️ Spider Slayer',
-                description: 'Defeat the Spider Boss',
-                type: 'boss',
-                baseTarget: 1,
-                multiplier: 1,
-                reward: { type: 'food', amount: 15000 },
-                icon: '🕷️',
-                category: 'milestone'
-            },
             efficiency100: {
                 id: 'efficiency100',
                 name: '📈 Efficient Colony',
@@ -153,7 +142,6 @@ IdleAnts.Managers.DailyChallengeManager = class {
             firstUpgrade: 0,
             mediumColony: 0,
             flyingAnts: 0,
-            spiderSlayer: 0,
             efficiency100: 0,
             foodHoarder: 0,
             largeColony: 0,
@@ -164,7 +152,6 @@ IdleAnts.Managers.DailyChallengeManager = class {
         
         // Boss defeat tracking
         this.bossesDefeated = {
-            spider: false,
             tarantula: false
         };
         
@@ -295,9 +282,7 @@ IdleAnts.Managers.DailyChallengeManager = class {
     
     // Track boss defeats
     trackBossDefeat(bossType) {
-        if (bossType === 'spider') {
-            this.updateChallengeProgress('spiderSlayer', 1);
-        } else if (bossType === 'tarantula') {
+        if (bossType === 'tarantula') {
             this.updateChallengeProgress('tarantulaSlayer', 1);
         }
     }
@@ -351,9 +336,6 @@ IdleAnts.Managers.DailyChallengeManager = class {
         this.checkAllUnitsUnlocked();
         
         // Check boss defeats (these need to be tracked when bosses are defeated)
-        if (this.bossesDefeated.spider) {
-            this.updateChallengeProgress('spiderSlayer', 1);
-        }
         if (this.bossesDefeated.tarantula) {
             this.updateChallengeProgress('tarantulaSlayer', 1);
         }
@@ -509,6 +491,12 @@ IdleAnts.Managers.DailyChallengeManager = class {
     createChallengeUI() {
         // Floating trigger button removed - now only accessible via settings modal
         
+        // Check if modal already exists to prevent duplicates
+        if (document.getElementById('challenge-modal-backdrop')) {
+            console.log('Challenge modal already exists, skipping creation');
+            return;
+        }
+        
         // Create modal backdrop
         const modalBackdrop = document.createElement('div');
         modalBackdrop.id = 'challenge-modal-backdrop';
@@ -544,7 +532,13 @@ IdleAnts.Managers.DailyChallengeManager = class {
                 this.closeModal();
             }
         });
-        document.getElementById('challenge-close-btn').addEventListener('click', () => this.closeModal());
+        
+        const closeBtn = document.getElementById('challenge-close-btn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => this.closeModal());
+        } else {
+            console.error('Challenge close button not found during event listener setup');
+        }
         
         // Add CSS
         const style = document.createElement('style');
@@ -922,17 +916,32 @@ IdleAnts.Managers.DailyChallengeManager = class {
     
     showModal() {
         try {
+            console.log('showModal called - starting');
             this.isModalOpen = true;
+            
             const backdrop = document.getElementById('challenge-modal-backdrop');
+            console.log('backdrop element:', backdrop);
+            
             if (backdrop) {
+                console.log('backdrop found, adding show class');
                 backdrop.classList.add('show');
+                console.log('backdrop classes after adding show:', backdrop.className);
+                
+                // Force display style to override any inline styles
+                backdrop.style.display = 'flex';
+                
+                // Check if modal is actually visible
+                const computedStyle = window.getComputedStyle(backdrop);
+                console.log('backdrop display style after fix:', computedStyle.display);
             } else {
                 console.error('Challenge modal backdrop not found');
                 return;
             }
             
             // Update the challenge list when modal opens
+            console.log('updating challenge UI');
             this.updateChallengeUI();
+            console.log('showModal completed successfully');
         } catch (error) {
             console.error('Error in showModal:', error);
             alert('Failed to open challenges modal. Error: ' + error.message);
@@ -944,6 +953,7 @@ IdleAnts.Managers.DailyChallengeManager = class {
         const backdrop = document.getElementById('challenge-modal-backdrop');
         if (backdrop) {
             backdrop.classList.remove('show');
+            backdrop.style.display = 'none';
         }
     }
     

@@ -63,6 +63,8 @@ IdleAnts.Managers.UIManager = class {
             autofeederLevel: document.getElementById('autofeeder-level'),
             upgradeQueenCost: document.getElementById('upgrade-queen-cost'),
             queenLevel: document.getElementById('queen-level'),
+            queenLevelDisplay: document.getElementById('queen-level-display'),
+            modalQueenLevelDisplay: document.getElementById('modal-queen-level-display'),
             queenLarvaeCapacity: document.getElementById('queen-larvae-capacity'),
             queenLarvaeRate: document.getElementById('queen-larvae-rate')
         };
@@ -307,6 +309,8 @@ IdleAnts.Managers.UIManager = class {
                 // Update queen stats using cached elements
                 updateCachedElementText(this.elements.upgradeQueenCost, this.resourceManager.stats.queenUpgradeCost);
                 updateCachedElementText(this.elements.queenLevel, this.resourceManager.stats.queenUpgradeLevel);
+                updateCachedElementText(this.elements.queenLevelDisplay, this.resourceManager.stats.queenUpgradeLevel);
+                updateCachedElementText(this.elements.modalQueenLevelDisplay, this.resourceManager.stats.queenUpgradeLevel);
                 
                 // Keep the UI elements but don't update them based on upgrades
                 // These will be replaced with HP in a future update
@@ -381,7 +385,9 @@ IdleAnts.Managers.UIManager = class {
         updateButtonState('expand-colony', !this.resourceManager.canAfford(this.resourceManager.stats.expandCost));
         
         // Update flying ant button states
-        updateButtonState('unlock-flying-ants', this.resourceManager.stats.flyingAntsUnlocked || !this.resourceManager.canAfford(this.resourceManager.stats.flyingAntUnlockCost));
+        if (!this.resourceManager.stats.flyingAntsUnlocked) {
+            updateButtonState('unlock-flying-ants', !this.resourceManager.canUnlockFlyingAnts());
+        }
         
         // Update queen ant button states
         // Hide unlock and buy buttons
@@ -395,16 +401,25 @@ IdleAnts.Managers.UIManager = class {
             buyQueenButton.style.display = 'none';
         }
         
-        // Only enable upgrade button if player can afford it
+        // Only enable upgrade button if player can afford it AND queen is not at max level
         const canUpgradeQueen = this.resourceManager.canUpgradeQueen();
         const queenAtMaxLevel = this.resourceManager.stats.queenUpgradeLevel >= this.resourceManager.stats.maxQueenUpgradeLevel;
         
-        updateButtonState('upgrade-queen', !canUpgradeQueen);
+        updateButtonState('upgrade-queen', !canUpgradeQueen || queenAtMaxLevel);
         
         // Update button text when queen is at max level
         const upgradeQueenButton = document.getElementById('upgrade-queen');
+        const modalUpgradeQueenButton = document.getElementById('modal-upgrade-queen');
+        
         if (upgradeQueenButton && queenAtMaxLevel) {
-            upgradeQueenButton.innerHTML = `<i class="fas fa-crown"></i>Queen Maxed (5/5)`;
+            upgradeQueenButton.innerHTML = `<i class="fas fa-crown"></i>Queen Maxed 5/5`;
+        }
+        
+        if (modalUpgradeQueenButton && queenAtMaxLevel) {
+            modalUpgradeQueenButton.innerHTML = `
+                <span><i class="fas fa-crown"></i>Queen Maxed 5/5</span>
+                <span>MAX</span>
+            `;
         }
         
         // Show/hide flying ant buttons based on unlock status
@@ -433,7 +448,9 @@ IdleAnts.Managers.UIManager = class {
         toggleElementVisibility('unlock-autofeeder', !autofeederUnlocked);
         toggleElementVisibility('upgrade-autofeeder', autofeederUnlocked);
         
-        if (autofeederUnlocked) {
+        if (!autofeederUnlocked) {
+            updateButtonState('unlock-autofeeder', !this.resourceManager.canAfford(this.resourceManager.stats.autofeederCost));
+        } else {
             updateButtonState('upgrade-autofeeder', !this.resourceManager.canUpgradeAutofeeder());
             
             // Update button text to show current food amount

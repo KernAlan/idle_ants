@@ -336,9 +336,13 @@ IdleAnts.Managers.ResourceManager = class {
     }
     
     // Flying ant methods
+    canUnlockFlyingAnts() {
+        return this.canAfford(this.stats.flyingAntUnlockCost) && !this.stats.flyingAntsUnlocked;
+    }
+
     unlockFlyingAnts() {
         // Check if we can afford it and if flying ants aren't already unlocked
-        if (this.resources.food >= this.stats.flyingAntUnlockCost && !this.stats.flyingAntsUnlocked) {
+        if (this.canUnlockFlyingAnts()) {
             // Deduct the food cost
             this.resources.food -= this.stats.flyingAntUnlockCost;
             
