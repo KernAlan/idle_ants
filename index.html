@@ -129,9 +129,8 @@
                     <span>Settings</span>
                 </button>
             </div>
-            
-            <!-- Modal System -->
-            <!-- Colony Modal -->
+
+            <!-- Keep original upgrade elements hidden for backward compatibility -->
             <div id="colony-modal" class="modal-backdrop">
                 <div class="modal-container">
                     <div class="modal-header">
@@ -438,6 +437,9 @@
     <script src="src/Game.js"></script>
     <script src="src/index.js"></script>
     
+    <!-- Script to move modals outside UI container for mobile fix -->
+    <script src="move_modals.js"></script>
+    
     <!-- Script to handle the audio start button -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -483,10 +485,7 @@
             
             const modal = document.getElementById(modalId);
             if (modal) {
-                // Position modal near the trigger button
-                if (triggerElement) {
-                    positionModalNearElement(modal, triggerElement);
-                }
+                // Don't position modal dynamically - let CSS handle it
                 modal.classList.add('show');
                 // Update modal content when opened
                 updateModalContent(modalId);
