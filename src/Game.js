@@ -113,15 +113,15 @@ IdleAnts.Game = class {
         let scale;
         
         if (isPhone) {
-            // Calculate scale to fit within viewport with padding
-            const maxWidthScale = (this.app.screen.width * 0.9) / this.titleSprite.texture.width;
-            const maxHeightScale = (this.app.screen.height * 0.5) / this.titleSprite.texture.height;
-            scale = Math.min(maxWidthScale, maxHeightScale, 0.4);
+            // Calculate scale to fit within viewport with more padding for text
+            const maxWidthScale = (this.app.screen.width * 0.8) / this.titleSprite.texture.width;
+            const maxHeightScale = (this.app.screen.height * 0.35) / this.titleSprite.texture.height;
+            scale = Math.min(maxWidthScale, maxHeightScale, 0.3);
         } else if (isMobile) {
             // Medium scale for tablets
-            const maxWidthScale = (this.app.screen.width * 0.85) / this.titleSprite.texture.width;
-            const maxHeightScale = (this.app.screen.height * 0.6) / this.titleSprite.texture.height;
-            scale = Math.min(maxWidthScale, maxHeightScale, 0.5);
+            const maxWidthScale = (this.app.screen.width * 0.8) / this.titleSprite.texture.width;
+            const maxHeightScale = (this.app.screen.height * 0.45) / this.titleSprite.texture.height;
+            scale = Math.min(maxWidthScale, maxHeightScale, 0.4);
         } else {
             // Original scale for desktop
             scale = 0.6;
@@ -129,7 +129,13 @@ IdleAnts.Game = class {
         
         this.titleSprite.scale.set(scale);
         this.titleSprite.x = this.app.screen.width / 2;  // Center horizontally
-        this.titleSprite.y = this.app.screen.height / 2; // Center vertically
+        
+        // Different positioning for mobile vs desktop
+        if (isPhone || isMobile) {
+            this.titleSprite.y = this.app.screen.height * 0.35; // Position higher on mobile for text
+        } else {
+            this.titleSprite.y = this.app.screen.height / 2; // Center vertically on desktop
+        }
         this.titleContainer.addChild(this.titleSprite);
         
         // Add "Press any key to start" text with responsive sizing
@@ -171,19 +177,13 @@ IdleAnts.Game = class {
         this.titleText.anchor.set(0.5);
         this.titleText.x = this.app.screen.width / 2;
         
-        // Position text below the logo with dynamic spacing
-        const logoBottom = this.titleSprite.y + (this.titleSprite.height * this.titleSprite.scale.y) / 2;
-        const textTopMargin = isPhone ? 30 : isMobile ? 40 : 60;
-        const bottomMargin = isPhone ? 30 : isMobile ? 50 : 100;
-        
-        // Position text between logo and bottom of screen
-        const availableSpace = this.app.screen.height - logoBottom - bottomMargin;
-        this.titleText.y = logoBottom + Math.min(textTopMargin, availableSpace / 2);
-        
-        // Ensure text doesn't go off bottom of screen
-        const textBottom = this.titleText.y + (this.titleText.height / 2);
-        if (textBottom > this.app.screen.height - bottomMargin) {
-            this.titleText.y = this.app.screen.height - bottomMargin - (this.titleText.height / 2);
+        // Position text appropriately for each screen type
+        if (isPhone || isMobile) {
+            this.titleText.y = this.app.screen.height * 0.7;
+        } else {
+            // For desktop, position below the centered logo
+            const logoBottom = this.titleSprite.y + (this.titleSprite.height * this.titleSprite.scale.y) / 2;
+            this.titleText.y = logoBottom + 80;
         }
         
         this.titleContainer.addChild(this.titleText);
@@ -562,40 +562,40 @@ IdleAnts.Game = class {
             let scale;
             
             if (isPhone) {
-                // Calculate scale to fit within viewport with padding
-                const maxWidthScale = (newWidth * 0.9) / this.titleSprite.texture.width;
-                const maxHeightScale = (newHeight * 0.5) / this.titleSprite.texture.height;
-                scale = Math.min(maxWidthScale, maxHeightScale, 0.4);
+                // Calculate scale to fit within viewport with more padding for text
+                const maxWidthScale = (newWidth * 0.8) / this.titleSprite.texture.width;
+                const maxHeightScale = (newHeight * 0.35) / this.titleSprite.texture.height;
+                scale = Math.min(maxWidthScale, maxHeightScale, 0.3);
             } else if (isMobile) {
                 // Medium scale for tablets
-                const maxWidthScale = (newWidth * 0.85) / this.titleSprite.texture.width;
-                const maxHeightScale = (newHeight * 0.6) / this.titleSprite.texture.height;
-                scale = Math.min(maxWidthScale, maxHeightScale, 0.5);
+                const maxWidthScale = (newWidth * 0.8) / this.titleSprite.texture.width;
+                const maxHeightScale = (newHeight * 0.45) / this.titleSprite.texture.height;
+                scale = Math.min(maxWidthScale, maxHeightScale, 0.4);
             } else {
                 scale = 0.6;
             }
             
             this.titleSprite.scale.set(scale);
             this.titleSprite.x = newWidth / 2;
-            this.titleSprite.y = newHeight / 2;
+            
+            // Different positioning for mobile vs desktop
+            if (isPhone || isMobile) {
+                this.titleSprite.y = newHeight * 0.35;
+            } else {
+                this.titleSprite.y = newHeight / 2;
+            }
             
             // Also reposition the title text when screen resizes
             if (this.titleText) {
                 this.titleText.x = newWidth / 2;
                 
-                // Position text below the logo with dynamic spacing
-                const logoBottom = this.titleSprite.y + (this.titleSprite.height * this.titleSprite.scale.y) / 2;
-                const textTopMargin = isPhone ? 30 : isMobile ? 40 : 60;
-                const bottomMargin = isPhone ? 30 : isMobile ? 50 : 100;
-                
-                // Position text between logo and bottom of screen
-                const availableSpace = newHeight - logoBottom - bottomMargin;
-                this.titleText.y = logoBottom + Math.min(textTopMargin, availableSpace / 2);
-                
-                // Ensure text doesn't go off bottom of screen
-                const textBottom = this.titleText.y + (this.titleText.height / 2);
-                if (textBottom > newHeight - bottomMargin) {
-                    this.titleText.y = newHeight - bottomMargin - (this.titleText.height / 2);
+                // Position text appropriately for each screen type
+                if (isPhone || isMobile) {
+                    this.titleText.y = newHeight * 0.7;
+                } else {
+                    // For desktop, position below the centered logo
+                    const logoBottom = this.titleSprite.y + (this.titleSprite.height * this.titleSprite.scale.y) / 2;
+                    this.titleText.y = logoBottom + 80;
                 }
             }
         }
