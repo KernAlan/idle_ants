@@ -171,9 +171,21 @@ IdleAnts.Game = class {
         this.titleText.anchor.set(0.5);
         this.titleText.x = this.app.screen.width / 2;
         
-        // Position text closer to bottom on mobile to account for smaller screens
-        const bottomMargin = isPhone ? 50 : isMobile ? 70 : 100;
-        this.titleText.y = this.app.screen.height - bottomMargin;
+        // Position text below the logo with dynamic spacing
+        const logoBottom = this.titleSprite.y + (this.titleSprite.height * this.titleSprite.scale.y) / 2;
+        const textTopMargin = isPhone ? 30 : isMobile ? 40 : 60;
+        const bottomMargin = isPhone ? 30 : isMobile ? 50 : 100;
+        
+        // Position text between logo and bottom of screen
+        const availableSpace = this.app.screen.height - logoBottom - bottomMargin;
+        this.titleText.y = logoBottom + Math.min(textTopMargin, availableSpace / 2);
+        
+        // Ensure text doesn't go off bottom of screen
+        const textBottom = this.titleText.y + (this.titleText.height / 2);
+        if (textBottom > this.app.screen.height - bottomMargin) {
+            this.titleText.y = this.app.screen.height - bottomMargin - (this.titleText.height / 2);
+        }
+        
         this.titleContainer.addChild(this.titleText);
         
         // Add pulsing animation
@@ -570,8 +582,21 @@ IdleAnts.Game = class {
             // Also reposition the title text when screen resizes
             if (this.titleText) {
                 this.titleText.x = newWidth / 2;
-                const bottomMargin = isPhone ? 50 : isMobile ? 70 : 100;
-                this.titleText.y = newHeight - bottomMargin;
+                
+                // Position text below the logo with dynamic spacing
+                const logoBottom = this.titleSprite.y + (this.titleSprite.height * this.titleSprite.scale.y) / 2;
+                const textTopMargin = isPhone ? 30 : isMobile ? 40 : 60;
+                const bottomMargin = isPhone ? 30 : isMobile ? 50 : 100;
+                
+                // Position text between logo and bottom of screen
+                const availableSpace = newHeight - logoBottom - bottomMargin;
+                this.titleText.y = logoBottom + Math.min(textTopMargin, availableSpace / 2);
+                
+                // Ensure text doesn't go off bottom of screen
+                const textBottom = this.titleText.y + (this.titleText.height / 2);
+                if (textBottom > newHeight - bottomMargin) {
+                    this.titleText.y = newHeight - bottomMargin - (this.titleText.height / 2);
+                }
             }
         }
         
