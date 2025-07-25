@@ -8,6 +8,10 @@ IdleAnts.Entities.HerculesBeetleEnemy = class extends IdleAnts.Entities.Enemy {
         super(texture,mapBounds);
         this.texture = PIXI.Texture.EMPTY;
         this.createBody();
+        
+        // Enemy name for tooltip
+        this.enemyName = "Hercules Beetle";
+        
         this.scale.set(2.2); // bigger than grasshopper, smaller than mantis
 
         // Combat stats (between grasshopper and mantis)

@@ -9,6 +9,10 @@ IdleAnts.Entities.WoollyBearEnemy = class extends IdleAnts.Entities.Enemy {
         // override graphic: draw caterpillar body
         this.texture = PIXI.Texture.EMPTY;
         this.createBody();
+        
+        // Enemy name for tooltip
+        this.enemyName = "Woolly Bear Caterpillar";
+        
         this.scale.set(1.0);
         this.speed = 0.5;
         this.attackDamage = 4;

@@ -10,6 +10,9 @@ IdleAnts.Entities.CricketEnemy = class extends IdleAnts.Entities.Enemy {
         this.texture = PIXI.Texture.EMPTY;
         this.createBody();
 
+        // Enemy name for tooltip
+        this.enemyName = "Cricket";
+
         // Stats – faster, lower HP than grasshopper
         this.speed = 1.8;
         this.hopSpeed = 15;            // pixels per frame burst

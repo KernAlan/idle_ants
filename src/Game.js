@@ -168,7 +168,7 @@ IdleAnts.Game = class {
         this.titleText.x = this.app.screen.width / 2;
         
         // Position text closer to bottom on mobile to account for smaller screens
-        const bottomMargin = isPhone ? 40 : isMobile ? 60 : 100;
+        const bottomMargin = isPhone ? 50 : isMobile ? 70 : 100;
         this.titleText.y = this.app.screen.height - bottomMargin;
         this.titleContainer.addChild(this.titleText);
         
@@ -556,6 +556,13 @@ IdleAnts.Game = class {
             this.titleSprite.scale.set(scale);
             this.titleSprite.x = newWidth / 2;
             this.titleSprite.y = newHeight / 2;
+            
+            // Also reposition the title text when screen resizes
+            if (this.titleText) {
+                this.titleText.x = newWidth / 2;
+                const bottomMargin = isPhone ? 50 : isMobile ? 70 : 100;
+                this.titleText.y = newHeight - bottomMargin;
+            }
         }
         
         if (this.state === IdleAnts.Game.States.TITLE && this.titleText) {
@@ -566,10 +573,10 @@ IdleAnts.Game = class {
             let fontSize, bottomMargin;
             if (isPhone) {
                 fontSize = 24;
-                bottomMargin = 40;
+                bottomMargin = 50;
             } else if (isMobile) {
                 fontSize = 32;
-                bottomMargin = 60;
+                bottomMargin = 70;
             } else {
                 fontSize = 48;
                 bottomMargin = 100;
