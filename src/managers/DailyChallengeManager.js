@@ -309,10 +309,10 @@ IdleAnts.Managers.DailyChallengeManager = class {
         this.updateChallengeProgress('firstMilestone', totalFoodCollected);
         this.updateChallengeProgress('foodHoarder', totalFoodCollected);
         
-        // Track efficiency milestones
-        const foodPerSecond = this.resourceManager.stats.foodPerSecond || 0;
-        this.updateChallengeProgress('efficiency100', foodPerSecond);
-        this.updateChallengeProgress('efficiency800', foodPerSecond);
+        // Track efficiency milestones using actual food rate
+        const actualFoodPerSecond = this.resourceManager.getActualFoodRate() || 0;
+        this.updateChallengeProgress('efficiency100', actualFoodPerSecond);
+        this.updateChallengeProgress('efficiency800', actualFoodPerSecond);
     }
     
     // Update tracking - simplified for milestone challenges
@@ -337,10 +337,10 @@ IdleAnts.Managers.DailyChallengeManager = class {
         this.updateChallengeProgress('firstMilestone', totalFoodCollected);
         this.updateChallengeProgress('foodHoarder', totalFoodCollected);
         
-        // Check efficiency milestones
-        const foodPerSecond = this.resourceManager.stats.foodPerSecond || 0;
-        this.updateChallengeProgress('efficiency100', foodPerSecond);
-        this.updateChallengeProgress('efficiency800', foodPerSecond);
+        // Check efficiency milestones using actual food rate
+        const actualFoodPerSecond = this.resourceManager.getActualFoodRate() || 0;
+        this.updateChallengeProgress('efficiency100', actualFoodPerSecond);
+        this.updateChallengeProgress('efficiency800', actualFoodPerSecond);
         
         // Check unlock status
         if (this.resourceManager.stats.flyingAntsUnlocked) {
