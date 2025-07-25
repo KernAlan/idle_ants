@@ -113,11 +113,15 @@ IdleAnts.Game = class {
         let scale;
         
         if (isPhone) {
-            // Very small scale for phones to fit properly
-            scale = Math.min(0.4, (this.app.screen.width * 0.8) / this.titleSprite.width, (this.app.screen.height * 0.6) / this.titleSprite.height);
+            // Calculate scale to fit within viewport with padding
+            const maxWidthScale = (this.app.screen.width * 0.9) / this.titleSprite.texture.width;
+            const maxHeightScale = (this.app.screen.height * 0.5) / this.titleSprite.texture.height;
+            scale = Math.min(maxWidthScale, maxHeightScale, 0.4);
         } else if (isMobile) {
             // Medium scale for tablets
-            scale = Math.min(0.5, (this.app.screen.width * 0.9) / this.titleSprite.width, (this.app.screen.height * 0.7) / this.titleSprite.height);
+            const maxWidthScale = (this.app.screen.width * 0.85) / this.titleSprite.texture.width;
+            const maxHeightScale = (this.app.screen.height * 0.6) / this.titleSprite.texture.height;
+            scale = Math.min(maxWidthScale, maxHeightScale, 0.5);
         } else {
             // Original scale for desktop
             scale = 0.6;
@@ -546,9 +550,15 @@ IdleAnts.Game = class {
             let scale;
             
             if (isPhone) {
-                scale = Math.min(0.4, (newWidth * 0.8) / this.titleSprite.texture.width, (newHeight * 0.6) / this.titleSprite.texture.height);
+                // Calculate scale to fit within viewport with padding
+                const maxWidthScale = (newWidth * 0.9) / this.titleSprite.texture.width;
+                const maxHeightScale = (newHeight * 0.5) / this.titleSprite.texture.height;
+                scale = Math.min(maxWidthScale, maxHeightScale, 0.4);
             } else if (isMobile) {
-                scale = Math.min(0.5, (newWidth * 0.9) / this.titleSprite.texture.width, (newHeight * 0.7) / this.titleSprite.texture.height);
+                // Medium scale for tablets
+                const maxWidthScale = (newWidth * 0.85) / this.titleSprite.texture.width;
+                const maxHeightScale = (newHeight * 0.6) / this.titleSprite.texture.height;
+                scale = Math.min(maxWidthScale, maxHeightScale, 0.5);
             } else {
                 scale = 0.6;
             }
