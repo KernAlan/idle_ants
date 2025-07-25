@@ -112,6 +112,18 @@
                     <i class="fas fa-trophy"></i>
                     <span>Challenges</span>
                 </button>
+                <button id="leaderboard-btn" class="action-btn">
+                    <i class="fas fa-crown"></i>
+                    <span>Leaderboard</span>
+                </button>
+                <button id="debug-victory-btn" class="action-btn" style="background: #ff6b6b;">
+                    <i class="fas fa-bug"></i>
+                    <span>Debug Victory</span>
+                </button>
+                <button id="debug-challenges-btn" class="action-btn" style="background: #ff9800;">
+                    <i class="fas fa-trophy"></i>
+                    <span>Debug Challenges</span>
+                </button>
                 <button id="settings-btn" class="action-btn">
                     <i class="fas fa-sliders-h"></i>
                     <span>Settings</span>
@@ -415,6 +427,13 @@
     '''    <script src="src/entities/AnteaterBoss.js"></script>
     <script src="src/entities/TarantulaBoss.js"></script>
     <script src="src/entities/GiantHornetBoss.js"></script>''
+    <!-- Leaderboard System -->
+    <script src="github-leaderboard.js"></script>
+    <script src="LeaderboardManager.js"></script>
+    <script src="src/managers/VictoryScreenManager.js"></script>
+    <script src="src/managers/GameLeaderboardIntegration.js"></script>
+    <!-- Debug Script -->
+    <script src="debug-metrics.js"></script>
     <!-- Game Core -->
     <script src="src/Game.js"></script>
     <script src="src/index.js"></script>
@@ -532,11 +551,60 @@
                 challengesBtn.addEventListener('click', (event) => {
                     event.stopPropagation();
                     console.log('Challenges button clicked');
-                    if (IdleAnts.game && IdleAnts.game.dailyChallengeManager) {
-                        console.log('Found dailyChallengeManager, calling showModal');
-                        IdleAnts.game.dailyChallengeManager.showModal();
+                    try {
+                        if (IdleAnts.game && IdleAnts.game.dailyChallengeManager) {
+                            console.log('Found dailyChallengeManager, calling showModal');
+                            IdleAnts.game.dailyChallengeManager.showModal();
+                        } else {
+                            console.error('dailyChallengeManager not found or not initialized');
+                            alert('Challenges system not available. Please try refreshing the page.');
+                        }
+                    } catch (error) {
+                        console.error('Error opening challenges modal:', error);
+                        alert('Failed to open challenges. Please try refreshing the page.');
+                    }
+                });
+            }
+
+            // Special handler for leaderboard button (doesn't open a modal)
+            const leaderboardBtn = document.getElementById('leaderboard-btn');
+            if (leaderboardBtn) {
+                leaderboardBtn.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    console.log('Leaderboard button clicked');
+                    if (IdleAnts.game && IdleAnts.game.leaderboardIntegration) {
+                        IdleAnts.game.leaderboardIntegration.showLeaderboard();
                     } else {
-                        console.log('dailyChallengeManager not found');
+                        console.log('leaderboardIntegration not found');
+                    }
+                });
+            }
+
+            // Debug button to trigger victory state
+            const debugVictoryBtn = document.getElementById('debug-victory-btn');
+            if (debugVictoryBtn) {
+                debugVictoryBtn.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    console.log('Debug Victory button clicked');
+                    if (IdleAnts.game) {
+                        // Simulate defeating the anteater boss
+                        IdleAnts.game.onBossDefeated('anteater');
+                    } else {
+                        console.log('Game not found');
+                    }
+                });
+            }
+
+            // Debug button to complete all challenges
+            const debugChallengesBtn = document.getElementById('debug-challenges-btn');
+            if (debugChallengesBtn) {
+                debugChallengesBtn.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    console.log('Debug Challenges button clicked');
+                    if (IdleAnts.game && IdleAnts.game.dailyChallengeManager) {
+                        IdleAnts.game.dailyChallengeManager.debugCompleteAllChallenges();
+                    } else {
+                        console.log('Game or dailyChallengeManager not found');
                     }
                 });
             }

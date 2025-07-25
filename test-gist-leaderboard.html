@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test GitHub Gist Leaderboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a1a; color: white; }
+        .container { max-width: 600px; margin: 0 auto; }
+        button { padding: 10px 20px; margin: 10px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .leaderboard { background: #2a2a2a; padding: 20px; border-radius: 10px; margin-top: 20px; }
+        .score-entry { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #444; }
+        .rank { color: #FFD700; font-weight: bold; }
+        .loading { color: #FFA500; }
+        .error { color: #FF6B6B; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏆 GitHub Gist Leaderboard Test</h1>
+        
+        <div>
+            <h3>Submit Test Score:</h3>
+            <input type="text" id="playerName" placeholder="Your name" maxlength="20">
+            <input type="number" id="testScore" placeholder="Score" value="12345">
+            <button onclick="submitTestScore()">Submit Score</button>
+        </div>
+        
+        <div>
+            <button onclick="loadLeaderboard()">Load Leaderboard</button>
+            <button onclick="clearLocalStorage()">Clear Local Data</button>
+        </div>
+        
+        <div id="status"></div>
+        
+        <div id="leaderboard" class="leaderboard" style="display:none;">
+            <h3>Current Leaderboard:</h3>
+            <div id="scores"></div>
+        </div>
+    </div>
+
+    <script src="github-leaderboard.js"></script>
+    <script>
+        const leaderboard = new GitHubLeaderboard();
+        
+        async function submitTestScore() {
+            const playerName = document.getElementById('playerName').value.trim();
+            const score = parseInt(document.getElementById('testScore').value) || 0;
+            
+            if (!playerName) {
+                alert('Please enter your name!');
+                return;
+            }
+            
+            const status = document.getElementById('status');
+            status.innerHTML = '<div class="loading">Submitting score...</div>';
+            
+            try {
+                const testData = {
+                    player_name: playerName,
+                    total_score: score,
+                    food_collected: Math.floor(score * 0.8),
+                    play_time: Math.floor(score / 10),
+                    achievements_unlocked: Math.floor(score / 1000),
+                    upgrades_purchased: Math.floor(score / 500),
+                    submitted_at: new Date().toISOString()
+                };
+                
+                const result = await leaderboard.submitScore(testData);
+                
+                if (result.success) {
+                    status.innerHTML = `<div style="color: #90EE90;">✅ Score submitted! You ranked #${result.rank} out of ${result.total_players} players.</div>`;
+                    await loadLeaderboard(); // Refresh the leaderboard
+                } else {
+                    status.innerHTML = `<div class="error">❌ Failed to submit: ${result.error}</div>`;
+                }
+            } catch (error) {
+                status.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+                console.error('Submission error:', error);
+            }
+        }
+        
+        async function loadLeaderboard() {
+            const status = document.getElementById('status');
+            const leaderboardDiv = document.getElementById('leaderboard');
+            const scoresDiv = document.getElementById('scores');
+            
+            status.innerHTML = '<div class="loading">Loading leaderboard...</div>';
+            
+            try {
+                const scores = await leaderboard.getLeaderboard();
+                
+                if (scores.length === 0) {
+                    status.innerHTML = '<div>No scores yet. Be the first to submit!</div>';
+                    leaderboardDiv.style.display = 'none';
+                    return;
+                }
+                
+                status.innerHTML = `<div style="color: #90EE90;">✅ Loaded ${scores.length} scores</div>`;
+                
+                scoresDiv.innerHTML = scores.slice(0, 10).map((score, index) => `
+                    <div class="score-entry">
+                        <span><span class="rank">#${index + 1}</span> ${score.player_name}</span>
+                        <span>${score.total_score.toLocaleString()}</span>
+                    </div>
+                `).join('');
+                
+                leaderboardDiv.style.display = 'block';
+                
+            } catch (error) {
+                status.innerHTML = `<div class="error">❌ Failed to load: ${error.message}</div>`;
+                console.error('Load error:', error);
+            }
+        }
+        
+        function clearLocalStorage() {
+            localStorage.removeItem('idle-ants-gist-id');
+            document.getElementById('status').innerHTML = '<div style="color: #FFA500;">Local storage cleared. Next submission will create a new gist.</div>';
+        }
+        
+        // Load leaderboard on page load
+        window.onload = () => {
+            loadLeaderboard();
+        };
+    </script>
+</body>
+</html>

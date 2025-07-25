@@ -29,10 +29,6 @@ IdleAnts.Entities.GoldenAnt = class extends IdleAnts.Entities.AntBase {
         this.auraRadius = 200; // Buff nearby ants
         this.auraStrength = 2.0; // 2x boost to nearby ants
         
-        // Create a comically dazzling golden ant sprite
-        this.createGoldenAntSprite();
-        this.scale.set(1.3); // Make it bigger
-        
         // Let the parent class handle capacity initialization properly
         // Just ensure it matches our carry capacity
         this.capacity = this.carryCapacity;
@@ -52,188 +48,229 @@ IdleAnts.Entities.GoldenAnt = class extends IdleAnts.Entities.AntBase {
         this.regenerationTimer = 0;
     }
     
-    createGoldenAntSprite() {
-        // Create a new ABSOLUTELY GOLDEN ant graphics
-        const goldenAnt = new PIXI.Graphics();
+    // Override createTypeSpecificElements to create golden ant parts
+    createTypeSpecificElements() {
+        // Create proper ant body with golden materials
+        this.createGoldenBody();
+        this.createGoldenHead();
+        this.createGoldenLegs();
+        this.createGoldenAntennae();
+        this.createGoldenCrown();
         
-        // BODY - All golden, no black whatsoever!
-        // Outer golden glow
-        goldenAnt.beginFill(0xFFD700, 0.6);
-        goldenAnt.drawEllipse(0, 0, 20, 14);
-        goldenAnt.endFill();
+        // Make it bigger than normal ants
+        this.scale.set(1.3);
         
-        // Middle golden layer
-        goldenAnt.beginFill(0xFFD700, 0.8);
-        goldenAnt.drawEllipse(0, 0, 16, 10);
-        goldenAnt.endFill();
-        
-        // Main golden body - BRIGHT GOLD
-        goldenAnt.beginFill(0xFFD700);
-        goldenAnt.drawEllipse(0, 0, 14, 8);
-        goldenAnt.endFill();
-        
-        // Golden highlights - even brighter!
-        goldenAnt.beginFill(0xFFFACD);
-        goldenAnt.drawEllipse(-2, -1, 10, 5);
-        goldenAnt.endFill();
-        
-        goldenAnt.beginFill(0xFFFFE0); // Light yellow highlight
-        goldenAnt.drawEllipse(-3, -2, 6, 3);
-        goldenAnt.endFill();
-        
-        goldenAnt.beginFill(0xFFFFFF, 0.9); // Bright white shine
-        goldenAnt.drawEllipse(-4, -2, 4, 2);
-        goldenAnt.endFill();
-        
-        // ABDOMEN - Golden rear section (no black butt!)
-        goldenAnt.beginFill(0xFFD700, 0.5); // Golden glow
-        goldenAnt.drawEllipse(0, 8, 12, 8);
-        goldenAnt.endFill();
-        
-        goldenAnt.beginFill(0xFFD700); // Main golden abdomen
-        goldenAnt.drawEllipse(0, 8, 10, 6);
-        goldenAnt.endFill();
-        
-        goldenAnt.beginFill(0xFFFACD); // Golden highlight on abdomen
-        goldenAnt.drawEllipse(-1, 7, 6, 3);
-        goldenAnt.endFill();
-        
-        goldenAnt.beginFill(0xFFFFE0); // Light golden shine
-        goldenAnt.drawEllipse(-2, 6, 3, 2);
-        goldenAnt.endFill();
-        
-        // HEAD - Completely golden!
-        goldenAnt.beginFill(0xFFD700, 0.5); // Golden glow
-        goldenAnt.drawCircle(0, -10, 9);
-        goldenAnt.endFill();
-        
-        goldenAnt.beginFill(0xFFD700); // Main golden head
-        goldenAnt.drawCircle(0, -10, 7);
-        goldenAnt.endFill();
-        
-        goldenAnt.beginFill(0xFFFACD); // Golden highlight
-        goldenAnt.drawCircle(-1, -11, 4);
-        goldenAnt.endFill();
-        
-        goldenAnt.beginFill(0xFFFFE0); // Lighter golden highlight
-        goldenAnt.drawCircle(-2, -12, 2);
-        goldenAnt.endFill();
-        
-        // CROWN - Pure gold and white!
-        goldenAnt.beginFill(0xFFFFFF);
-        goldenAnt.moveTo(-5, -14);
-        goldenAnt.lineTo(-3, -20);
-        goldenAnt.lineTo(0, -17);
-        goldenAnt.lineTo(3, -20);
-        goldenAnt.lineTo(5, -14);
-        goldenAnt.lineTo(0, -13);
-        goldenAnt.closePath();
-        goldenAnt.endFill();
-        
-        // Crown base - golden
-        goldenAnt.beginFill(0xFFD700);
-        goldenAnt.drawRect(-5, -14, 10, 2);
-        goldenAnt.endFill();
-        
-        // Crown gems - bright colors
-        goldenAnt.beginFill(0xFF6B6B); // Bright red
-        goldenAnt.drawCircle(-2, -17, 1.2);
-        goldenAnt.beginFill(0x4ECDC4); // Bright teal  
-        goldenAnt.drawCircle(2, -17, 1.2);
-        goldenAnt.beginFill(0x45B7D1); // Bright blue
-        goldenAnt.drawCircle(0, -16, 1.2);
-        goldenAnt.endFill();
-        
-        // EYES - Golden with bright pupils (NO BLACK!)
-        goldenAnt.beginFill(0xFFFFFF); // White base
-        goldenAnt.drawCircle(-2.5, -10, 2);
-        goldenAnt.drawCircle(2.5, -10, 2);
-        goldenAnt.endFill();
-        
-        goldenAnt.beginFill(0xFFD700); // Golden pupils instead of black!
-        goldenAnt.drawCircle(-2.5, -10, 1.2);
-        goldenAnt.drawCircle(2.5, -10, 1.2);
-        goldenAnt.endFill();
-        
-        goldenAnt.beginFill(0xFFFFE0); // Light golden shine
-        goldenAnt.drawCircle(-2.5, -10, 0.6);
-        goldenAnt.drawCircle(2.5, -10, 0.6);
-        goldenAnt.endFill();
-        
-        // LEGS - THICK GOLDEN LEGS
-        goldenAnt.lineStyle(4, 0xFFD700); // Thicker golden legs
-        // Left legs
-        goldenAnt.moveTo(-7, -2);
-        goldenAnt.lineTo(-12, 3);
-        goldenAnt.moveTo(-7, 0);
-        goldenAnt.lineTo(-12, 5);
-        goldenAnt.moveTo(-7, 2);
-        goldenAnt.lineTo(-12, 7);
-        
-        // Right legs  
-        goldenAnt.moveTo(7, -2);
-        goldenAnt.lineTo(12, 3);
-        goldenAnt.moveTo(7, 0);
-        goldenAnt.lineTo(12, 5);
-        goldenAnt.moveTo(7, 2);
-        goldenAnt.lineTo(12, 7);
-        
-        // Add golden leg joints
-        goldenAnt.beginFill(0xFFD700);
-        [-7, 7].forEach(x => {
-            [-2, 0, 2].forEach(y => {
-                goldenAnt.drawCircle(x, y, 1.5);
-            });
-        });
-        goldenAnt.endFill();
-        
-        // ANTENNAE - Golden with golden tips!
-        goldenAnt.lineStyle(3, 0xFFD700); // Thicker golden antennae
-        goldenAnt.moveTo(-2, -16);
-        goldenAnt.lineTo(-5, -22);
-        goldenAnt.moveTo(2, -16);
-        goldenAnt.lineTo(5, -22);
-        
-        goldenAnt.beginFill(0xFFD700); // Golden tips
-        goldenAnt.drawCircle(-5, -22, 2);
-        goldenAnt.drawCircle(5, -22, 2);
-        goldenAnt.endFill();
-        
-        goldenAnt.beginFill(0xFFFFFF); // White sparkle on tips
-        goldenAnt.drawCircle(-5, -22, 1);
-        goldenAnt.drawCircle(5, -22, 1);
-        goldenAnt.endFill();
-        
-        // Store reference to golden graphics  
-        this.goldenGraphics = goldenAnt;
-        
-        // Replace the original texture with our GOLDEN ant
-        this.removeChildren();
-        this.addChild(this.goldenGraphics);
-        
-        // Position the graphics at center (Graphics doesn't have anchor, so we center manually)
-        this.goldenGraphics.x = 0;
-        this.goldenGraphics.y = 0;
-        this.goldenGraphics.pivot.set(0, 0); // Set pivot point to center the graphics
-        
-        // Create health bar (needed for proper ant behavior)
-        this.createHealthBar();
-        
-        // Add pulsing effect
+        // Add special golden effects
         this.pulseTimer = 0;
         this.dazzleTimer = 0;
         this.rainbowTimer = 0;
         this.scaleTimer = 0;
-        this.rotationTimer = 0;
     }
     
-    updateRidiculousDazzle() {
+    createGoldenBody() {
+        // Create a Graphics object for the body (not a Container)
+        const goldenBody = new PIXI.Graphics();
+        
+        // Copy EXACT ant structure from antAssets.js but in golden colors
+        
+        // Rear segment (abdomen) - angled ellipse showing depth (EXACTLY like regular ant)
+        goldenBody.beginFill(0xFFD700); // Golden base instead of 0x2A1B10
+        goldenBody.drawEllipse(0, 8, 7, 10); // EXACT same dimensions as regular ant
+        goldenBody.endFill();
+        
+        // Abdomen highlight - shows the "top" surface at an angle (EXACTLY like regular ant)
+        goldenBody.beginFill(0xFFFACD); // Golden highlight instead of 0x3D2817
+        goldenBody.drawEllipse(-1, 6, 6, 8); // EXACT same offset to show angled top
+        goldenBody.endFill();
+        
+        // Abdomen bright highlight - the most visible "top" surface (EXACTLY like regular ant)
+        goldenBody.beginFill(0xFFFFE0); // Brightest golden highlight instead of 0x5D4037
+        goldenBody.drawEllipse(-2, 5, 4, 6); // EXACT same further offset for depth
+        goldenBody.endFill();
+        
+        // Middle segment (thorax) - angled perspective (EXACTLY like regular ant)
+        goldenBody.beginFill(0xFFD700); // Golden base instead of 0x2A1B10
+        goldenBody.drawEllipse(0, -2, 5, 7); // EXACT same base thorax dimensions
+        goldenBody.endFill();
+        
+        // Thorax top surface (EXACTLY like regular ant)
+        goldenBody.beginFill(0xFFFACD); // Golden highlight instead of 0x3D2817
+        goldenBody.drawEllipse(-1, -3, 4, 5); // EXACT same angled top
+        goldenBody.endFill();
+        
+        // Thorax highlight (EXACTLY like regular ant)
+        goldenBody.beginFill(0xFFFFE0); // Bright golden highlight instead of 0x5D4037
+        goldenBody.drawEllipse(-1.5, -4, 3, 3); // EXACT same top highlight
+        goldenBody.endFill();
+        
+        // Store reference and add to ant
+        this.goldenBody = goldenBody;
+        this.addChild(this.goldenBody);
+    }
+    
+    createGoldenHead() {
+        // Create a Graphics object for the head
+        const goldenHead = new PIXI.Graphics();
+        
+        // Head - angled circular perspective (EXACTLY like regular ant)
+        goldenHead.beginFill(0xFFD700); // Golden base instead of 0x2A1B10
+        goldenHead.drawEllipse(0, -14, 5, 6); // EXACT same dimensions - elliptical due to angle
+        goldenHead.endFill();
+        
+        // Head top surface (EXACTLY like regular ant)
+        goldenHead.beginFill(0xFFFACD); // Golden highlight instead of 0x3D2817
+        goldenHead.drawEllipse(-1, -15, 4, 5); // EXACT same angled top surface
+        goldenHead.endFill();
+        
+        // Head highlight (EXACTLY like regular ant)
+        goldenHead.beginFill(0xFFFFE0); // Bright golden highlight instead of 0x5D4037
+        goldenHead.drawEllipse(-1.5, -15.5, 3, 3); // EXACT same top highlight
+        goldenHead.endFill();
+        
+        // Eyes - positioned for angled view (EXACTLY like regular ant)
+        goldenHead.beginFill(0x000000); // Keep black eyes like regular ant
+        goldenHead.drawEllipse(-2.5, -15, 1.2, 1.5); // EXACT same left eye - more elliptical
+        goldenHead.drawEllipse(1.5, -14.5, 1.2, 1.5); // EXACT same right eye - slightly different position
+        goldenHead.endFill();
+        
+        // Eye highlights - angled perspective (EXACTLY like regular ant)
+        goldenHead.beginFill(0xFFFFFF, 0.8); // Keep white highlights like regular ant
+        goldenHead.drawEllipse(-2.7, -15.2, 0.5, 0.7); // EXACT same left eye highlight
+        goldenHead.drawEllipse(1.3, -14.7, 0.5, 0.7); // EXACT same right eye highlight
+        goldenHead.endFill();
+        
+        // Mandibles - angled outward from perspective (EXACTLY like regular ant)
+        goldenHead.lineStyle(1.2, 0xFFD700); // Golden mandibles instead of 0x2A1B10
+        goldenHead.moveTo(-3, -17); // EXACT same left mandible position
+        goldenHead.lineTo(-5.5, -19.5); // EXACT same left mandible end
+        goldenHead.moveTo(2.5, -16.5); // EXACT same right mandible - different angle
+        goldenHead.lineTo(5, -19); // EXACT same right mandible end
+        
+        // Store reference and add to ant
+        this.goldenHead = goldenHead;
+        this.addChild(this.goldenHead);
+    }
+    
+    createGoldenLegs() {
+        // Add legs to the body graphics object (EXACTLY like regular ant)
+        this.goldenBody.lineStyle(1.5, 0xFFD700); // Golden legs instead of 0x2A1B10
+        
+        // Left side legs (more visible from this angle) - EXACT same positions as regular ant
+        this.goldenBody.moveTo(-4, -8); // Front leg - EXACT same
+        this.goldenBody.lineTo(-8, -6); // EXACT same end
+        this.goldenBody.moveTo(-4, -2); // Middle leg - EXACT same
+        this.goldenBody.lineTo(-8, 0); // EXACT same end
+        this.goldenBody.moveTo(-4, 4); // Rear leg - EXACT same
+        this.goldenBody.lineTo(-8, 6); // EXACT same end
+        
+        // Right side legs (partially visible from angle) - EXACT same positions as regular ant
+        this.goldenBody.moveTo(3, -7); // Front leg - EXACT same
+        this.goldenBody.lineTo(6, -5); // EXACT same end
+        this.goldenBody.moveTo(3, -1); // Middle leg - EXACT same
+        this.goldenBody.lineTo(6, 1); // EXACT same end
+        this.goldenBody.moveTo(3, 5); // Rear leg - EXACT same
+        this.goldenBody.lineTo(6, 7); // EXACT same end
+    }
+    
+    createGoldenAntennae() {
+        // Add antennae to the head graphics object (EXACTLY like regular ant)
+        this.goldenHead.lineStyle(1, 0xFFD700); // Golden antennae instead of 0x2A1B10
+        
+        // Left antenna - more visible from this angle (EXACTLY like regular ant)
+        this.goldenHead.moveTo(-2.5, -17); // EXACT same start position
+        this.goldenHead.bezierCurveTo(-5.5, -21, -7.5, -23, -6.5, -25); // EXACT same curve
+        
+        // Right antenna - partially visible from angle (EXACTLY like regular ant)
+        this.goldenHead.moveTo(2, -16.5); // EXACT same start position
+        this.goldenHead.bezierCurveTo(4.5, -20, 6.5, -22, 6, -24); // EXACT same curve
+        
+        // Antenna tips (EXACTLY like regular ant)
+        this.goldenHead.lineStyle(0);
+        this.goldenHead.beginFill(0xFFFACD); // Golden tips instead of 0x3D2817
+        this.goldenHead.drawCircle(-6.5, -25, 1); // EXACT same left tip
+        this.goldenHead.drawCircle(6, -24, 1); // EXACT same right tip
+        this.goldenHead.endFill();
+    }
+    
+    createGoldenCrown() {
+        // Create crown container
+        this.crownContainer = new PIXI.Container();
+        this.addChild(this.crownContainer);
+        
+        const crown = new PIXI.Graphics();
+        
+        // Crown shape - Pure gold and white!
+        crown.beginFill(0xFFFFFF, 0.9);
+        crown.moveTo(-4, -12);
+        crown.lineTo(-2, -18);
+        crown.lineTo(0, -15);
+        crown.lineTo(2, -18);
+        crown.lineTo(4, -12);
+        crown.lineTo(0, -11);
+        crown.closePath();
+        crown.endFill();
+        
+        // Crown base - golden
+        crown.beginFill(0xFFD700);
+        crown.drawRect(-4, -12, 8, 1.5);
+        crown.endFill();
+        
+        // Crown gems - bright colors
+        crown.beginFill(0xFF6B6B); // Bright red
+        crown.drawCircle(-1.5, -15, 0.8);
+        crown.beginFill(0x4ECDC4); // Bright teal  
+        crown.drawCircle(1.5, -15, 0.8);
+        crown.beginFill(0x45B7D1); // Bright blue
+        crown.drawCircle(0, -14, 0.8);
+        crown.endFill();
+        
+        this.crownContainer.addChild(crown);
+    }
+    
+    // Implement ant-specific animation like normal ants
+    performAnimation() {
+        this.animateGoldenLegs();
+        this.updateGoldenDazzle();
+    }
+    
+    animateGoldenLegs() {
+        // Use the same leg animation system as normal ants
+        this.legPhase += this.legAnimationSpeed;
+        
+        // Speed-based animation rate - faster movement = faster leg movement
+        const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+        const animationRate = Math.max(0.1, speed * 0.3);
+        
+        // Animate each leg with symmetrical movement like normal ants
+        if (this.legs) {
+            for (let i = 0; i < this.legs.length; i++) {
+                const leg = this.legs[i];
+                
+                // Alternating leg movement pattern - opposite sides move in opposite phases
+                let phase = this.legPhase + (leg.index * Math.PI / 3);
+                if (leg.side === 'right') {
+                    phase += Math.PI; // Opposite phase for right legs
+                }
+                
+                // Apply leg animation - symmetrical movement
+                const legMovement = Math.sin(phase) * 3; // Slightly more movement for golden ant
+                
+                // Update leg position based on movement
+                leg.position.x = leg.baseX + (leg.side === 'left' ? legMovement : -legMovement);
+                leg.position.y = leg.baseY + Math.abs(legMovement) * 0.5;
+                
+                // Redraw the leg to update visual
+                this.drawGoldenLeg(leg);
+            }
+        }
+    }
+    
+    updateGoldenDazzle() {
         // Multiple overlapping animation timers for maximum ridiculousness
         this.pulseTimer += 0.15;
         this.dazzleTimer += 0.2;
         this.rainbowTimer += 0.1;
         this.scaleTimer += 0.08;
-        this.rotationTimer += 0.03;
         
         // PULSING BRIGHTNESS - Make it strobe like a disco ball
         const pulse1 = Math.sin(this.pulseTimer) * 0.3 + 0.7; // 0.4 to 1.0
@@ -248,7 +285,7 @@ IdleAnts.Entities.GoldenAnt = class extends IdleAnts.Entities.AntBase {
         const rainbowTint = (Math.floor(r * 255) << 16) + (Math.floor(g * 255) << 8) + Math.floor(b * 255);
         this.tint = rainbowTint;
         
-        // SCALE PULSING - Make it grow and shrink dramatically
+        // SCALE PULSING - Make it grow and shrink dramatically  
         const scaleBase = 1.3; // Base size
         const scalePulse1 = Math.sin(this.scaleTimer) * 0.2; // ±0.2
         const scalePulse2 = Math.sin(this.scaleTimer * 1.7) * 0.1; // ±0.1
@@ -256,8 +293,7 @@ IdleAnts.Entities.GoldenAnt = class extends IdleAnts.Entities.AntBase {
         const finalScale = scaleBase + scalePulse1 + scalePulse2 + scalePulse3;
         this.scale.set(finalScale);
         
-        // SUBTLE ROTATION - Because it's so dazzling it's spinning
-        this.rotation = Math.sin(this.rotationTimer) * 0.1; // ±0.1 radians (about ±6 degrees)
+        // DON'T override rotation - let the parent class handle directional rotation
         
         // EXPLOSIVE SPARKLE BURSTS - More frequent and more dramatic
         if (this.sparkleTimer >= 15) { // Every 0.25 seconds instead of 0.5
@@ -361,8 +397,7 @@ IdleAnts.Entities.GoldenAnt = class extends IdleAnts.Entities.AntBase {
     }
     
     update(nestPosition, foods) {
-        
-        // Call base update first
+        // Call base update first - this handles movement and rotation
         const baseUpdateResult = super.update(nestPosition, foods);
         
         // FIX: Handle instant collection for foods with collectionTime = 0
@@ -389,16 +424,12 @@ IdleAnts.Entities.GoldenAnt = class extends IdleAnts.Entities.AntBase {
         
         // Sparkle effect
         this.sparkleTimer++;
-        if (this.sparkleTimer >= 30) { // Every 0.5 seconds
-            this.sparkleTimer = 0;
-            this.createSparkleEffect();
-        }
         
         // Apply aura to nearby ants
         this.applyAuraEffect();
         
-        // COMICALLY OVER-THE-TOP DAZZLE ANIMATION!
-        this.updateRidiculousDazzle();
+        // Golden ant specific animation (legs and subtle effects)
+        this.performAnimation();
         
         return baseUpdateResult;
     }

@@ -4,227 +4,142 @@ IdleAnts.Managers.DailyChallengeManager = class {
         this.resourceManager = resourceManager;
         this.achievementManager = achievementManager;
         
-        // Challenge templates - expanded to 20 diverse challenges
+        // Challenge templates - 12 progression milestones
         this.challengeTemplates = {
-            collectFood: {
-                id: 'collectFood',
-                name: '🍎 Food Hunter',
-                description: 'Collect {target} food automatically',
-                type: 'collect',
-                baseTarget: 50,
-                multiplier: 1.5,
-                reward: { type: 'food', amount: 25 },
-                icon: '🍎',
-                category: 'collection'
-            },
-            buyAnts: {
-                id: 'buyAnts',
-                name: '🐜 Ant Recruiter',
-                description: 'Buy {target} ants',
-                type: 'buy',
-                baseTarget: 3,
-                multiplier: 1.2,
-                reward: { type: 'food', amount: 50 },
-                icon: '🐜',
-                category: 'building'
-            },
-            upgradeSpeed: {
-                id: 'upgradeSpeed',
-                name: '⚡ Speed Booster',
-                description: 'Upgrade speed {target} times',
-                type: 'upgrade',
-                baseTarget: 2,
-                multiplier: 1.1,
-                reward: { type: 'food', amount: 75 },
-                icon: '⚡',
-                category: 'upgrade'
-            },
-            activeTime: {
-                id: 'activeTime',
-                name: '⏰ Busy Bee',
-                description: 'Play for {target} minutes',
-                type: 'time',
+            // Early Game (1-3)
+            firstColony: {
+                id: 'firstColony',
+                name: '🐜 First Colony',
+                description: 'Build a colony of {target} ants',
+                type: 'antCount',
                 baseTarget: 10,
-                multiplier: 1.3,
-                reward: { type: 'food', amount: 5000 },
-                icon: '⏰',
-                category: 'time'
-            },
-            placeFood: {
-                id: 'placeFood',
-                name: '👆 Food Placer',
-                description: 'Place food by clicking {target} times',
-                type: 'click',
-                baseTarget: 20,
-                multiplier: 1.4,
-                reward: { type: 'food', amount: 30 },
-                icon: '👆',
-                category: 'action'
-            },
-            massAntPurchase: {
-                id: 'massAntPurchase',
-                name: '🏭 Mass Recruiter',
-                description: 'Buy {target} ants in a single session',
-                type: 'buySession',
-                baseTarget: 10,
-                multiplier: 1.3,
-                reward: { type: 'food', amount: 200 },
-                icon: '🏭',
-                category: 'building'
-            },
-            foodMilestone: {
-                id: 'foodMilestone',
-                name: '🎯 Food Milestone',
-                description: 'Reach {target} total food',
-                type: 'milestone',
-                baseTarget: 1000,
-                multiplier: 2.0,
+                multiplier: 1,
                 reward: { type: 'food', amount: 500 },
-                icon: '🎯',
+                icon: '🐜',
                 category: 'milestone'
             },
-            speedDemon: {
-                id: 'speedDemon',
-                name: '🚀 Speed Demon',
-                description: 'Reach {target} ant speed level',
-                type: 'speedLevel',
-                baseTarget: 5,
-                multiplier: 1.2,
-                reward: { type: 'food', amount: 150 },
+            firstMilestone: {
+                id: 'firstMilestone',
+                name: '🌱 First Harvest',
+                description: 'Collect {target} total food',
+                type: 'foodCollected',
+                baseTarget: 1000,
+                multiplier: 1,
+                reward: { type: 'food', amount: 1000 },
+                icon: '🌱',
+                category: 'milestone'
+            },
+            firstUpgrade: {
+                id: 'firstUpgrade',
+                name: '⬆️ Power Up',
+                description: 'Reach {target}x multiplier (speed or strength)',
+                type: 'multiplier',
+                baseTarget: 2,
+                multiplier: 1,
+                reward: { type: 'food', amount: 2000 },
+                icon: '⬆️',
+                category: 'milestone'
+            },
+            // Mid Game (4-8)
+            mediumColony: {
+                id: 'mediumColony',
+                name: '🏘️ Growing Colony',
+                description: 'Build a colony of {target} ants',
+                type: 'antCount',
+                baseTarget: 30,
+                multiplier: 1,
+                reward: { type: 'food', amount: 5000 },
+                icon: '🏘️',
+                category: 'milestone'
+            },
+            flyingAnts: {
+                id: 'flyingAnts',
+                name: '🚁 Take Flight',
+                description: 'Unlock Flying Ants',
+                type: 'unlock',
+                baseTarget: 1,
+                multiplier: 1,
+                reward: { type: 'food', amount: 10000 },
+                icon: '🚁',
+                category: 'milestone'
+            },
+            spiderSlayer: {
+                id: 'spiderSlayer',
+                name: '🕷️ Spider Slayer',
+                description: 'Defeat the Spider Boss',
+                type: 'boss',
+                baseTarget: 1,
+                multiplier: 1,
+                reward: { type: 'food', amount: 15000 },
+                icon: '🕷️',
+                category: 'milestone'
+            },
+            efficiency100: {
+                id: 'efficiency100',
+                name: '📈 Efficient Colony',
+                description: 'Reach {target} food per second',
+                type: 'foodPerSecond',
+                baseTarget: 100,
+                multiplier: 1,
+                reward: { type: 'food', amount: 20000 },
+                icon: '📈',
+                category: 'milestone'
+            },
+            foodHoarder: {
+                id: 'foodHoarder',
+                name: '🍯 Food Hoarder',
+                description: 'Collect {target} total food',
+                type: 'foodCollected',
+                baseTarget: 100000,
+                multiplier: 1,
+                reward: { type: 'food', amount: 25000 },
+                icon: '🍯',
+                category: 'milestone'
+            },
+            // Late Game (9-12)
+            largeColony: {
+                id: 'largeColony',
+                name: '🏛️ Ant Empire',
+                description: 'Build a colony of {target} ants',
+                type: 'antCount',
+                baseTarget: 50,
+                multiplier: 1,
+                reward: { type: 'food', amount: 30000 },
+                icon: '🏛️',
+                category: 'milestone'
+            },
+            allUnits: {
+                id: 'allUnits',
+                name: '🎖️ Full Arsenal',
+                description: 'Unlock all special ant types',
+                type: 'unlockAll',
+                baseTarget: 1,
+                multiplier: 1,
+                reward: { type: 'food', amount: 35000 },
+                icon: '🎖️',
+                category: 'milestone'
+            },
+            tarantulaSlayer: {
+                id: 'tarantulaSlayer',
+                name: '🕸️ Tarantula Slayer',
+                description: 'Defeat the Tarantula Boss',
+                type: 'boss',
+                baseTarget: 1,
+                multiplier: 1,
+                reward: { type: 'food', amount: 40000 },
+                icon: '🕸️',
+                category: 'milestone'
+            },
+            efficiency800: {
+                id: 'efficiency800',
+                name: '🚀 Ultimate Efficiency',
+                description: 'Reach {target} food per second',
+                type: 'foodPerSecond',
+                baseTarget: 800,
+                multiplier: 1,
+                reward: { type: 'food', amount: 50000 },
                 icon: '🚀',
                 category: 'milestone'
-            },
-            clickFrenzy: {
-                id: 'clickFrenzy',
-                name: '🔥 Click Frenzy',
-                description: 'Click {target} times in 60 seconds',
-                type: 'clickFrenzy',
-                baseTarget: 30,
-                multiplier: 1.5,
-                reward: { type: 'food', amount: 100 },
-                icon: '🔥',
-                category: 'action'
-            },
-            antArmy: {
-                id: 'antArmy',
-                name: '⚔️ Ant Army',
-                description: 'Have {target} ants active at once',
-                type: 'antCount',
-                baseTarget: 15,
-                multiplier: 1.4,
-                reward: { type: 'food', amount: 300 },
-                icon: '⚔️',
-                category: 'building'
-            },
-            efficiencyExpert: {
-                id: 'efficiencyExpert',
-                name: '📊 Efficiency Expert',
-                description: 'Collect {target} food per second',
-                type: 'foodPerSecond',
-                baseTarget: 10,
-                multiplier: 1.6,
-                reward: { type: 'food', amount: 400 },
-                icon: '📊',
-                category: 'efficiency'
-            },
-            marathonPlayer: {
-                id: 'marathonPlayer',
-                name: '🏃 Marathon Player',
-                description: 'Play for {target} minutes straight',
-                type: 'continuousTime',
-                baseTarget: 30,
-                multiplier: 1.2,
-                reward: { type: 'food', amount: 1000 },
-                icon: '🏃',
-                category: 'time'
-            },
-            upgradeSpree: {
-                id: 'upgradeSpree',
-                name: '🔧 Upgrade Spree',
-                description: 'Perform {target} upgrades of any type',
-                type: 'upgradeAny',
-                baseTarget: 5,
-                multiplier: 1.3,
-                reward: { type: 'food', amount: 250 },
-                icon: '🔧',
-                category: 'upgrade'
-            },
-            foodVariety: {
-                id: 'foodVariety',
-                name: '🌈 Food Variety',
-                description: 'Collect {target} different food types',
-                type: 'foodTypes',
-                baseTarget: 3,
-                multiplier: 1.1,
-                reward: { type: 'food', amount: 200 },
-                icon: '🌈',
-                category: 'collection'
-            },
-            quickStart: {
-                id: 'quickStart',
-                name: '⚡ Quick Start',
-                description: 'Buy first ant within {target} seconds',
-                type: 'quickBuy',
-                baseTarget: 30,
-                multiplier: 0.9,
-                reward: { type: 'food', amount: 100 },
-                icon: '⚡',
-                category: 'challenge'
-            },
-            saveSpree: {
-                id: 'saveSpree',
-                name: '💰 Save Spree',
-                description: 'Save up {target} food without spending',
-                type: 'saveFood',
-                baseTarget: 500,
-                multiplier: 1.8,
-                reward: { type: 'food', amount: 1000 },
-                icon: '💰',
-                category: 'challenge'
-            },
-            perfectTiming: {
-                id: 'perfectTiming',
-                name: '🎯 Perfect Timing',
-                description: 'Complete {target} precise actions',
-                type: 'precision',
-                baseTarget: 10,
-                multiplier: 1.2,
-                reward: { type: 'food', amount: 300 },
-                icon: '🎯',
-                category: 'challenge'
-            },
-            colonyBuilder: {
-                id: 'colonyBuilder',
-                name: '🏗️ Colony Builder',
-                description: 'Expand your colony to {target} total capacity',
-                type: 'totalCapacity',
-                baseTarget: 50,
-                multiplier: 1.5,
-                reward: { type: 'food', amount: 400 },
-                icon: '🏗️',
-                category: 'building'
-            },
-            nightOwl: {
-                id: 'nightOwl',
-                name: '🦉 Night Owl',
-                description: 'Play during late hours for {target} minutes',
-                type: 'nightTime',
-                baseTarget: 15,
-                multiplier: 1.3,
-                reward: { type: 'food', amount: 500 },
-                icon: '🦉',
-                category: 'time'
-            },
-            comeback: {
-                id: 'comeback',
-                name: '🔄 Comeback',
-                description: 'Return after {target} hours away',
-                type: 'returnAfter',
-                baseTarget: 4,
-                multiplier: 1.1,
-                reward: { type: 'food', amount: 800 },
-                icon: '🔄',
-                category: 'time'
             }
         };
         
@@ -233,38 +148,25 @@ IdleAnts.Managers.DailyChallengeManager = class {
         
         // Progress tracking
         this.progress = {
-            collectFood: 0,
-            buyAnts: 0,
-            upgradeSpeed: 0,
-            activeTime: 0,
-            placeFood: 0,
-            massAntPurchase: 0,
-            foodMilestone: 0,
-            speedDemon: 0,
-            clickFrenzy: 0,
-            antArmy: 0,
-            efficiencyExpert: 0,
-            marathonPlayer: 0,
-            upgradeSpree: 0,
-            foodVariety: 0,
-            quickStart: 0,
-            saveSpree: 0,
-            perfectTiming: 0,
-            colonyBuilder: 0,
-            nightOwl: 0,
-            comeback: 0
+            firstColony: 0,
+            firstMilestone: 0,
+            firstUpgrade: 0,
+            mediumColony: 0,
+            flyingAnts: 0,
+            spiderSlayer: 0,
+            efficiency100: 0,
+            foodHoarder: 0,
+            largeColony: 0,
+            allUnits: 0,
+            tarantulaSlayer: 0,
+            efficiency800: 0
         };
         
-        // Additional tracking variables
-        this.sessionAntPurchases = 0;
-        this.sessionStartTime = Date.now();
-        this.continuousPlayTime = 0;
-        this.lastActiveTime = Date.now();
-        this.clickFrenzyStartTime = null;
-        this.clickFrenzyCount = 0;
-        this.collectedFoodTypes = new Set();
-        this.maxSavedFood = 0;
-        this.precisionActions = 0;
+        // Boss defeat tracking
+        this.bossesDefeated = {
+            spider: false,
+            tarantula: false
+        };
         
         // Golden ant tracking
         this.goldenAntSpawned = false;
@@ -286,81 +188,23 @@ IdleAnts.Managers.DailyChallengeManager = class {
         // Create UI
         this.createChallengeUI();
         
-        // Start daily reset check
-        this.startDailyResetCheck();
+        // No daily reset needed for permanent challenges
     }
     
-    checkForNewChallenges() {
-        const today = new Date().toDateString();
-        const lastChallengeDate = localStorage.getItem('idleAnts_lastChallengeDate');
-        
-        if (lastChallengeDate !== today) {
-            this.generateDailyChallenges();
-            localStorage.setItem('idleAnts_lastChallengeDate', today);
-        }
-    }
     
     generateDailyChallenges() {
         // Clear current challenges
         this.currentChallenges = [];
         
-        // Reset progress
-        this.progress = Object.keys(this.challengeTemplates).reduce((acc, key) => {
-            acc[key] = 0;
-            return acc;
-        }, {});
-        
-        // Reset session tracking
-        this.sessionAntPurchases = 0;
-        this.sessionStartTime = Date.now();
-        this.continuousPlayTime = 0;
-        this.lastActiveTime = Date.now();
-        this.clickFrenzyStartTime = null;
-        this.clickFrenzyCount = 0;
-        this.collectedFoodTypes = new Set();
-        this.maxSavedFood = 0;
-        this.precisionActions = 0;
-        
-        // Calculate player level based on total food collected
-        const currentFood = this.resourceManager?.resources?.food || 0;
-        const playerLevel = Math.max(1, Math.min(10, Math.floor(currentFood / 100) + 1)); // Cap at level 10
-        console.log(`[DailyChallenge] Current food: ${currentFood}, Player level: ${playerLevel}`);
-        
-        // Select 5 challenges from different categories to ensure variety
+        // Show all 12 challenges - they're permanent milestones
         const challengeTypes = Object.keys(this.challengeTemplates);
-        const categories = [...new Set(Object.values(this.challengeTemplates).map(t => t.category))];
-        const selectedTypes = [];
         
-        // Try to get at least one challenge from each category
-        categories.forEach(category => {
-            const categoryTypes = challengeTypes.filter(type => 
-                this.challengeTemplates[type].category === category && 
-                !selectedTypes.includes(type)
-            );
-            if (categoryTypes.length > 0 && selectedTypes.length < 5) {
-                const randomType = categoryTypes[Math.floor(Math.random() * categoryTypes.length)];
-                selectedTypes.push(randomType);
-            }
-        });
-        
-        // Fill remaining slots with random challenges
-        while (selectedTypes.length < 5 && challengeTypes.length > selectedTypes.length) {
-            const remainingTypes = challengeTypes.filter(type => !selectedTypes.includes(type));
-            if (remainingTypes.length > 0) {
-                const randomType = remainingTypes[Math.floor(Math.random() * remainingTypes.length)];
-                selectedTypes.push(randomType);
-            }
-        }
-        
-        // Generate challenges
-        selectedTypes.forEach(type => {
+        // Generate all challenges in order
+        challengeTypes.forEach(type => {
             const template = this.challengeTemplates[type];
-            const challenge = this.createChallenge(template, playerLevel);
+            const challenge = this.createChallenge(template);
             this.currentChallenges.push(challenge);
         });
-        
-        // Save data
-        // this.saveData(); // Disabled for now
         
         // Update UI
         this.updateChallengeUI();
@@ -369,15 +213,12 @@ IdleAnts.Managers.DailyChallengeManager = class {
         this.showNewChallengesNotification();
     }
     
-    createChallenge(template, playerLevel) {
-        // Calculate target based on player level with safeguards
-        const multiplier = Math.min(template.multiplier, 2.0); // Cap multiplier at 2.0
-        const levelFactor = Math.min(playerLevel - 1, 9); // Cap level factor at 9
-        const target = Math.ceil(template.baseTarget * Math.pow(multiplier, levelFactor));
-        console.log(`[DailyChallenge] Creating ${template.id}: baseTarget=${template.baseTarget}, multiplier=${multiplier}, levelFactor=${levelFactor}, target=${target}`);
+    createChallenge(template) {
+        // For milestone challenges, targets are fixed - no scaling
+        const target = template.baseTarget;
         
-        // Calculate reward based on player level
-        const rewardAmount = Math.ceil(template.reward.amount * (1 + (playerLevel - 1) * 0.2));
+        // Rewards are also fixed for milestones
+        const rewardAmount = template.reward.amount;
         
         return {
             id: template.id,
@@ -405,96 +246,117 @@ IdleAnts.Managers.DailyChallengeManager = class {
             return result;
         };
         
-        // Track active time with enhanced tracking
+        // Periodically update all challenge progress
         setInterval(() => {
-            this.updateActiveTime();
+            this.updateTracking();
         }, 1000);
     }
     
     // Called by game when specific actions occur
     trackAntPurchase() {
-        this.progress.buyAnts += 1;
-        this.sessionAntPurchases += 1;
-        this.updateChallengeProgress('buyAnts', this.progress.buyAnts);
-        this.updateChallengeProgress('massAntPurchase', this.sessionAntPurchases);
+        // Check ant count milestones
+        const antCount = this.resourceManager.stats.ants || 0;
+        this.updateChallengeProgress('firstColony', antCount);
+        this.updateChallengeProgress('mediumColony', antCount);
+        this.updateChallengeProgress('largeColony', antCount);
+    }
+    
+    trackUpgrade() {
+        // Check multiplier milestone - count upgrades above base level (1.0x)
+        const speedMultiplier = this.resourceManager.stats.speedMultiplier || 1;
+        const strengthMultiplier = this.resourceManager.stats.strengthMultiplier || 1;
+        const maxMultiplier = Math.max(speedMultiplier, strengthMultiplier);
         
-        // Check ant army challenge
-        if (IdleAnts.game && IdleAnts.game.entities && IdleAnts.game.entities.ants) {
-            const antCount = IdleAnts.game.entities.ants.length;
-            this.updateChallengeProgress('antArmy', antCount);
+        // Only count if we've actually upgraded (above 1.0x = base level)
+        const upgradeLevel = maxMultiplier > 1 ? maxMultiplier : 0;
+        this.updateChallengeProgress('firstUpgrade', upgradeLevel);
+    }
+    
+    // Track special unit unlocks
+    trackUnlock(unitType) {
+        if (unitType === 'flyingAnts') {
+            this.updateChallengeProgress('flyingAnts', 1);
+        }
+        
+        // Check if all units are unlocked after any unlock
+        this.checkAllUnitsUnlocked();
+    }
+    
+    // Check if all special units are unlocked
+    checkAllUnitsUnlocked() {
+        const allUnlocked = this.resourceManager.stats.flyingAntsUnlocked && 
+                          this.resourceManager.stats.carAntsUnlocked && 
+                          this.resourceManager.stats.fireAntsUnlocked && 
+                          this.resourceManager.stats.queenUnlocked;
+        if (allUnlocked) {
+            this.updateChallengeProgress('allUnits', 1);
         }
     }
     
-    trackSpeedUpgrade() {
-        this.progress.upgradeSpeed += 1;
-        this.progress.upgradeSpree += 1;
-        this.updateChallengeProgress('upgradeSpeed', this.progress.upgradeSpeed);
-        this.updateChallengeProgress('upgradeSpree', this.progress.upgradeSpree);
-    }
-    
-    trackFoodClick() {
-        this.progress.placeFood += 1;
-        this.updateChallengeProgress('placeFood', this.progress.placeFood);
-        
-        // Track click frenzy
-        const now = Date.now();
-        if (!this.clickFrenzyStartTime || now - this.clickFrenzyStartTime > 60000) {
-            this.clickFrenzyStartTime = now;
-            this.clickFrenzyCount = 1;
-        } else {
-            this.clickFrenzyCount += 1;
+    // Track boss defeats
+    trackBossDefeat(bossType) {
+        if (bossType === 'spider') {
+            this.updateChallengeProgress('spiderSlayer', 1);
+        } else if (bossType === 'tarantula') {
+            this.updateChallengeProgress('tarantulaSlayer', 1);
         }
-        this.updateChallengeProgress('clickFrenzy', this.clickFrenzyCount);
     }
     
-    // New tracking methods for additional challenges
+    // Track food collection milestones
     trackFoodCollection(amount, foodType) {
-        this.progress.collectFood += amount;
-        this.updateChallengeProgress('collectFood', this.progress.collectFood);
+        // Use achievement manager's tracked total
+        const totalFoodCollected = this.achievementManager.progress.foodCollected || 0;
+        this.updateChallengeProgress('firstMilestone', totalFoodCollected);
+        this.updateChallengeProgress('foodHoarder', totalFoodCollected);
         
-        // Track food milestone
-        const totalFood = this.resourceManager.resources.food;
-        this.updateChallengeProgress('foodMilestone', totalFood);
-        
-        // Track food variety
-        if (foodType) {
-            this.collectedFoodTypes.add(foodType);
-            this.updateChallengeProgress('foodVariety', this.collectedFoodTypes.size);
-        }
-        
-        // Track save spree (max food saved)
-        this.maxSavedFood = Math.max(this.maxSavedFood, totalFood);
-        this.updateChallengeProgress('saveSpree', this.maxSavedFood);
+        // Track efficiency milestones
+        const foodPerSecond = this.resourceManager.stats.foodPerSecond || 0;
+        this.updateChallengeProgress('efficiency100', foodPerSecond);
+        this.updateChallengeProgress('efficiency800', foodPerSecond);
     }
     
-    trackPrecisionAction() {
-        this.precisionActions += 1;
-        this.updateChallengeProgress('perfectTiming', this.precisionActions);
-    }
-    
-    // Update active time tracking with more granular checks
-    updateActiveTime() {
-        const now = Date.now();
-        if (document.visibilityState === 'visible') {
-            const timeDiff = now - this.lastActiveTime;
-            if (timeDiff < 2000) { // Only count if less than 2 seconds gap (continuous play)
-                this.continuousPlayTime += timeDiff / 1000 / 60; // Convert to minutes
-                this.updateChallengeProgress('marathonPlayer', Math.floor(this.continuousPlayTime));
-            }
-            
-            this.progress.activeTime += 1 / 60; // Convert seconds to minutes
-            this.updateChallengeProgress('activeTime', Math.floor(this.progress.activeTime));
-            
-            // Check if it's night time (10 PM to 6 AM)
-            const hour = new Date().getHours();
-            if (hour >= 22 || hour <= 6) {
-                this.progress.nightOwl += 1 / 60;
-                this.updateChallengeProgress('nightOwl', Math.floor(this.progress.nightOwl));
-            }
-        } else {
-            this.continuousPlayTime = 0; // Reset continuous play time when not visible
+    // Update tracking - simplified for milestone challenges
+    updateTracking() {
+        // Check ant count milestones
+        const antCount = this.resourceManager.stats.ants || 0;
+        this.updateChallengeProgress('firstColony', antCount);
+        this.updateChallengeProgress('mediumColony', antCount);
+        this.updateChallengeProgress('largeColony', antCount);
+        
+        // Check multiplier milestone - count upgrades above base level (1.0x)
+        const speedMultiplier = this.resourceManager.stats.speedMultiplier || 1;
+        const strengthMultiplier = this.resourceManager.stats.strengthMultiplier || 1;
+        const maxMultiplier = Math.max(speedMultiplier, strengthMultiplier);
+        
+        // Only count if we've actually upgraded (above 1.0x = base level)
+        const upgradeLevel = maxMultiplier > 1 ? maxMultiplier : 0;
+        this.updateChallengeProgress('firstUpgrade', upgradeLevel);
+        
+        // Check food collection milestones
+        const totalFoodCollected = this.achievementManager.progress.foodCollected || 0;
+        this.updateChallengeProgress('firstMilestone', totalFoodCollected);
+        this.updateChallengeProgress('foodHoarder', totalFoodCollected);
+        
+        // Check efficiency milestones
+        const foodPerSecond = this.resourceManager.stats.foodPerSecond || 0;
+        this.updateChallengeProgress('efficiency100', foodPerSecond);
+        this.updateChallengeProgress('efficiency800', foodPerSecond);
+        
+        // Check unlock status
+        if (this.resourceManager.stats.flyingAntsUnlocked) {
+            this.updateChallengeProgress('flyingAnts', 1);
         }
-        this.lastActiveTime = now;
+        
+        // Check if all units are unlocked
+        this.checkAllUnitsUnlocked();
+        
+        // Check boss defeats (these need to be tracked when bosses are defeated)
+        if (this.bossesDefeated.spider) {
+            this.updateChallengeProgress('spiderSlayer', 1);
+        }
+        if (this.bossesDefeated.tarantula) {
+            this.updateChallengeProgress('tarantulaSlayer', 1);
+        }
     }
     
     updateChallengeProgress(type, progress) {
@@ -661,9 +523,15 @@ IdleAnts.Managers.DailyChallengeManager = class {
         modal.className = 'challenge-modal';
         modal.innerHTML = `
             <div class="challenge-modal-header">
-                <h3>🎯 Daily Challenges</h3>
-                <div class="challenge-timer" id="challenge-timer">Next: 00:00:00</div>
+                <h3>🎯 Challenges</h3>
                 <button class="challenge-close-btn" id="challenge-close-btn">×</button>
+            </div>
+            <div id="golden-ant-status" class="golden-ant-status" style="display: none;">
+                <div class="golden-ant-status-icon">🌟🐜✨</div>
+                <div class="golden-ant-status-text">
+                    <div class="golden-ant-status-title">GOLDEN ANT UNLOCKED!</div>
+                    <div class="golden-ant-status-subtitle">Ultimate Achievement Complete!</div>
+                </div>
             </div>
             <div class="challenge-list-container">
                 <div class="challenge-list" id="challenge-list"></div>
@@ -760,9 +628,7 @@ IdleAnts.Managers.DailyChallengeManager = class {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                padding: 20px 20px 15px 20px;
-                flex-wrap: wrap;
-                flex-shrink: 0;
+                padding: 20px;
                 border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             }
             
@@ -782,6 +648,64 @@ IdleAnts.Managers.DailyChallengeManager = class {
             .challenge-modal-header h3 {
                 margin: 0;
                 font-size: 18px;
+            }
+            
+            .golden-ant-status {
+                background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 193, 7, 0.2) 100%);
+                border: 2px solid #FFD700;
+                margin: 10px 20px;
+                padding: 15px;
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                animation: golden-pulse 2s ease-in-out infinite;
+                box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+            }
+            
+            .golden-ant-status-icon {
+                font-size: 2.5em;
+                animation: bounce-icon 1.5s ease-in-out infinite;
+                filter: drop-shadow(0 0 8px #FFD700);
+            }
+            
+            .golden-ant-status-text {
+                flex: 1;
+            }
+            
+            .golden-ant-status-title {
+                font-size: 1.3em;
+                font-weight: bold;
+                color: #FFD700;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+                margin-bottom: 3px;
+            }
+            
+            .golden-ant-status-subtitle {
+                font-size: 1em;
+                color: #FFA500;
+                font-weight: bold;
+            }
+            
+            @keyframes golden-pulse {
+                0% { 
+                    background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 193, 7, 0.2) 100%);
+                    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+                }
+                50% { 
+                    background: linear-gradient(135deg, rgba(255, 215, 0, 0.4) 0%, rgba(255, 193, 7, 0.3) 100%);
+                    box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+                }
+                100% { 
+                    background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 193, 7, 0.2) 100%);
+                    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+                }
+            }
+            
+            @keyframes bounce-icon {
+                0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+                40% { transform: translateY(-8px); }
+                60% { transform: translateY(-4px); }
             }
             
             .challenge-timer {
@@ -986,10 +910,6 @@ IdleAnts.Managers.DailyChallengeManager = class {
         `;
         document.head.appendChild(style);
         
-        // Update timer
-        this.updateTimer();
-        setInterval(() => this.updateTimer(), 1000);
-        
         // Initial UI update
         this.updateChallengeUI();
     }
@@ -1003,14 +923,26 @@ IdleAnts.Managers.DailyChallengeManager = class {
     }
     
     showModal() {
-        this.isModalOpen = true;
-        const backdrop = document.getElementById('challenge-modal-backdrop');
-        if (backdrop) {
-            backdrop.classList.add('show');
+        try {
+            console.log('showModal called');
+            this.isModalOpen = true;
+            const backdrop = document.getElementById('challenge-modal-backdrop');
+            if (backdrop) {
+                console.log('Adding show class to backdrop');
+                backdrop.classList.add('show');
+            } else {
+                console.error('Challenge modal backdrop not found');
+                return;
+            }
+            
+            // Update the challenge list when modal opens
+            console.log('Updating challenge UI');
+            this.updateChallengeUI();
+            console.log('Modal should now be visible');
+        } catch (error) {
+            console.error('Error in showModal:', error);
+            alert('Failed to open challenges modal. Error: ' + error.message);
         }
-        
-        // Update the challenge list when modal opens
-        this.updateChallengeUI();
     }
     
     closeModal() {
@@ -1025,11 +957,21 @@ IdleAnts.Managers.DailyChallengeManager = class {
         const challengeList = document.getElementById('challenge-list');
         if (!challengeList) return;
         
+        // Update golden ant status visibility
+        const goldenAntStatus = document.getElementById('golden-ant-status');
+        if (goldenAntStatus) {
+            if (this.goldenAntSpawned) {
+                goldenAntStatus.style.display = 'flex';
+            } else {
+                goldenAntStatus.style.display = 'none';
+            }
+        }
+        
         challengeList.innerHTML = '';
         
         // Show challenges if any exist
         if (this.currentChallenges.length === 0) {
-            challengeList.innerHTML = '<div class="no-challenges">No challenges available today.<br>Check back tomorrow!</div>';
+            challengeList.innerHTML = '<div class="no-challenges">No challenges available.</div>';
             return;
         }
         
@@ -1064,28 +1006,6 @@ IdleAnts.Managers.DailyChallengeManager = class {
         });
     }
     
-    updateTimer() {
-        const now = new Date();
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        tomorrow.setHours(0, 0, 0, 0);
-        
-        const timeLeft = tomorrow - now;
-        const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-        
-        const timerElement = document.getElementById('challenge-timer');
-        if (timerElement) {
-            timerElement.textContent = `Next: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        }
-    }
-    
-    startDailyResetCheck() {
-        setInterval(() => {
-            this.checkForNewChallenges();
-        }, 60000); // Check every minute
-    }
     
     showNewChallengesNotification() {
         const notification = document.createElement('div');
@@ -1093,8 +1013,8 @@ IdleAnts.Managers.DailyChallengeManager = class {
         notification.innerHTML = `
             <div class="notification-icon">🎯</div>
             <div class="notification-content">
-                <div class="notification-title">New Daily Challenges!</div>
-                <div class="notification-text">Click the challenge button to view tasks</div>
+                <div class="notification-title">New Challenges Available!</div>
+                <div class="notification-text">Complete all challenges to unlock the Golden Ant!</div>
             </div>
         `;
         
@@ -1183,6 +1103,29 @@ IdleAnts.Managers.DailyChallengeManager = class {
                 console.error('Error loading challenge data:', error);
             }
         }
+    }
+
+    // Debug method to complete all challenges
+    debugCompleteAllChallenges() {
+        console.log('Debug: Completing all challenges');
+        
+        // Set all challenge progress to completed
+        this.currentChallenges.forEach(challenge => {
+            if (!challenge.completed) {
+                challenge.progress = challenge.target;
+                challenge.completed = true;
+                console.log(`Debug: Completed challenge ${challenge.name}`);
+            }
+        });
+        
+        // Update the UI to reflect the changes
+        this.updateChallengeUI();
+        
+        // Check if golden ant should spawn
+        this.checkAllChallengesComplete();
+        
+        console.log('Debug: All challenges completed!');
+        alert('Debug: All challenges completed! Golden Ant should spawn if all challenges are done.');
     }
 };
 

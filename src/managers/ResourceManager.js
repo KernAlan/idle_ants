@@ -98,10 +98,12 @@ IdleAnts.Managers.ResourceManager = class {
     
     // Food resource methods
     addFood(amount, foodType = null) {
-        this.resources.food += amount;
+        // Always round food amounts to whole numbers
+        const roundedAmount = Math.round(amount);
+        this.resources.food += roundedAmount;
         
         // Track this food addition for rate calculation
-        this.trackFoodCollection(amount);
+        this.trackFoodCollection(roundedAmount);
         
         // If foodType is provided, notify daily challenge manager
         if (foodType && typeof window !== 'undefined' && 

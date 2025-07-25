@@ -68,7 +68,7 @@ IdleAnts.Managers.InputManager = class {
     }
 
     handleCanvasClick(e) {
-        if (this.game.state !== IdleAnts.Game.States.PLAYING || this.game.isMobileDevice) { // Mobile uses touchend for taps
+        if ((this.game.state !== IdleAnts.Game.States.PLAYING && this.game.state !== IdleAnts.Game.States.BOSS_FIGHT) || this.game.isMobileDevice) { // Mobile uses touchend for taps
             return;
         }
         
@@ -82,10 +82,7 @@ IdleAnts.Managers.InputManager = class {
         const currentFoodType = this.resourceManager.getCurrentFoodType();
         this.entityManager.addFood({ x: worldX, y: worldY, clickPlaced: true }, currentFoodType);
         
-        // Track daily challenge for food clicking
-        if (this.game.dailyChallengeManager) {
-            this.game.dailyChallengeManager.trackFoodClick();
-        }
+        // Food clicks are now tracked automatically through addFood
         
         if (this.game.uiManager) this.game.uiManager.updateUI();
     }
@@ -268,7 +265,7 @@ IdleAnts.Managers.InputManager = class {
 
         if (e.touches.length === 0) { // All touches ended
             // Only allow food placement during PLAYING state
-            if (this.game.state === IdleAnts.Game.States.PLAYING && !this.touchMoved && touchDuration < 300 && !this.isPanning) { // Tap
+            if ((this.game.state === IdleAnts.Game.States.PLAYING || this.game.state === IdleAnts.Game.States.BOSS_FIGHT) && !this.touchMoved && touchDuration < 300 && !this.isPanning) { // Tap
                 // Use initial touch position for tap accuracy
                 const worldX = (this.touchStartX / this.mapConfig.zoom.level) + this.mapConfig.viewport.x;
                 const worldY = (this.touchStartY / this.mapConfig.zoom.level) + this.mapConfig.viewport.y;
@@ -279,10 +276,7 @@ IdleAnts.Managers.InputManager = class {
                 setTimeout(() => {
                     this.entityManager.addFood({ x: worldX, y: worldY, clickPlaced: true }, currentFoodType);
                     
-                    // Track daily challenge for food clicking
-                    if (this.game.dailyChallengeManager) {
-                        this.game.dailyChallengeManager.trackFoodClick();
-                    }
+                    // Food clicks are now tracked automatically through addFood
                     
                     if (this.game.uiManager) this.game.uiManager.updateUI();
                 }, this.mobileSettings.tapDelay);

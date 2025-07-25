@@ -20,6 +20,9 @@ IdleAnts.Game = class {
         // Initialize game state - start with title screen
         this.state = IdleAnts.Game.States.TITLE;
         
+        // Track session start time for accurate play time in victory screen
+        this.sessionStartTime = Date.now();
+        
         // Detect if running on mobile device
         this.isMobileDevice = this.detectMobileDevice();
         
@@ -51,6 +54,7 @@ IdleAnts.Game = class {
             background: 0x269c3f, // Matching green background
             width: window.innerWidth,
             height: window.innerHeight,
+            resizeTo: window // Enable automatic resizing
         });
         
         const canvasContainer = document.getElementById('game-canvas-container');
@@ -79,6 +83,9 @@ IdleAnts.Game = class {
         
         this.cameraManager = new IdleAnts.Managers.CameraManager(this.app, this.worldContainer, this.mapConfig, this);
         
+        // Initialize leaderboard integration
+        this.leaderboardIntegration = new GameLeaderboardIntegration(this);
+        
         // Run any registered initialization functions
         this.runInitHooks();
         
@@ -101,36 +108,77 @@ IdleAnts.Game = class {
         this.titleContainer = new PIXI.Container();
         this.app.stage.addChild(this.titleContainer);
         
-        // Load and display title background (centered, slightly smaller)
+        // Load and display title background (responsive scaling for mobile)
         console.log('Loading title image...');
         this.titleSprite = PIXI.Sprite.from('assets/backgrounds/adil_ants_title_screen.png');
         this.titleSprite.anchor.set(0.5); // Center the anchor point
-        this.titleSprite.scale.set(0.6); // Scale down to 60% of original size
+        
+        // Responsive scaling based on screen size
+        const isMobile = window.innerWidth <= 768;
+        const isPhone = window.innerWidth <= 480;
+        let scale;
+        
+        if (isPhone) {
+            // Very small scale for phones to fit properly
+            scale = Math.min(0.4, (this.app.screen.width * 0.8) / this.titleSprite.width, (this.app.screen.height * 0.6) / this.titleSprite.height);
+        } else if (isMobile) {
+            // Medium scale for tablets
+            scale = Math.min(0.5, (this.app.screen.width * 0.9) / this.titleSprite.width, (this.app.screen.height * 0.7) / this.titleSprite.height);
+        } else {
+            // Original scale for desktop
+            scale = 0.6;
+        }
+        
+        this.titleSprite.scale.set(scale);
         this.titleSprite.x = this.app.screen.width / 2;  // Center horizontally
         this.titleSprite.y = this.app.screen.height / 2; // Center vertically
         this.titleContainer.addChild(this.titleSprite);
-        console.log('Title sprite added to container');
+        console.log(`Title sprite added with scale: ${scale} for screen: ${this.app.screen.width}x${this.app.screen.height}`);
         
-        // Add "Press any key to start" text
+        // Add "Press any key to start" text with responsive sizing
+        let fontSize, strokeThickness, shadowBlur, shadowDistance;
+        
+        if (isPhone) {
+            fontSize = 24; // Much smaller for phones
+            strokeThickness = 2;
+            shadowBlur = 4;
+            shadowDistance = 2;
+        } else if (isMobile) {
+            fontSize = 32; // Medium for tablets
+            strokeThickness = 3;
+            shadowBlur = 6;
+            shadowDistance = 3;
+        } else {
+            fontSize = 48; // Original for desktop
+            strokeThickness = 4;
+            shadowBlur = 8;
+            shadowDistance = 4;
+        }
+        
         const textStyle = new PIXI.TextStyle({
             fontFamily: 'Impact, Arial Black, sans-serif',
-            fontSize: 48,
+            fontSize: fontSize,
             fontWeight: 'bold',
             fill: '#ffffff',
             stroke: '#000000',
-            strokeThickness: 4,
+            strokeThickness: strokeThickness,
             dropShadow: true,
             dropShadowColor: '#000000',
-            dropShadowBlur: 8,
-            dropShadowDistance: 4,
+            dropShadowBlur: shadowBlur,
+            dropShadowDistance: shadowDistance,
             align: 'center'
         });
         
-        this.titleText = new PIXI.Text('Press any key to start', textStyle);
+        const buttonText = isMobile ? 'Tap to start' : 'Press any key to start';
+        this.titleText = new PIXI.Text(buttonText, textStyle);
         this.titleText.anchor.set(0.5);
         this.titleText.x = this.app.screen.width / 2;
-        this.titleText.y = this.app.screen.height - 100;
+        
+        // Position text closer to bottom on mobile to account for smaller screens
+        const bottomMargin = isPhone ? 40 : isMobile ? 60 : 100;
+        this.titleText.y = this.app.screen.height - bottomMargin;
         this.titleContainer.addChild(this.titleText);
+        console.log(`Title text positioned with fontSize: ${fontSize}, bottomMargin: ${bottomMargin}`);
         
         // Add pulsing animation
         const pulse = () => {
@@ -158,6 +206,9 @@ IdleAnts.Game = class {
         this.app.stage.removeChild(this.titleContainer);
         document.removeEventListener('keydown', this.titleKeyHandler);
         document.removeEventListener('click', this.titleKeyHandler);
+        
+        // Add game-started class to enable UI interactions
+        document.body.classList.add('game-started');
         
         // Show UI elements now
         this.showUIElements();
@@ -401,31 +452,51 @@ IdleAnts.Game = class {
         // Keep window resize and orientation change here as they affect more than just input/camera directly.
         // Or, InputManager could call back to Game for these if preferred for full centralization.
 
-        // Add event listener for window resize
+        // Add event listener for window resize with proper canvas handling
         window.addEventListener('resize', () => {
-            this.updateMinimap(); 
-            if (this.cameraManager) {
-                this.cameraManager.handleResizeOrOrientationChange();
-            }
-            if (this.uiManager) { // Also update UI on resize
-                this.uiManager.updateUI();
-            }
+            this.handleResize();
         });
 
         // Handle orientation change on mobile devices (moved from original setupEventListeners)
         if (this.isMobileDevice) {
             window.addEventListener('orientationchange', () => {
                 setTimeout(() => {
-                    if (this.cameraManager) {
-                        this.cameraManager.handleResizeOrOrientationChange();
-                    }
-                    this.updateMinimap();
-                    if (this.uiManager) {
-                        this.uiManager.updateUI();
-                    }
+                    this.handleResize();
                 }, 300); 
             });
         }
+
+        // Handle fullscreen changes (important for fullscreen button functionality)
+        document.addEventListener('fullscreenchange', () => {
+            // Small delay to ensure fullscreen transition is complete
+            setTimeout(() => {
+                this.handleResize();
+            }, 100);
+        });
+        
+        // Handle webkit fullscreen changes (Safari)
+        document.addEventListener('webkitfullscreenchange', () => {
+            setTimeout(() => {
+                this.handleResize();
+            }, 100);
+        });
+        
+        // Handle moz fullscreen changes (Firefox)
+        document.addEventListener('mozfullscreenchange', () => {
+            setTimeout(() => {
+                this.handleResize();
+            }, 100);
+        });
+        
+        // Handle visibility changes (console opening/closing, tab switching)
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                // When page becomes visible again, check if resize is needed
+                setTimeout(() => {
+                    this.handleResize();
+                }, 50);
+            }
+        });
 
         // Create and track hover effect (Graphics object setup)
         this.hoverIndicator = new PIXI.Graphics();
@@ -441,6 +512,90 @@ IdleAnts.Game = class {
                 IdleAnts.AudioManager.resumeAudioContext();
             });
         }
+    }
+    
+    /**
+     * Comprehensive resize handler that prevents canvas stretching
+     * and maintains proper aspect ratios across all scenarios
+     */
+    handleResize() {
+        // Get current window dimensions
+        const newWidth = window.innerWidth;
+        const newHeight = window.innerHeight;
+        
+        // Resize the PIXI application properly - this prevents stretching
+        this.app.renderer.resize(newWidth, newHeight);
+        
+        // Update app screen dimensions for other components
+        this.app.screen.width = newWidth;
+        this.app.screen.height = newHeight;
+        
+        // Update camera manager for new viewport
+        if (this.cameraManager) {
+            this.cameraManager.handleResizeOrOrientationChange();
+        }
+        
+        // Update minimap position and sizing
+        this.updateMinimap();
+        if (this.minimap) {
+            const padding = 10;
+            const size = 150;
+            this.minimap.position.set(
+                newWidth - size - padding,
+                newHeight - (size * (this.mapConfig.height / this.mapConfig.width)) - padding
+            );
+        }
+        
+        // Update UI manager
+        if (this.uiManager) {
+            this.uiManager.updateUI();
+        }
+        
+        // Update title screen positioning if active with responsive scaling
+        if (this.state === IdleAnts.Game.States.TITLE && this.titleSprite) {
+            // Recalculate scale for new dimensions
+            const isMobile = newWidth <= 768;
+            const isPhone = newWidth <= 480;
+            let scale;
+            
+            if (isPhone) {
+                scale = Math.min(0.4, (newWidth * 0.8) / this.titleSprite.texture.width, (newHeight * 0.6) / this.titleSprite.texture.height);
+            } else if (isMobile) {
+                scale = Math.min(0.5, (newWidth * 0.9) / this.titleSprite.texture.width, (newHeight * 0.7) / this.titleSprite.texture.height);
+            } else {
+                scale = 0.6;
+            }
+            
+            this.titleSprite.scale.set(scale);
+            this.titleSprite.x = newWidth / 2;
+            this.titleSprite.y = newHeight / 2;
+        }
+        
+        if (this.state === IdleAnts.Game.States.TITLE && this.titleText) {
+            // Update text size and position for new dimensions
+            const isMobile = newWidth <= 768;
+            const isPhone = newWidth <= 480;
+            
+            let fontSize, bottomMargin;
+            if (isPhone) {
+                fontSize = 24;
+                bottomMargin = 40;
+            } else if (isMobile) {
+                fontSize = 32;
+                bottomMargin = 60;
+            } else {
+                fontSize = 48;
+                bottomMargin = 100;
+            }
+            
+            // Update text style
+            this.titleText.style.fontSize = fontSize;
+            this.titleText.text = isMobile ? 'Tap to start' : 'Press any key to start';
+            this.titleText.x = newWidth / 2;
+            this.titleText.y = newHeight - bottomMargin;
+        }
+        
+        console.log(`Canvas resized to: ${newWidth}x${newHeight} - no stretching!`);
     }
     
     updateHoverIndicator(x, y) {
@@ -597,16 +752,7 @@ IdleAnts.Game = class {
         // Remove navigation helper - will be added by user later
         // this.addNavigationHelper();
         
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            this.minimap.position.set(
-                this.app.screen.width - size - padding,
-                this.app.screen.height - (size * (this.mapConfig.height / this.mapConfig.width)) - padding
-            );
-            
-            // Update navigation helper position - not needed now
-            // this.updateNavigationHelperPosition();
-        });
+        // Minimap resize handling is now done in handleResize() method
     }
     
     updateMinimap() {
@@ -961,20 +1107,32 @@ IdleAnts.Game = class {
             this.entityManager.boss = null;
         }
         
+        // Track boss defeat for challenges
+        if (this.dailyChallengeManager) {
+            this.dailyChallengeManager.trackBossDefeat(bossType);
+        }
+        
         // Check if this is the final boss (anteater) or a miniboss
         if (bossType === 'anteater') {
-            // Final boss defeated - trigger victory
-            if (this.uiManager) {
-                this.uiManager.showWinScreen();
-            }
+            // Final boss defeated - trigger victory with leaderboard integration
             if (this.entityManager) {
                 this.entityManager.bossDefeated = true;
                 this.entityManager.bossTriggered = false;
             }
+            
             // Play victory theme
             if (IdleAnts.AudioManager && IdleAnts.AudioAssets && IdleAnts.AudioAssets.BGM && IdleAnts.AudioAssets.BGM.VICTORY_THEME) {
                 IdleAnts.AudioManager.playBGM(IdleAnts.AudioAssets.BGM.VICTORY_THEME.id);
             }
+            
+            // Show leaderboard victory sequence instead of simple win screen
+            if (this.leaderboardIntegration) {
+                this.leaderboardIntegration.handleVictory();
+            } else if (this.uiManager) {
+                // Fallback to original win screen if leaderboard system fails
+                this.uiManager.showWinScreen();
+            }
+            
             this.transitionToState(IdleAnts.Game.States.WIN);
         } else {
             // Miniboss defeated - continue game, return to normal music
@@ -1098,6 +1256,11 @@ IdleAnts.Game = class {
             // Show success effect
             this.uiManager.showUpgradeEffect('unlock-flying-ants', 'Flying ants unlocked!');
             
+            // Track challenge progress
+            if (this.dailyChallengeManager) {
+                this.dailyChallengeManager.trackUnlock('flyingAnts');
+            }
+            
             // Show the previously hidden flying ant buttons
             const buyButton = document.getElementById('buy-flying-ant');
             const statsDisplay = document.getElementById('flying-ant-stats');
@@ -1210,9 +1373,9 @@ IdleAnts.Game = class {
                 this.achievementManager.trackSpeedUpgrade();
             }
             
-            // Track daily challenge
+            // Track challenge progress
             if (this.dailyChallengeManager) {
-                this.dailyChallengeManager.trackSpeedUpgrade();
+                this.dailyChallengeManager.trackUpgrade();
             }
             
             // Update UI
@@ -1283,6 +1446,23 @@ IdleAnts.Game = class {
 
     adjustSettingsForMobile() {
         // Adjust game settings for better mobile experience
+        
+        // Auto-collapse UI on phones for maximum game space
+        if (window.innerWidth <= 480) {
+            // Add condensed class for ultra-small phones
+            document.body.classList.add('phone-condensed');
+            
+            // Auto-collapse UI on phones to maximize game space
+            const gameContainer = document.getElementById('game-container');
+            if (gameContainer) {
+                gameContainer.classList.add('ui-collapsed');
+            }
+            console.log('Phone detected - UI auto-collapsed for maximum game space');
+        }
+        
+        // Store mobile detection for title screen usage
+        this.isMobile = window.innerWidth <= 768;
+        this.isPhone = window.innerWidth <= 480;
         
         // Increase UI button sizes for touch
         const buttons = document.querySelectorAll('.upgrade-btn');
@@ -1424,6 +1604,11 @@ IdleAnts.Game = class {
             // Show unlock effect
             this.uiManager.showUpgradeEffect('unlock-queen', 'Queen Ant Unlocked!');
             
+            // Track challenge progress
+            if (this.dailyChallengeManager) {
+                this.dailyChallengeManager.trackUnlock('queen');
+            }
+            
             // Update UI
             this.uiManager.updateUI();
             this.uiManager.updateButtonStates();
@@ -1466,6 +1651,11 @@ IdleAnts.Game = class {
         if (this.resourceManager.unlockCarAnts()) {
             this.uiManager.updateUI();
             this.uiManager.showUpgradeEffect('unlock-car-ants', 'Car Ants Unlocked! Bay available.');
+            
+            // Track challenge progress
+            if (this.dailyChallengeManager) {
+                this.dailyChallengeManager.trackUnlock('carAnts');
+            }
             return true;
         }
         return false;
@@ -1499,6 +1689,11 @@ IdleAnts.Game = class {
         if (this.resourceManager.unlockFireAnts()) {
             this.uiManager.updateUI();
             this.uiManager.showUpgradeEffect('unlock-fire-ants', 'Fire Ants Unlocked!');
+            
+            // Track challenge progress
+            if (this.dailyChallengeManager) {
+                this.dailyChallengeManager.trackUnlock('fireAnts');
+            }
             return true;
         }
         return false;

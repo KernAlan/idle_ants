@@ -232,9 +232,8 @@ html {
 
 canvas {
     display: block;
-    width: 100%;
-    height: 100%;
     touch-action: none; /* Disable browser handling of touch gestures */
+    /* Remove width/height 100% to prevent CSS stretching - PIXI handles sizing */
 }
 
 /* 3D-specific styles */
@@ -428,32 +427,125 @@ canvas {
     }
 }
 
-/* For extremely small screens */
+/* For phones - Ultra condensed UI to maximize game space */
 @media (max-width: 480px) {
     #ui-container {
-        padding: 2px 3px;
-        max-height: 40vh;
+        padding: 1px 2px;
+        max-height: 12vh; /* Even smaller for phones - just 12% of screen */
+        border-radius: 0 0 6px 6px;
     }
     
     #game-title {
-        font-size: 10px;
+        font-size: 8px; /* Tiny title */
         min-width: auto;
-        margin-right: 5px;
+        margin-right: 2px;
+        gap: 1px;
     }
     
-    #upgrades {
-        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    #resources {
+        font-size: 8px; /* Very small resource text */
+        gap: 1px;
     }
     
-    .upgrade-section {
-        min-width: 80px;
-    }
-    
-    .upgrade-btn {
-        min-width: 75px;
+    #food, #ants, #flying-ant-stats {
+        padding: 0px 2px; /* Minimal padding */
         font-size: 8px;
-        padding: 2px;
-        height: 32px; /* Reduced height for very small screens */
+        border-radius: 4px;
+        margin: 0px;
+    }
+    
+    #food-rate {
+        padding: 0px 2px;
+        font-size: 7px; /* Tiny rate display */
+        border-radius: 4px;
+    }
+    
+    #action-bar {
+        gap: 1px; /* Minimal gaps between buttons */
+        margin: 1px 0;
+    }
+    
+    .action-btn {
+        min-width: 38px; /* Very small buttons for phones */
+        height: 28px; /* Compact height */
+        font-size: 7px; /* Tiny text */
+        padding: 1px;
+        border-radius: 6px;
+    }
+    
+    .action-btn i {
+        font-size: 10px; /* Small icons */
+        margin-bottom: 0px;
+    }
+    
+    /* Make collapsed state even more minimal on phones */
+    .ui-collapsed #ui-container {
+        max-height: 18px; /* Tiny collapsed state */
+    }
+    
+    .ui-collapsed #game-canvas-container {
+        height: calc(100vh - 18px);
+    }
+}
+
+/* Ultra-condensed mode for phones */
+.phone-condensed #ui-container {
+    max-height: 10vh !important; /* Even more aggressive - just 10% */
+    padding: 0px 1px !important;
+    border-radius: 0 0 4px 4px !important;
+}
+
+.phone-condensed #action-bar {
+    margin: 0px !important;
+    gap: 0px !important; /* No gaps at all */
+}
+
+.phone-condensed .action-btn {
+    min-width: 35px !important; /* Tiny buttons */
+    height: 24px !important;
+    font-size: 6px !important;
+    padding: 0px !important;
+    border-radius: 4px !important;
+}
+
+.phone-condensed .action-btn i {
+    font-size: 8px !important;
+}
+
+/* Collapsed state for phones is almost invisible */
+.phone-condensed.ui-collapsed #ui-container {
+    max-height: 16px !important;
+}
+
+.phone-condensed.ui-collapsed #game-canvas-container {
+    height: calc(100vh - 16px) !important;
+}
+
+/* Title screen mobile optimizations */
+@media (max-width: 768px) {
+    /* Ensure title screen elements are properly sized for mobile */
+    canvas {
+        width: 100vw !important;
+        height: 100vh !important;
+        object-fit: contain; /* Maintain aspect ratio */
+    }
+}
+
+@media (max-width: 480px) {
+    /* Phone-specific title screen adjustments */
+    canvas {
+        width: 100vw !important;
+        height: 100vh !important;
+    }
+    
+    /* Ensure UI doesn't interfere with title screen on phones */
+    #ui-container {
+        pointer-events: none; /* Allow clicks to pass through during title */
+    }
+    
+    /* Re-enable UI interaction after title screen */
+    .game-started #ui-container {
+        pointer-events: auto;
     }
 }
 
@@ -682,6 +774,14 @@ input, textarea {
     flex-wrap: wrap;
 }
 
+/* Mobile action bar - much more condensed */
+@media (max-width: 768px) {
+    #action-bar {
+        gap: 2px; /* Much tighter spacing */
+        margin: 2px 0; /* Reduced margin */
+    }
+}
+
 .action-btn {
     display: flex;
     flex-direction: column;
@@ -847,16 +947,18 @@ input, textarea {
     text-align: center;
 }
 
-/* Mobile Modal Adjustments */
+/* Mobile Modal Adjustments - Ultra condensed */
 @media (max-width: 768px) {
     .action-btn {
-        min-width: 70px;
-        height: 50px;
-        font-size: 10px;
+        min-width: 45px; /* Much smaller buttons */
+        height: 32px; /* Reduced height */
+        font-size: 8px; /* Smaller text */
+        padding: 2px; /* Tighter padding */
     }
     
     .action-btn i {
-        font-size: 16px;
+        font-size: 12px; /* Smaller icons */
+        margin-bottom: 1px;
     }
     
     .modal-backdrop {

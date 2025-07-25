@@ -117,6 +117,7 @@ IdleAnts.Managers.AchievementManager = class {
         this.progress = {
             foodCollected: 0,
             antsOwned: 0,
+            peakConcurrentAnts: 0,
             upgradesPurchased: 0,
             daysPlayed: 0,
             speedUpgrades: 0,
@@ -132,6 +133,12 @@ IdleAnts.Managers.AchievementManager = class {
         
         // Create achievement notification system
         this.createNotificationSystem();
+        
+        // Flag to ignore debug starting food
+        this.isInitializing = true;
+        setTimeout(() => {
+            this.isInitializing = false;
+        }, 100); // Allow 100ms for initialization to complete
     }
     
     setupTracking() {
@@ -139,29 +146,78 @@ IdleAnts.Managers.AchievementManager = class {
         const originalAddFood = this.resourceManager.addFood.bind(this.resourceManager);
         this.resourceManager.addFood = (amount) => {
             const result = originalAddFood(amount);
-            this.progress.foodCollected += amount;
-            this.checkAchievements();
+            
+            // Always use whole numbers for food tracking
+            const roundedAmount = Math.round(amount);
+            
+            // Don't count debug starting food (ignore large amounts during initialization)
+            if (!(this.isInitializing && IdleAnts.Config.debug && roundedAmount >= 1000000)) {
+                this.progress.foodCollected += roundedAmount;
+                this.checkAchievements();
+            }
+            
             return result;
         };
         
-        // Track ant purchases
+        // Track ant count changes by wrapping the increaseAntCount method
+        const originalIncreaseAntCount = this.resourceManager.increaseAntCount.bind(this.resourceManager);
+        this.resourceManager.increaseAntCount = () => {
+            const result = originalIncreaseAntCount();
+            
+            // Update peak ant count tracking
+            if (this.resourceManager.stats.ants > this.progress.antsOwned) {
+                this.progress.antsOwned = this.resourceManager.stats.ants;
+                this.checkAchievements();
+            }
+            
+            return result;
+        };
+        
+        // Also track when ants are added directly via stats
         const originalStats = this.resourceManager.stats;
         Object.defineProperty(this.resourceManager, 'stats', {
             get: () => originalStats,
             set: (value) => {
-                if (value.ants > this.progress.antsOwned) {
+                // Check if ant count increased
+                if (value && value.ants > this.progress.antsOwned) {
                     this.progress.antsOwned = value.ants;
                     this.checkAchievements();
                 }
-                originalStats = value;
+                Object.assign(originalStats, value);
             }
         });
         
-        // Track play time
+        // Track play time and check ant count
         setInterval(() => {
             this.progress.playTime += 1;
+            
+            // Periodically check for ant count increases (in case we missed some)
+            if (this.resourceManager.stats.ants > this.progress.antsOwned) {
+                this.progress.antsOwned = this.resourceManager.stats.ants;
+                this.checkAchievements();
+            }
+            
+            // Track peak concurrent ants
+            this.updatePeakConcurrentAnts();
+            
             this.saveProgress();
         }, 1000);
+    }
+    
+    updatePeakConcurrentAnts() {
+        // Get total concurrent ants (all types currently alive)
+        const entityManager = IdleAnts.game?.entityManager;
+        if (!entityManager) return;
+        
+        const concurrentAnts = 
+            (entityManager.entities.ants?.length || 0) +
+            (entityManager.entities.flyingAnts?.length || 0) +
+            (entityManager.entities.carAnts?.length || 0) +
+            (entityManager.entities.fireAnts?.length || 0);
+        
+        if (concurrentAnts > this.progress.peakConcurrentAnts) {
+            this.progress.peakConcurrentAnts = concurrentAnts;
+        }
     }
     
     checkAchievements() {
@@ -388,9 +444,16 @@ IdleAnts.Managers.AchievementManager = class {
                 
                 // Load progress
                 this.progress = { ...this.progress, ...data.progress };
+                
+                // Reset session-based tracking (food collected should be per-session)
+                console.log('Resetting session-based progress for new session');
+                this.progress.foodCollected = 0;
             } catch (error) {
                 console.error('Error loading achievement data:', error);
             }
+        } else {
+            // No saved data, ensure foodCollected starts at 0 for this session
+            this.progress.foodCollected = 0;
         }
     }
     

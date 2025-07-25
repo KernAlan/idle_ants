@@ -9,7 +9,7 @@ IdleAnts.Entities.TarantulaBoss = class extends PIXI.Container {
         this.vx = 0; this.vy = 0;
         this.maxHp = 12000;
         this.hp = this.maxHp;
-        this.attackDamage = 800;
+        this.attackDamage = 200;
         this.attackRange = 120;
         this.attackCooldown = 90;
         this._attackTimer = 0;

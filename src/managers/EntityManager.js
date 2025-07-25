@@ -1127,11 +1127,11 @@ IdleAnts.Managers.EntityManager = class {
     }
     
     updateEnemies(){
-        // If the boss is active, skip regular spawning and just update the boss.
+        // If the boss is active, update the boss but continue with regular enemy updates
         if (this.boss && !this.boss.isDead) {
             const ants = [...this.entities.ants, ...this.entities.flyingAnts, ...this.entities.carAnts, ...this.entities.fireAnts];
             this.boss.update(ants);
-            return;
+            // Don't return - continue with regular enemy updates so they don't freeze
         }
         // Calculate total ants in colony
         const antTotal = this.entities.ants.length + this.entities.flyingAnts.length + this.entities.carAnts.length + this.entities.fireAnts.length;
