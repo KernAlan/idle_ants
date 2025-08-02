@@ -27,7 +27,7 @@ IdleAnts.Managers.ResourceManager = class {
             speedUpgradeCost: 75,
             speedMultiplier: 1,
             // New strength-related properties
-            strengthUpgradeCost: 50,
+            strengthUpgradeCost: 150,
             strengthMultiplier: 1, // Now represents the actual carrying capacity
             // Food tier properties
             foodTier: 1,  // Start with basic food (tier 1)
@@ -393,7 +393,7 @@ IdleAnts.Managers.ResourceManager = class {
     
     // New strength-related methods
     updateStrengthUpgradeCost() {
-        this.stats.strengthUpgradeCost = Math.floor(this.stats.strengthUpgradeCost * 1.2);
+        this.stats.strengthUpgradeCost = Math.floor(this.stats.strengthUpgradeCost * 1.4);
     }
     
     upgradeStrengthMultiplier(amount) {
@@ -647,7 +647,7 @@ IdleAnts.Managers.ResourceManager = class {
             foodMultiplier: 1,
             speedUpgradeCost: 75,
             speedMultiplier: 1,
-            strengthUpgradeCost: 50,
+            strengthUpgradeCost: 150,
             strengthMultiplier: 1,
             foodTier: 1,
             maxFoodTier: 9,

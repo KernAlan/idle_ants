@@ -12,7 +12,7 @@ IdleAnts.Entities.FireAnt = class extends IdleAnts.Entities.AntBase {
         this.tint = 0xFF0000;
 
         // Combat-related placeholders (future implementation)
-        this.attackDamage = 25; // Increased attack power
+        this.attackDamage = 20; // Reduced attack power (was 25, now 20% less)
         this.attackCooldown = 60; // frames
         this._attackTimer = 0;
 
