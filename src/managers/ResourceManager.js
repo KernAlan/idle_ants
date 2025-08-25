@@ -14,7 +14,6 @@ IdleAnts.Managers.ResourceManager = class {
             ants: 1,
             maxAnts: 10,
             flyingAnts: 0,
-            maxFlyingAnts: 0,  // Start with no flying ants allowed
             flyingAntsUnlocked: false,  // Flying ants need to be unlocked first
             foodPerClick: 1,
             foodPerSecond: 0,
@@ -53,18 +52,92 @@ IdleAnts.Managers.ResourceManager = class {
 
             // Car Ant properties
             carAnts: 0,
-            maxCarAnts: 0, // Starts locked
             carAntsUnlocked: false,
             carAntUnlockCost: 10000, // Example: High cost to unlock
             carAntCost: 2500,       // Example: High cost per Car Ant
             carAntFoodPerSecond: 5, // Example: Car ants are very efficient
             // Fire Ant properties
             fireAnts: 0,
-            maxFireAnts: 0,
             fireAntsUnlocked: false,
             fireAntUnlockCost: 20000,
             fireAntCost: 700,
-            fireAntFoodPerSecond: 8
+            fireAntFoodPerSecond: 8,
+            
+            // New Ant Types - Basic Combat
+            fatAnts: 0,
+            fatAntsUnlocked: false,
+            fatAntUnlockCost: 3000,
+            fatAntCost: 4000,
+            
+            gasAnts: 0,
+            gasAntsUnlocked: false,
+            gasAntUnlockCost: 1500,
+            gasAntCost: 2000,
+            
+            acidAnts: 0,
+            acidAntsUnlocked: false,
+            acidAntUnlockCost: 2000,
+            acidAntCost: 3000,
+            
+            rainbowAnts: 0,
+            rainbowAntsUnlocked: false,
+            rainbowAntUnlockCost: 2500,
+            rainbowAntCost: 3000,
+            
+            // New Ant Types - Exploding
+            smokeAnts: 0,
+            smokeAntsUnlocked: false,
+            smokeAntUnlockCost: 1800,
+            smokeAntCost: 2000,
+            
+            electricAnts: 0,
+            electricAntsUnlocked: false,
+            electricAntUnlockCost: 5000,
+            electricAntCost: 7000,
+            
+            leafCutterAnts: 0,
+            leafCutterAntsUnlocked: false,
+            leafCutterAntUnlockCost: 6000,
+            leafCutterAntCost: 8000,
+            
+            doorAnts: 0,
+            doorAntsUnlocked: false,
+            doorAntUnlockCost: 7000,
+            doorAntCost: 9000,
+            
+            // New Ant Types - Throwing
+            bananaThrowingAnts: 0,
+            bananaThrowingAntsUnlocked: false,
+            bananaThrowingAntUnlockCost: 12000,
+            bananaThrowingAntCost: 15000,
+            
+            juiceAnts: 0,
+            juiceAntsUnlocked: false,
+            juiceAntUnlockCost: 9000,
+            juiceAntCost: 12000,
+            
+            crabAnts: 0,
+            crabAntsUnlocked: false,
+            crabAntUnlockCost: 8000,
+            crabAntCost: 10000,
+            
+            // New Ant Types - Special
+            upsideDownAnts: 0,
+            upsideDownAntsUnlocked: false,
+            upsideDownAntUnlockCost: 4000,
+            upsideDownAntCost: 5000,
+            
+            dpsAnts: 0,
+            dpsAntsUnlocked: false,
+            dpsAntUnlockCost: 6000,
+            dpsAntCost: 8000,
+            
+            spiderAnts: 0,
+            spiderAntsUnlocked: false,
+            spiderAntUnlockCost: 20000,
+            spiderAntCost: 25000,
+            
+            // Other
         };
         
         // Map of food tier to food type
@@ -349,8 +422,6 @@ IdleAnts.Managers.ResourceManager = class {
             // Set flying ants as unlocked
             this.stats.flyingAntsUnlocked = true;
             
-            // Set initial max flying ants
-            this.stats.maxFlyingAnts = 3;
             
             return true;
         }
@@ -361,13 +432,14 @@ IdleAnts.Managers.ResourceManager = class {
     canBuyFlyingAnt() {
         return this.stats.flyingAntsUnlocked && 
                this.canAfford(this.stats.flyingAntCost) && 
-               this.stats.flyingAnts < this.stats.maxFlyingAnts;
+               this.stats.ants < this.stats.maxAnts;
     }
     
     buyFlyingAnt() {
         if (this.canBuyFlyingAnt()) {
             this.spendFood(this.stats.flyingAntCost);
             this.stats.flyingAnts++;
+            this.stats.ants++;
             const oldCost = this.stats.flyingAntCost;
             this.stats.flyingAntCost = Math.floor(this.stats.flyingAntCost * 1.25);
             this.updateFoodPerSecond();
@@ -376,20 +448,6 @@ IdleAnts.Managers.ResourceManager = class {
         return false;
     }
     
-    canExpandFlyingAntCapacity() {
-        const expandFlyingCost = Math.floor(this.stats.expandCost * 1.5);
-        return this.stats.flyingAntsUnlocked && this.canAfford(expandFlyingCost);
-    }
-
-    expandFlyingAntCapacity() {
-        const expandFlyingCost = Math.floor(this.stats.expandCost * 1.5);
-        if (this.canExpandFlyingAntCapacity()) {
-            this.spendFood(expandFlyingCost);
-            this.stats.maxFlyingAnts += 2; // Add fewer flying ants per upgrade
-            return true;
-        }
-        return false;
-    }
     
     // New strength-related methods
     updateStrengthUpgradeCost() {
@@ -526,7 +584,6 @@ IdleAnts.Managers.ResourceManager = class {
         if (this.canUnlockCarAnts()) {
             this.spendFood(this.stats.carAntUnlockCost);
             this.stats.carAntsUnlocked = true;
-            this.stats.maxCarAnts = 2; // Unlock a small initial capacity, e.g., 2
             // Potentially update UI or trigger game event here
             return true;
         }
@@ -536,13 +593,14 @@ IdleAnts.Managers.ResourceManager = class {
     canBuyCarAnt() {
         return this.stats.carAntsUnlocked && 
                this.canAfford(this.stats.carAntCost) && 
-               this.stats.carAnts < this.stats.maxCarAnts;
+               this.stats.ants < this.stats.maxAnts;
     }
 
     buyCarAnt() {
         if (this.canBuyCarAnt()) {
             this.spendFood(this.stats.carAntCost);
             this.stats.carAnts++;
+            this.stats.ants++;
             this.updateFoodPerSecond(); // Recalculate food per second
             this.updateCarAntCost();    // Increase cost for the next one
             return true;
@@ -554,23 +612,6 @@ IdleAnts.Managers.ResourceManager = class {
         this.stats.carAntCost = Math.floor(this.stats.carAntCost * 1.25);
     }
 
-    // Method to expand Car Ant capacity (similar to flying ants)
-    canExpandCarAntCapacity() {
-        // Define a cost for expanding car ant capacity, e.g., based on current max or a fixed high cost
-        // For simplicity, let's use a cost that scales with the number of car ants or a fixed high value
-        const expandCarAntCapacityCost = this.stats.maxCarAnts > 0 ? this.stats.carAntCost * (this.stats.maxCarAnts + 1) * 0.5 : 5000;
-        return this.stats.carAntsUnlocked && this.canAfford(expandCarAntCapacityCost);
-    }
-
-    expandCarAntCapacity() {
-        const expandCarAntCapacityCost = this.stats.maxCarAnts > 0 ? this.stats.carAntCost * (this.stats.maxCarAnts + 1) * 0.5 : 5000;
-        if (this.canExpandCarAntCapacity()) {
-            this.spendFood(expandCarAntCapacityCost);
-            this.stats.maxCarAnts += 1; // Increase max by 1 or a fixed amount
-            return true;
-        }
-        return false;
-    }
 
     // Fire Ant Methods
     canUnlockFireAnts() {
@@ -581,7 +622,6 @@ IdleAnts.Managers.ResourceManager = class {
         if (this.canUnlockFireAnts()) {
             this.spendFood(this.stats.fireAntUnlockCost);
             this.stats.fireAntsUnlocked = true;
-            this.stats.maxFireAnts = 2; // initial capacity
             return true;
         }
         return false;
@@ -590,13 +630,14 @@ IdleAnts.Managers.ResourceManager = class {
     canBuyFireAnt() {
         return this.stats.fireAntsUnlocked &&
                this.canAfford(this.stats.fireAntCost) &&
-               this.stats.fireAnts < this.stats.maxFireAnts;
+               this.stats.ants < this.stats.maxAnts;
     }
 
     buyFireAnt() {
         if (this.canBuyFireAnt()) {
             this.spendFood(this.stats.fireAntCost);
             this.stats.fireAnts++;
+            this.stats.ants++;
             this.updateFoodPerSecond();
             this.updateFireAntCost();
             return true;
@@ -608,20 +649,445 @@ IdleAnts.Managers.ResourceManager = class {
         this.stats.fireAntCost = Math.floor(this.stats.fireAntCost * 1.25);
     }
 
-    canExpandFireAntCapacity() {
-        const cost = this.stats.maxFireAnts > 0 ? this.stats.fireAntCost * (this.stats.maxFireAnts + 1) * 0.5 : 10000;
-        return this.stats.fireAntsUnlocked && this.canAfford(cost);
+
+    // ===============================================
+    // NEW ANT TYPES PURCHASE METHODS
+    // ===============================================
+
+    // Fat Ant Methods
+    canUnlockFatAnts() {
+        return this.canAfford(this.stats.fatAntUnlockCost) && !this.stats.fatAntsUnlocked;
     }
 
-    expandFireAntCapacity() {
-        const cost = this.stats.maxFireAnts > 0 ? this.stats.fireAntCost * (this.stats.maxFireAnts + 1) * 0.5 : 10000;
-        if (this.canExpandFireAntCapacity()) {
-            this.spendFood(cost);
-            this.stats.maxFireAnts += 1;
+    unlockFatAnts() {
+        if (this.canUnlockFatAnts()) {
+            this.spendFood(this.stats.fatAntUnlockCost);
+            this.stats.fatAntsUnlocked = true;
             return true;
         }
         return false;
     }
+
+    canBuyFatAnt() {
+        return this.stats.fatAntsUnlocked && 
+               this.canAfford(this.stats.fatAntCost) && 
+               this.stats.ants < this.stats.maxAnts;
+    }
+
+    buyFatAnt() {
+        if (this.canBuyFatAnt()) {
+            this.spendFood(this.stats.fatAntCost);
+            this.stats.fatAnts++;
+            this.stats.ants++;
+            this.stats.fatAntCost = Math.floor(this.stats.fatAntCost * 1.25);
+            return true;
+        }
+        return false;
+    }
+
+    // Gas Ant Methods
+    canUnlockGasAnts() {
+        return this.canAfford(this.stats.gasAntUnlockCost) && !this.stats.gasAntsUnlocked;
+    }
+
+    unlockGasAnts() {
+        if (this.canUnlockGasAnts()) {
+            this.spendFood(this.stats.gasAntUnlockCost);
+            this.stats.gasAntsUnlocked = true;
+            return true;
+        }
+        return false;
+    }
+
+    canBuyGasAnt() {
+        return this.stats.gasAntsUnlocked && 
+               this.canAfford(this.stats.gasAntCost) && 
+               this.stats.ants < this.stats.maxAnts;
+    }
+
+    buyGasAnt() {
+        if (this.canBuyGasAnt()) {
+            this.spendFood(this.stats.gasAntCost);
+            this.stats.gasAnts++;
+            this.stats.ants++;
+            this.stats.gasAntCost = Math.floor(this.stats.gasAntCost * 1.25);
+            return true;
+        }
+        return false;
+    }
+
+    // Acid Ant Methods
+    canUnlockAcidAnts() {
+        return this.canAfford(this.stats.acidAntUnlockCost) && !this.stats.acidAntsUnlocked;
+    }
+
+    unlockAcidAnts() {
+        if (this.canUnlockAcidAnts()) {
+            this.spendFood(this.stats.acidAntUnlockCost);
+            this.stats.acidAntsUnlocked = true;
+            return true;
+        }
+        return false;
+    }
+
+    canBuyAcidAnt() {
+        return this.stats.acidAntsUnlocked && 
+               this.canAfford(this.stats.acidAntCost) && 
+               this.stats.ants < this.stats.maxAnts;
+    }
+
+    buyAcidAnt() {
+        if (this.canBuyAcidAnt()) {
+            this.spendFood(this.stats.acidAntCost);
+            this.stats.acidAnts++;
+            this.stats.ants++;
+            this.stats.acidAntCost = Math.floor(this.stats.acidAntCost * 1.25);
+            return true;
+        }
+        return false;
+    }
+
+    // Rainbow Ant Methods
+    canUnlockRainbowAnts() {
+        return this.canAfford(this.stats.rainbowAntUnlockCost) && !this.stats.rainbowAntsUnlocked;
+    }
+
+    unlockRainbowAnts() {
+        if (this.canUnlockRainbowAnts()) {
+            this.spendFood(this.stats.rainbowAntUnlockCost);
+            this.stats.rainbowAntsUnlocked = true;
+            return true;
+        }
+        return false;
+    }
+
+    canBuyRainbowAnt() {
+        return this.stats.rainbowAntsUnlocked && 
+               this.canAfford(this.stats.rainbowAntCost) && 
+               this.stats.ants < this.stats.maxAnts;
+    }
+
+    buyRainbowAnt() {
+        if (this.canBuyRainbowAnt()) {
+            this.spendFood(this.stats.rainbowAntCost);
+            this.stats.rainbowAnts++;
+            this.stats.ants++;
+            this.stats.rainbowAntCost = Math.floor(this.stats.rainbowAntCost * 1.25);
+            return true;
+        }
+        return false;
+    }
+
+    // Smoke Ant Methods
+    canUnlockSmokeAnts() {
+        return this.canAfford(this.stats.smokeAntUnlockCost) && !this.stats.smokeAntsUnlocked;
+    }
+
+    unlockSmokeAnts() {
+        if (this.canUnlockSmokeAnts()) {
+            this.spendFood(this.stats.smokeAntUnlockCost);
+            this.stats.smokeAntsUnlocked = true;
+            return true;
+        }
+        return false;
+    }
+
+    canBuySmokeAnt() {
+        return this.stats.smokeAntsUnlocked && 
+               this.canAfford(this.stats.smokeAntCost) && 
+               this.stats.ants < this.stats.maxAnts;
+    }
+
+    buySmokeAnt() {
+        if (this.canBuySmokeAnt()) {
+            this.spendFood(this.stats.smokeAntCost);
+            this.stats.smokeAnts++;
+            this.stats.ants++;
+            this.stats.smokeAntCost = Math.floor(this.stats.smokeAntCost * 1.25);
+            return true;
+        }
+        return false;
+    }
+
+    // Electric Ant Methods
+    canUnlockElectricAnts() {
+        return this.canAfford(this.stats.electricAntUnlockCost) && !this.stats.electricAntsUnlocked;
+    }
+
+    unlockElectricAnts() {
+        if (this.canUnlockElectricAnts()) {
+            this.spendFood(this.stats.electricAntUnlockCost);
+            this.stats.electricAntsUnlocked = true;
+            return true;
+        }
+        return false;
+    }
+
+    canBuyElectricAnt() {
+        return this.stats.electricAntsUnlocked && 
+               this.canAfford(this.stats.electricAntCost) && 
+               this.stats.ants < this.stats.maxAnts;
+    }
+
+    buyElectricAnt() {
+        if (this.canBuyElectricAnt()) {
+            this.spendFood(this.stats.electricAntCost);
+            this.stats.electricAnts++;
+            this.stats.ants++;
+            this.stats.electricAntCost = Math.floor(this.stats.electricAntCost * 1.25);
+            return true;
+        }
+        return false;
+    }
+
+    // Leaf Cutter Ant Methods
+    canUnlockLeafCutterAnts() {
+        return this.canAfford(this.stats.leafCutterAntUnlockCost) && !this.stats.leafCutterAntsUnlocked;
+    }
+
+    unlockLeafCutterAnts() {
+        if (this.canUnlockLeafCutterAnts()) {
+            this.spendFood(this.stats.leafCutterAntUnlockCost);
+            this.stats.leafCutterAntsUnlocked = true;
+            return true;
+        }
+        return false;
+    }
+
+    canBuyLeafCutterAnt() {
+        return this.stats.leafCutterAntsUnlocked && 
+               this.canAfford(this.stats.leafCutterAntCost) && 
+               this.stats.ants < this.stats.maxAnts;
+    }
+
+    buyLeafCutterAnt() {
+        if (this.canBuyLeafCutterAnt()) {
+            this.spendFood(this.stats.leafCutterAntCost);
+            this.stats.leafCutterAnts++;
+            this.stats.ants++;
+            this.stats.leafCutterAntCost = Math.floor(this.stats.leafCutterAntCost * 1.25);
+            return true;
+        }
+        return false;
+    }
+
+    // Door Ant Methods
+    canUnlockDoorAnts() {
+        return this.canAfford(this.stats.doorAntUnlockCost) && !this.stats.doorAntsUnlocked;
+    }
+
+    unlockDoorAnts() {
+        if (this.canUnlockDoorAnts()) {
+            this.spendFood(this.stats.doorAntUnlockCost);
+            this.stats.doorAntsUnlocked = true;
+            return true;
+        }
+        return false;
+    }
+
+    canBuyDoorAnt() {
+        return this.stats.doorAntsUnlocked && 
+               this.canAfford(this.stats.doorAntCost) && 
+               this.stats.ants < this.stats.maxAnts;
+    }
+
+    buyDoorAnt() {
+        if (this.canBuyDoorAnt()) {
+            this.spendFood(this.stats.doorAntCost);
+            this.stats.doorAnts++;
+            this.stats.ants++;
+            this.stats.doorAntCost = Math.floor(this.stats.doorAntCost * 1.25);
+            return true;
+        }
+        return false;
+    }
+
+    // Banana Throwing Ant Methods
+    canUnlockBananaThrowingAnts() {
+        return this.canAfford(this.stats.bananaThrowingAntUnlockCost) && !this.stats.bananaThrowingAntsUnlocked;
+    }
+
+    unlockBananaThrowingAnts() {
+        if (this.canUnlockBananaThrowingAnts()) {
+            this.spendFood(this.stats.bananaThrowingAntUnlockCost);
+            this.stats.bananaThrowingAntsUnlocked = true;
+            return true;
+        }
+        return false;
+    }
+
+    canBuyBananaThrowingAnt() {
+        return this.stats.bananaThrowingAntsUnlocked && 
+               this.canAfford(this.stats.bananaThrowingAntCost) && 
+               this.stats.ants < this.stats.maxAnts;
+    }
+
+    buyBananaThrowingAnt() {
+        if (this.canBuyBananaThrowingAnt()) {
+            this.spendFood(this.stats.bananaThrowingAntCost);
+            this.stats.bananaThrowingAnts++;
+            this.stats.ants++;
+            this.stats.bananaThrowingAntCost = Math.floor(this.stats.bananaThrowingAntCost * 1.25);
+            return true;
+        }
+        return false;
+    }
+
+    // Juice Ant Methods
+    canUnlockJuiceAnts() {
+        return this.canAfford(this.stats.juiceAntUnlockCost) && !this.stats.juiceAntsUnlocked;
+    }
+
+    unlockJuiceAnts() {
+        if (this.canUnlockJuiceAnts()) {
+            this.spendFood(this.stats.juiceAntUnlockCost);
+            this.stats.juiceAntsUnlocked = true;
+            return true;
+        }
+        return false;
+    }
+
+    canBuyJuiceAnt() {
+        return this.stats.juiceAntsUnlocked && 
+               this.canAfford(this.stats.juiceAntCost) && 
+               this.stats.ants < this.stats.maxAnts;
+    }
+
+    buyJuiceAnt() {
+        if (this.canBuyJuiceAnt()) {
+            this.spendFood(this.stats.juiceAntCost);
+            this.stats.juiceAnts++;
+            this.stats.ants++;
+            this.stats.juiceAntCost = Math.floor(this.stats.juiceAntCost * 1.25);
+            return true;
+        }
+        return false;
+    }
+
+    // Crab Ant Methods
+    canUnlockCrabAnts() {
+        return this.canAfford(this.stats.crabAntUnlockCost) && !this.stats.crabAntsUnlocked;
+    }
+
+    unlockCrabAnts() {
+        if (this.canUnlockCrabAnts()) {
+            this.spendFood(this.stats.crabAntUnlockCost);
+            this.stats.crabAntsUnlocked = true;
+            return true;
+        }
+        return false;
+    }
+
+    canBuyCrabAnt() {
+        return this.stats.crabAntsUnlocked && 
+               this.canAfford(this.stats.crabAntCost) && 
+               this.stats.ants < this.stats.maxAnts;
+    }
+
+    buyCrabAnt() {
+        if (this.canBuyCrabAnt()) {
+            this.spendFood(this.stats.crabAntCost);
+            this.stats.crabAnts++;
+            this.stats.ants++;
+            this.stats.crabAntCost = Math.floor(this.stats.crabAntCost * 1.25);
+            return true;
+        }
+        return false;
+    }
+
+    // Upside Down Ant Methods
+    canUnlockUpsideDownAnts() {
+        return this.canAfford(this.stats.upsideDownAntUnlockCost) && !this.stats.upsideDownAntsUnlocked;
+    }
+
+    unlockUpsideDownAnts() {
+        if (this.canUnlockUpsideDownAnts()) {
+            this.spendFood(this.stats.upsideDownAntUnlockCost);
+            this.stats.upsideDownAntsUnlocked = true;
+            return true;
+        }
+        return false;
+    }
+
+    canBuyUpsideDownAnt() {
+        return this.stats.upsideDownAntsUnlocked && 
+               this.canAfford(this.stats.upsideDownAntCost) && 
+               this.stats.ants < this.stats.maxAnts;
+    }
+
+    buyUpsideDownAnt() {
+        if (this.canBuyUpsideDownAnt()) {
+            this.spendFood(this.stats.upsideDownAntCost);
+            this.stats.upsideDownAnts++;
+            this.stats.ants++;
+            this.stats.upsideDownAntCost = Math.floor(this.stats.upsideDownAntCost * 1.25);
+            return true;
+        }
+        return false;
+    }
+
+    // DPS Ant Methods
+    canUnlockDpsAnts() {
+        return this.canAfford(this.stats.dpsAntUnlockCost) && !this.stats.dpsAntsUnlocked;
+    }
+
+    unlockDpsAnts() {
+        if (this.canUnlockDpsAnts()) {
+            this.spendFood(this.stats.dpsAntUnlockCost);
+            this.stats.dpsAntsUnlocked = true;
+            return true;
+        }
+        return false;
+    }
+
+    canBuyDpsAnt() {
+        return this.stats.dpsAntsUnlocked && 
+               this.canAfford(this.stats.dpsAntCost) && 
+               this.stats.ants < this.stats.maxAnts;
+    }
+
+    buyDpsAnt() {
+        if (this.canBuyDpsAnt()) {
+            this.spendFood(this.stats.dpsAntCost);
+            this.stats.dpsAnts++;
+            this.stats.ants++;
+            this.stats.dpsAntCost = Math.floor(this.stats.dpsAntCost * 1.25);
+            return true;
+        }
+        return false;
+    }
+
+    // Spider Ant Methods
+    canUnlockSpiderAnts() {
+        return this.canAfford(this.stats.spiderAntUnlockCost) && !this.stats.spiderAntsUnlocked;
+    }
+
+    unlockSpiderAnts() {
+        if (this.canUnlockSpiderAnts()) {
+            this.spendFood(this.stats.spiderAntUnlockCost);
+            this.stats.spiderAntsUnlocked = true;
+            return true;
+        }
+        return false;
+    }
+
+    canBuySpiderAnt() {
+        return this.stats.spiderAntsUnlocked && 
+               this.canAfford(this.stats.spiderAntCost) && 
+               this.stats.ants < this.stats.maxAnts;
+    }
+
+    buySpiderAnt() {
+        if (this.canBuySpiderAnt()) {
+            this.spendFood(this.stats.spiderAntCost);
+            this.stats.spiderAnts++;
+            this.stats.ants++;
+            this.stats.spiderAntCost = Math.floor(this.stats.spiderAntCost * 1.25);
+            return true;
+        }
+        return false;
+    }
+
     
     resetToDefaults() {
         // Reset resources
@@ -674,7 +1140,6 @@ IdleAnts.Managers.ResourceManager = class {
             carAntUnlockCost: 10000,
             fireAntsUnlocked: false,
             fireAnts: 0,
-            maxFireAnts: 0,
             fireAntCost: 5000,
             fireAntUnlockCost: 20000
         };

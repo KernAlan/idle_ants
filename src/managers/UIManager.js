@@ -41,6 +41,36 @@ IdleAnts.Managers.UIManager = class {
             fireAntMax: document.getElementById('fire-ant-max'),
             fireAntResourceCount: document.getElementById('fire-ant-resource-count'),
             fireAntResourceMax: document.getElementById('fire-ant-resource-max'),
+            // New ant types
+            fatAntCount: document.getElementById('fat-ant-count'),
+            fatAntMax: document.getElementById('fat-ant-max'),
+            gasAntCount: document.getElementById('gas-ant-count'),
+            gasAntMax: document.getElementById('gas-ant-max'),
+            electricAntCount: document.getElementById('electric-ant-count'),
+            electricAntMax: document.getElementById('electric-ant-max'),
+            bananaThrowingAntCount: document.getElementById('banana-throwing-ant-count'),
+            bananaThrowingAntMax: document.getElementById('banana-throwing-ant-max'),
+            dpsAntCount: document.getElementById('dps-ant-count'),
+            dpsAntMax: document.getElementById('dps-ant-max'),
+            // Newly added ant type counts
+            acidAntCount: document.getElementById('acid-ant-count'),
+            acidAntMax: document.getElementById('acid-ant-max'),
+            rainbowAntCount: document.getElementById('rainbow-ant-count'),
+            rainbowAntMax: document.getElementById('rainbow-ant-max'),
+            smokeAntCount: document.getElementById('smoke-ant-count'),
+            smokeAntMax: document.getElementById('smoke-ant-max'),
+            leafCutterAntCount: document.getElementById('leaf-cutter-ant-count'),
+            leafCutterAntMax: document.getElementById('leaf-cutter-ant-max'),
+            doorAntCount: document.getElementById('door-ant-count'),
+            doorAntMax: document.getElementById('door-ant-max'),
+            juiceAntCount: document.getElementById('juice-ant-count'),
+            juiceAntMax: document.getElementById('juice-ant-max'),
+            crabAntCount: document.getElementById('crab-ant-count'),
+            crabAntMax: document.getElementById('crab-ant-max'),
+            upsideDownAntCount: document.getElementById('upside-down-ant-count'),
+            upsideDownAntMax: document.getElementById('upside-down-ant-max'),
+            spiderAntCount: document.getElementById('spider-ant-count'),
+            spiderAntMax: document.getElementById('spider-ant-max'),
             foodPerSecondActual: document.getElementById('food-per-second-actual'),
             foodType: document.getElementById('food-type'),
             // Costs
@@ -58,6 +88,36 @@ IdleAnts.Managers.UIManager = class {
             fireAntUnlockCost: document.getElementById('fire-ant-unlock-cost'),
             fireAntCost: document.getElementById('fire-ant-cost'),
             expandFireAntCost: document.getElementById('expand-fire-ant-cost'),
+            // New ant type costs
+            fatAntUnlockCost: document.getElementById('fat-ant-unlock-cost'),
+            fatAntCost: document.getElementById('fat-ant-cost'),
+            gasAntUnlockCost: document.getElementById('gas-ant-unlock-cost'),
+            gasAntCost: document.getElementById('gas-ant-cost'),
+            electricAntUnlockCost: document.getElementById('electric-ant-unlock-cost'),
+            electricAntCost: document.getElementById('electric-ant-cost'),
+            bananaThrowingAntUnlockCost: document.getElementById('banana-throwing-ant-unlock-cost'),
+            bananaThrowingAntCost: document.getElementById('banana-throwing-ant-cost'),
+            dpsAntUnlockCost: document.getElementById('dps-ant-unlock-cost'),
+            dpsAntCost: document.getElementById('dps-ant-cost'),
+            // Newly added ant type costs
+            acidAntUnlockCost: document.getElementById('acid-ant-unlock-cost'),
+            acidAntCost: document.getElementById('acid-ant-cost'),
+            rainbowAntUnlockCost: document.getElementById('rainbow-ant-unlock-cost'),
+            rainbowAntCost: document.getElementById('rainbow-ant-cost'),
+            smokeAntUnlockCost: document.getElementById('smoke-ant-unlock-cost'),
+            smokeAntCost: document.getElementById('smoke-ant-cost'),
+            leafCutterAntUnlockCost: document.getElementById('leaf-cutter-ant-unlock-cost'),
+            leafCutterAntCost: document.getElementById('leaf-cutter-ant-cost'),
+            doorAntUnlockCost: document.getElementById('door-ant-unlock-cost'),
+            doorAntCost: document.getElementById('door-ant-cost'),
+            juiceAntUnlockCost: document.getElementById('juice-ant-unlock-cost'),
+            juiceAntCost: document.getElementById('juice-ant-cost'),
+            crabAntUnlockCost: document.getElementById('crab-ant-unlock-cost'),
+            crabAntCost: document.getElementById('crab-ant-cost'),
+            upsideDownAntUnlockCost: document.getElementById('upside-down-ant-unlock-cost'),
+            upsideDownAntCost: document.getElementById('upside-down-ant-cost'),
+            spiderAntUnlockCost: document.getElementById('spider-ant-unlock-cost'),
+            spiderAntCost: document.getElementById('spider-ant-cost'),
             autofeederCost: document.getElementById('autofeeder-cost'),
             autofeederUpgradeCost: document.getElementById('autofeeder-upgrade-cost'),
             autofeederLevel: document.getElementById('autofeeder-level'),
@@ -95,7 +155,6 @@ IdleAnts.Managers.UIManager = class {
         // Flying ant buttons
         addSafeClickListener('unlock-flying-ants', () => this.game.unlockFlyingAnts());
         addSafeClickListener('buy-flying-ant', () => this.game.buyFlyingAnt());
-        addSafeClickListener('expand-flying-ants', () => this.game.expandFlyingAntCapacity());
         
         // Queen ant buttons
         addSafeClickListener('unlock-queen', () => this.game.unlockQueen());
@@ -109,12 +168,60 @@ IdleAnts.Managers.UIManager = class {
         // Car Ant buttons
         addSafeClickListener('unlock-car-ants', () => this.game.unlockCarAnts());
         addSafeClickListener('buy-car-ant', () => this.game.buyCarAnt());
-        addSafeClickListener('expand-car-ants', () => this.game.expandCarAntCapacity());
         
         // Fire Ant buttons
         addSafeClickListener('unlock-fire-ants', () => this.game.unlockFireAnts());
         addSafeClickListener('buy-fire-ant', () => this.game.buyFireAnt());
-        addSafeClickListener('expand-fire-ants', () => this.game.expandFireAntCapacity());
+        
+        // New Ant Types - Selected key representatives
+        // Fat Ant (Basic Combat)
+        addSafeClickListener('unlock-fat-ants', () => this.game.unlockFatAnts());
+        addSafeClickListener('buy-fat-ant', () => this.game.buyFatAnt());
+        
+        // Gas Ant (Basic Combat) 
+        addSafeClickListener('unlock-gas-ants', () => this.game.unlockGasAnts());
+        addSafeClickListener('buy-gas-ant', () => this.game.buyGasAnt());
+        
+        // Electric Ant (Exploding)
+        addSafeClickListener('unlock-electric-ants', () => this.game.unlockElectricAnts());
+        addSafeClickListener('buy-electric-ant', () => this.game.buyElectricAnt());
+        
+        // Banana Throwing Ant (Throwing)
+        addSafeClickListener('unlock-banana-throwing-ants', () => this.game.unlockBananaThrowingAnts());
+        addSafeClickListener('buy-banana-throwing-ant', () => this.game.buyBananaThrowingAnt());
+        
+        // DPS Ant (Special) 
+        addSafeClickListener('unlock-dps-ants', () => this.game.unlockDpsAnts());
+        addSafeClickListener('buy-dps-ant', () => this.game.buyDpsAnt());
+
+        // Newly added ant type buttons
+        addSafeClickListener('unlock-acid-ants', () => this.game.unlockAcidAnts());
+        addSafeClickListener('buy-acid-ant', () => this.game.buyAcidAnt());
+
+        addSafeClickListener('unlock-rainbow-ants', () => this.game.unlockRainbowAnts());
+        addSafeClickListener('buy-rainbow-ant', () => this.game.buyRainbowAnt());
+
+        addSafeClickListener('unlock-smoke-ants', () => this.game.unlockSmokeAnts());
+        addSafeClickListener('buy-smoke-ant', () => this.game.buySmokeAnt());
+
+        addSafeClickListener('unlock-leaf-cutter-ants', () => this.game.unlockLeafCutterAnts());
+        addSafeClickListener('buy-leaf-cutter-ant', () => this.game.buyLeafCutterAnt());
+
+        addSafeClickListener('unlock-door-ants', () => this.game.unlockDoorAnts());
+        addSafeClickListener('buy-door-ant', () => this.game.buyDoorAnt());
+
+        addSafeClickListener('unlock-juice-ants', () => this.game.unlockJuiceAnts());
+        addSafeClickListener('buy-juice-ant', () => this.game.buyJuiceAnt());
+
+        addSafeClickListener('unlock-crab-ants', () => this.game.unlockCrabAnts());
+        addSafeClickListener('buy-crab-ant', () => this.game.buyCrabAnt());
+
+        addSafeClickListener('unlock-upside-down-ants', () => this.game.unlockUpsideDownAnts());
+        addSafeClickListener('buy-upside-down-ant', () => this.game.buyUpsideDownAnt());
+
+        addSafeClickListener('unlock-spider-ants', () => this.game.unlockSpiderAnts());
+        addSafeClickListener('buy-spider-ant', () => this.game.buySpiderAnt());
+
     }
     
     // Add UI toggle functionality
@@ -175,7 +282,7 @@ IdleAnts.Managers.UIManager = class {
         const debugInfo = {
             'Food': Math.floor(this.resourceManager.resources.food),
             'Ants': `${this.resourceManager.stats.ants}/${this.resourceManager.stats.maxAnts}`,
-            'Flying Ants': `${this.resourceManager.stats.flyingAnts}/${this.resourceManager.stats.maxFlyingAnts}`,
+            'Flying Ants': `${this.resourceManager.stats.flyingAnts}`,
             'Food/Sec': this.resourceManager.stats.foodPerSecond.toFixed(2),
             'Food Multiplier': this.resourceManager.stats.foodMultiplier.toFixed(2),
             'Speed Multiplier': this.resourceManager.stats.speedMultiplier.toFixed(2),
@@ -212,13 +319,10 @@ IdleAnts.Managers.UIManager = class {
             updateCachedElementText(this.elements.antCount, this.resourceManager.stats.ants);
             updateCachedElementText(this.elements.antMax, this.resourceManager.stats.maxAnts);
             updateCachedElementText(this.elements.flyingAntCount, this.resourceManager.stats.flyingAnts);
-            updateCachedElementText(this.elements.flyingAntMax, this.resourceManager.stats.maxFlyingAnts);
             
             // Update Car Ant counts using cached elements
             updateCachedElementText(this.elements.carAntCount, this.resourceManager.stats.carAnts);
-            updateCachedElementText(this.elements.carAntMax, this.resourceManager.stats.maxCarAnts);
             updateCachedElementText(this.elements.carAntResourceCount, this.resourceManager.stats.carAnts);
-            updateCachedElementText(this.elements.carAntResourceMax, this.resourceManager.stats.maxCarAnts);
             
             // Update costs using cached elements
             updateCachedElementText(this.elements.antCost, this.resourceManager.stats.antCost);
@@ -235,8 +339,6 @@ IdleAnts.Managers.UIManager = class {
             updateCachedElementText(this.elements.carAntCost, this.resourceManager.stats.carAntCost);
             // Assuming expand car ant cost is dynamic or needs a specific stat in ResourceManager
             // For now, let's use a placeholder or make it dependent on carAntCost like flying ants if similar logic applies
-            const expandCarAntCapacityCost = this.resourceManager.stats.maxCarAnts > 0 ? this.resourceManager.stats.carAntCost * (this.resourceManager.stats.maxCarAnts + 1) * 0.5 : 5000;
-            updateCachedElementText(this.elements.expandCarAntCost, Math.floor(expandCarAntCapacityCost));
             
             // Update autofeeder UI elements using cached elements
             updateCachedElementText(this.elements.autofeederCost, this.resourceManager.stats.autofeederCost);
@@ -253,15 +355,84 @@ IdleAnts.Managers.UIManager = class {
 
             // Update Fire Ant counts using cached elements
             updateCachedElementText(this.elements.fireAntCount, this.resourceManager.stats.fireAnts);
-            updateCachedElementText(this.elements.fireAntMax, this.resourceManager.stats.maxFireAnts);
             updateCachedElementText(this.elements.fireAntResourceCount, this.resourceManager.stats.fireAnts);
-            updateCachedElementText(this.elements.fireAntResourceMax, this.resourceManager.stats.maxFireAnts);
             
             // Update Fire Ant costs using cached elements
             updateCachedElementText(this.elements.fireAntUnlockCost, this.resourceManager.stats.fireAntUnlockCost);
             updateCachedElementText(this.elements.fireAntCost, this.resourceManager.stats.fireAntCost);
-            const expandFireAntCapacityCost = this.resourceManager.stats.maxFireAnts > 0 ? this.resourceManager.stats.fireAntCost * (this.resourceManager.stats.maxFireAnts + 1) * 0.5 : 10000;
-            updateCachedElementText(this.elements.expandFireAntCost, Math.floor(expandFireAntCapacityCost));
+
+            // Update New Ant Types counts and costs using cached elements
+            updateCachedElementText(this.elements.fatAntCount, this.resourceManager.stats.fatAnts);
+            updateCachedElementText(this.elements.fatAntMax, this.resourceManager.stats.maxFatAnts);
+            updateCachedElementText(this.elements.fatAntUnlockCost, this.resourceManager.stats.fatAntUnlockCost);
+            updateCachedElementText(this.elements.fatAntCost, this.resourceManager.stats.fatAntCost);
+
+            updateCachedElementText(this.elements.gasAntCount, this.resourceManager.stats.gasAnts);
+            updateCachedElementText(this.elements.gasAntMax, this.resourceManager.stats.maxGasAnts);
+            updateCachedElementText(this.elements.gasAntUnlockCost, this.resourceManager.stats.gasAntUnlockCost);
+            updateCachedElementText(this.elements.gasAntCost, this.resourceManager.stats.gasAntCost);
+
+            updateCachedElementText(this.elements.electricAntCount, this.resourceManager.stats.electricAnts);
+            updateCachedElementText(this.elements.electricAntMax, this.resourceManager.stats.maxElectricAnts);
+            updateCachedElementText(this.elements.electricAntUnlockCost, this.resourceManager.stats.electricAntUnlockCost);
+            updateCachedElementText(this.elements.electricAntCost, this.resourceManager.stats.electricAntCost);
+
+            updateCachedElementText(this.elements.bananaThrowingAntCount, this.resourceManager.stats.bananaThrowingAnts);
+            updateCachedElementText(this.elements.bananaThrowingAntMax, this.resourceManager.stats.maxBananaThrowingAnts);
+            updateCachedElementText(this.elements.bananaThrowingAntUnlockCost, this.resourceManager.stats.bananaThrowingAntUnlockCost);
+            updateCachedElementText(this.elements.bananaThrowingAntCost, this.resourceManager.stats.bananaThrowingAntCost);
+
+            updateCachedElementText(this.elements.dpsAntCount, this.resourceManager.stats.dpsAnts);
+            updateCachedElementText(this.elements.dpsAntMax, this.resourceManager.stats.maxDpsAnts);
+            updateCachedElementText(this.elements.dpsAntUnlockCost, this.resourceManager.stats.dpsAntUnlockCost);
+            updateCachedElementText(this.elements.dpsAntCost, this.resourceManager.stats.dpsAntCost);
+
+            // Newly added ant types counts and costs
+            updateCachedElementText(this.elements.acidAntCount, this.resourceManager.stats.acidAnts);
+            updateCachedElementText(this.elements.acidAntMax, this.resourceManager.stats.maxAcidAnts);
+            updateCachedElementText(this.elements.acidAntUnlockCost, this.resourceManager.stats.acidAntUnlockCost);
+            updateCachedElementText(this.elements.acidAntCost, this.resourceManager.stats.acidAntCost);
+
+            updateCachedElementText(this.elements.rainbowAntCount, this.resourceManager.stats.rainbowAnts);
+            updateCachedElementText(this.elements.rainbowAntMax, this.resourceManager.stats.maxRainbowAnts);
+            updateCachedElementText(this.elements.rainbowAntUnlockCost, this.resourceManager.stats.rainbowAntUnlockCost);
+            updateCachedElementText(this.elements.rainbowAntCost, this.resourceManager.stats.rainbowAntCost);
+
+            updateCachedElementText(this.elements.smokeAntCount, this.resourceManager.stats.smokeAnts);
+            updateCachedElementText(this.elements.smokeAntMax, this.resourceManager.stats.maxSmokeAnts);
+            updateCachedElementText(this.elements.smokeAntUnlockCost, this.resourceManager.stats.smokeAntUnlockCost);
+            updateCachedElementText(this.elements.smokeAntCost, this.resourceManager.stats.smokeAntCost);
+
+            updateCachedElementText(this.elements.leafCutterAntCount, this.resourceManager.stats.leafCutterAnts);
+            updateCachedElementText(this.elements.leafCutterAntMax, this.resourceManager.stats.maxLeafCutterAnts);
+            updateCachedElementText(this.elements.leafCutterAntUnlockCost, this.resourceManager.stats.leafCutterAntUnlockCost);
+            updateCachedElementText(this.elements.leafCutterAntCost, this.resourceManager.stats.leafCutterAntCost);
+
+            updateCachedElementText(this.elements.doorAntCount, this.resourceManager.stats.doorAnts);
+            updateCachedElementText(this.elements.doorAntMax, this.resourceManager.stats.maxDoorAnts);
+            updateCachedElementText(this.elements.doorAntUnlockCost, this.resourceManager.stats.doorAntUnlockCost);
+            updateCachedElementText(this.elements.doorAntCost, this.resourceManager.stats.doorAntCost);
+
+            updateCachedElementText(this.elements.juiceAntCount, this.resourceManager.stats.juiceAnts);
+            updateCachedElementText(this.elements.juiceAntMax, this.resourceManager.stats.maxJuiceAnts);
+            updateCachedElementText(this.elements.juiceAntUnlockCost, this.resourceManager.stats.juiceAntUnlockCost);
+            updateCachedElementText(this.elements.juiceAntCost, this.resourceManager.stats.juiceAntCost);
+
+            updateCachedElementText(this.elements.crabAntCount, this.resourceManager.stats.crabAnts);
+            updateCachedElementText(this.elements.crabAntMax, this.resourceManager.stats.maxCrabAnts);
+            updateCachedElementText(this.elements.crabAntUnlockCost, this.resourceManager.stats.crabAntUnlockCost);
+            updateCachedElementText(this.elements.crabAntCost, this.resourceManager.stats.crabAntCost);
+
+            updateCachedElementText(this.elements.upsideDownAntCount, this.resourceManager.stats.upsideDownAnts);
+            updateCachedElementText(this.elements.upsideDownAntMax, this.resourceManager.stats.maxUpsideDownAnts);
+            updateCachedElementText(this.elements.upsideDownAntUnlockCost, this.resourceManager.stats.upsideDownAntUnlockCost);
+            updateCachedElementText(this.elements.upsideDownAntCost, this.resourceManager.stats.upsideDownAntCost);
+
+            updateCachedElementText(this.elements.spiderAntCount, this.resourceManager.stats.spiderAnts);
+            updateCachedElementText(this.elements.spiderAntMax, this.resourceManager.stats.maxSpiderAnts);
+            updateCachedElementText(this.elements.spiderAntUnlockCost, this.resourceManager.stats.spiderAntUnlockCost);
+            updateCachedElementText(this.elements.spiderAntCost, this.resourceManager.stats.spiderAntCost);
+
         } catch (error) {
             console.error('Error updating UI resources:', error);
         }
@@ -429,19 +600,11 @@ IdleAnts.Managers.UIManager = class {
         
         toggleElementVisibility('unlock-flying-ants', !flyingAntsUnlocked);
         toggleElementVisibility('buy-flying-ant', flyingAntsUnlocked);
-        toggleElementVisibility('expand-flying-ants', flyingAntsUnlocked);
-        toggleElementVisibility('flying-ant-stats', flyingAntsUnlocked);
         
-        // Also for the main resource display
-        const flyingAntResourceStats = document.getElementById('flying-ant-resource-stats');
-        if(flyingAntResourceStats) {
-            flyingAntResourceStats.classList.toggle('hidden', !flyingAntsUnlocked && this.resourceManager.stats.maxFlyingAnts === 0);
-        }
         
         // Update flying ant button states when unlocked
         if (flyingAntsUnlocked) {
             updateButtonState('buy-flying-ant', !this.resourceManager.canBuyFlyingAnt());
-            updateButtonState('expand-flying-ants', !this.resourceManager.canExpandFlyingAntCapacity());
         }
         
         // Autofeeder Buttons & Stats
@@ -480,15 +643,9 @@ IdleAnts.Managers.UIManager = class {
         
         toggleElementVisibility('unlock-car-ants', !carAntsUnlocked);
         toggleElementVisibility('buy-car-ant', carAntsUnlocked);
-        toggleElementVisibility('expand-car-ants', carAntsUnlocked);
-        toggleElementVisibility('car-ant-stats', carAntsUnlocked);
-        // Main resource display for car ants
-        const carAntResourceStats = document.getElementById('car-ant-resource-stats');
-        if(carAntResourceStats) carAntResourceStats.classList.toggle('hidden', !carAntsUnlocked && this.resourceManager.stats.maxCarAnts === 0);
 
         if (carAntsUnlocked) {
             updateButtonState('buy-car-ant', !this.resourceManager.canBuyCarAnt());
-            updateButtonState('expand-car-ants', !this.resourceManager.canExpandCarAntCapacity());
         } else {
             updateButtonState('unlock-car-ants', !this.resourceManager.canUnlockCarAnts());
         }
@@ -497,17 +654,128 @@ IdleAnts.Managers.UIManager = class {
         const fireAntsUnlocked = this.resourceManager.stats.fireAntsUnlocked;
         toggleElementVisibility('unlock-fire-ants', !fireAntsUnlocked);
         toggleElementVisibility('buy-fire-ant', fireAntsUnlocked);
-        toggleElementVisibility('expand-fire-ants', fireAntsUnlocked);
-        toggleElementVisibility('fire-ant-stats', fireAntsUnlocked);
-        const fireAntResourceStats = document.getElementById('fire-ant-resource-stats');
-        if (fireAntResourceStats) fireAntResourceStats.classList.toggle('hidden', !fireAntsUnlocked && this.resourceManager.stats.maxFireAnts === 0);
 
         if (fireAntsUnlocked) {
             updateButtonState('buy-fire-ant', !this.resourceManager.canBuyFireAnt());
-            updateButtonState('expand-fire-ants', !this.resourceManager.canExpandFireAntCapacity());
         } else {
             updateButtonState('unlock-fire-ants', !this.resourceManager.canUnlockFireAnts());
         }
+
+        // New Ant Types Button States
+        // Fat Ant Buttons & Stats
+        const fatAntsUnlocked = this.resourceManager.stats.fatAntsUnlocked;
+        toggleElementVisibility('unlock-fat-ants', !fatAntsUnlocked);
+        toggleElementVisibility('buy-fat-ant', fatAntsUnlocked);
+        if (fatAntsUnlocked) {
+            updateButtonState('buy-fat-ant', !this.resourceManager.canBuyFatAnt());
+        } else {
+            updateButtonState('unlock-fat-ants', !this.resourceManager.canUnlockFatAnts());
+        }
+
+        // Gas Ant Buttons & Stats
+        const gasAntsUnlocked = this.resourceManager.stats.gasAntsUnlocked;
+        toggleElementVisibility('unlock-gas-ants', !gasAntsUnlocked);
+        toggleElementVisibility('buy-gas-ant', gasAntsUnlocked);
+        if (gasAntsUnlocked) {
+            updateButtonState('buy-gas-ant', !this.resourceManager.canBuyGasAnt());
+        } else {
+            updateButtonState('unlock-gas-ants', !this.resourceManager.canUnlockGasAnts());
+        }
+
+        // Electric Ant Buttons & Stats
+        const electricAntsUnlocked = this.resourceManager.stats.electricAntsUnlocked;
+        toggleElementVisibility('unlock-electric-ants', !electricAntsUnlocked);
+        toggleElementVisibility('buy-electric-ant', electricAntsUnlocked);
+        if (electricAntsUnlocked) {
+            updateButtonState('buy-electric-ant', !this.resourceManager.canBuyElectricAnt());
+        } else {
+            updateButtonState('unlock-electric-ants', !this.resourceManager.canUnlockElectricAnts());
+        }
+
+        // Banana Throwing Ant Buttons & Stats
+        const bananaThrowingAntsUnlocked = this.resourceManager.stats.bananaThrowingAntsUnlocked;
+        toggleElementVisibility('unlock-banana-throwing-ants', !bananaThrowingAntsUnlocked);
+        toggleElementVisibility('buy-banana-throwing-ant', bananaThrowingAntsUnlocked);
+        if (bananaThrowingAntsUnlocked) {
+            updateButtonState('buy-banana-throwing-ant', !this.resourceManager.canBuyBananaThrowingAnt());
+        } else {
+            updateButtonState('unlock-banana-throwing-ants', !this.resourceManager.canUnlockBananaThrowingAnts());
+        }
+
+        // DPS Ant Buttons & Stats
+        const dpsAntsUnlocked = this.resourceManager.stats.dpsAntsUnlocked;
+        toggleElementVisibility('unlock-dps-ants', !dpsAntsUnlocked);
+        toggleElementVisibility('buy-dps-ant', dpsAntsUnlocked);
+        if (dpsAntsUnlocked) {
+            updateButtonState('buy-dps-ant', !this.resourceManager.canBuyDpsAnt());
+        } else {
+            updateButtonState('unlock-dps-ants', !this.resourceManager.canUnlockDpsAnts());
+        }
+
+        // Acid Ant
+        const acidAntsUnlocked = this.resourceManager.stats.acidAntsUnlocked;
+        toggleElementVisibility('unlock-acid-ants', !acidAntsUnlocked);
+        toggleElementVisibility('buy-acid-ant', acidAntsUnlocked);
+        updateButtonState(acidAntsUnlocked ? 'buy-acid-ant' : 'unlock-acid-ants',
+            acidAntsUnlocked ? !this.resourceManager.canBuyAcidAnt() : !this.resourceManager.canUnlockAcidAnts());
+
+        // Rainbow Ant
+        const rainbowAntsUnlocked = this.resourceManager.stats.rainbowAntsUnlocked;
+        toggleElementVisibility('unlock-rainbow-ants', !rainbowAntsUnlocked);
+        toggleElementVisibility('buy-rainbow-ant', rainbowAntsUnlocked);
+        updateButtonState(rainbowAntsUnlocked ? 'buy-rainbow-ant' : 'unlock-rainbow-ants',
+            rainbowAntsUnlocked ? !this.resourceManager.canBuyRainbowAnt() : !this.resourceManager.canUnlockRainbowAnts());
+
+        // Smoke Ant
+        const smokeAntsUnlocked = this.resourceManager.stats.smokeAntsUnlocked;
+        toggleElementVisibility('unlock-smoke-ants', !smokeAntsUnlocked);
+        toggleElementVisibility('buy-smoke-ant', smokeAntsUnlocked);
+        updateButtonState(smokeAntsUnlocked ? 'buy-smoke-ant' : 'unlock-smoke-ants',
+            smokeAntsUnlocked ? !this.resourceManager.canBuySmokeAnt() : !this.resourceManager.canUnlockSmokeAnts());
+
+        // Leaf Cutter Ant
+        const leafCutterAntsUnlocked = this.resourceManager.stats.leafCutterAntsUnlocked;
+        toggleElementVisibility('unlock-leaf-cutter-ants', !leafCutterAntsUnlocked);
+        toggleElementVisibility('buy-leaf-cutter-ant', leafCutterAntsUnlocked);
+        updateButtonState(leafCutterAntsUnlocked ? 'buy-leaf-cutter-ant' : 'unlock-leaf-cutter-ants',
+            leafCutterAntsUnlocked ? !this.resourceManager.canBuyLeafCutterAnt() : !this.resourceManager.canUnlockLeafCutterAnts());
+
+        // Door Ant
+        const doorAntsUnlocked = this.resourceManager.stats.doorAntsUnlocked;
+        toggleElementVisibility('unlock-door-ants', !doorAntsUnlocked);
+        toggleElementVisibility('buy-door-ant', doorAntsUnlocked);
+        updateButtonState(doorAntsUnlocked ? 'buy-door-ant' : 'unlock-door-ants',
+            doorAntsUnlocked ? !this.resourceManager.canBuyDoorAnt() : !this.resourceManager.canUnlockDoorAnts());
+
+        // Juice Ant
+        const juiceAntsUnlocked = this.resourceManager.stats.juiceAntsUnlocked;
+        toggleElementVisibility('unlock-juice-ants', !juiceAntsUnlocked);
+        toggleElementVisibility('buy-juice-ant', juiceAntsUnlocked);
+        updateButtonState(juiceAntsUnlocked ? 'buy-juice-ant' : 'unlock-juice-ants',
+            juiceAntsUnlocked ? !this.resourceManager.canBuyJuiceAnt() : !this.resourceManager.canUnlockJuiceAnts());
+
+        // Crab Ant
+        const crabAntsUnlocked = this.resourceManager.stats.crabAntsUnlocked;
+        toggleElementVisibility('unlock-crab-ants', !crabAntsUnlocked);
+        toggleElementVisibility('buy-crab-ant', crabAntsUnlocked);
+        updateButtonState(crabAntsUnlocked ? 'buy-crab-ant' : 'unlock-crab-ants',
+            crabAntsUnlocked ? !this.resourceManager.canBuyCrabAnt() : !this.resourceManager.canUnlockCrabAnts());
+
+        // Upside Down Ant
+        const upsideAntsUnlocked = this.resourceManager.stats.upsideDownAntsUnlocked;
+        toggleElementVisibility('unlock-upside-down-ants', !upsideAntsUnlocked);
+        toggleElementVisibility('buy-upside-down-ant', upsideAntsUnlocked);
+        updateButtonState(upsideAntsUnlocked ? 'buy-upside-down-ant' : 'unlock-upside-down-ants',
+            upsideAntsUnlocked ? !this.resourceManager.canBuyUpsideDownAnt() : !this.resourceManager.canUnlockUpsideDownAnts());
+
+        // Spider Ant
+        const spiderAntsUnlocked = this.resourceManager.stats.spiderAntsUnlocked;
+        toggleElementVisibility('unlock-spider-ants', !spiderAntsUnlocked);
+        toggleElementVisibility('buy-spider-ant', spiderAntsUnlocked);
+        updateButtonState(spiderAntsUnlocked ? 'buy-spider-ant' : 'unlock-spider-ants',
+            spiderAntsUnlocked ? !this.resourceManager.canBuySpiderAnt() : !this.resourceManager.canUnlockSpiderAnts());
+
+        // Bomber Beetle
     }
     
     animateCounters() {
@@ -728,5 +996,59 @@ IdleAnts.Managers.UIManager = class {
             // Fallback: reload the page
             window.location.reload();
         }
+    }
+    
+    // Pause overlay methods
+    showPauseOverlay() {
+        if (!this.pauseOverlay) {
+            this.createPauseOverlay();
+        }
+        this.pauseOverlay.style.display = 'flex';
+    }
+    
+    hidePauseOverlay() {
+        if (this.pauseOverlay) {
+            this.pauseOverlay.style.display = 'none';
+        }
+    }
+    
+    createPauseOverlay() {
+        this.pauseOverlay = document.createElement('div');
+        this.pauseOverlay.id = 'pause-overlay';
+        Object.assign(this.pauseOverlay.style, {
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'rgba(0, 0, 0, 0.8)',
+            color: '#fff',
+            display: 'none',
+            justifyContent: 'center',
+            alignItems: 'center',
+            flexDirection: 'column',
+            textAlign: 'center',
+            zIndex: 10000,
+            fontSize: '2em'
+        });
+        
+        this.pauseOverlay.innerHTML = `
+            <h1>Game Paused</h1>
+            <p>Press SPACE to continue</p>
+        `;
+        
+        document.body.appendChild(this.pauseOverlay);
+    }
+    
+    // Upgrade menu methods
+    showUpgradeMenu() {
+        // This could be implemented to show a specific upgrade modal
+        // For now, we'll just ensure the game state is properly handled
+        console.log('Show upgrade menu called');
+    }
+    
+    closeUpgradeMenu() {
+        // Close any open upgrade-related modals
+        console.log('Close upgrade menu called');
     }
 } 

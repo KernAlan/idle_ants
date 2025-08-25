@@ -23,7 +23,27 @@ IdleAnts.Entities.Food = class extends PIXI.Sprite {
             'hot_dog': 'hotDogFood',
             'watermelon': 'watermelonFood',
             'donut': 'donutFood',
-            'cake': 'cakeFood'
+            'cake': 'cakeFood',
+            // New fast food textures
+            'fries': 'friesFood',
+            'chickenNuggets': 'chickenNuggetsFood',
+            'hotDogNew': 'hotDogNewFood',
+            // New healthy food textures
+            'carrots': 'carrotsFood',
+            'lettuce': 'lettuceFood',
+            'bananas': 'bananasFood',
+            'grapes': 'grapesFood',
+            // New dessert textures
+            'iceCreamCone': 'iceCreamConeFood',
+            'snowCone': 'snowConeFood',
+            'cookiesNew': 'cookiesNewFood',
+            // New candy textures
+            'candy': 'candyFood',
+            'chocolateChips': 'chocolateChipsFood',
+            // New beverage textures
+            'chocolateMilk': 'chocolateMilkFood',
+            'cereal': 'cerealFood',
+            'lemonade': 'lemonadeFood'
         };
         
         const textureId = textureMap[foodType_.id];

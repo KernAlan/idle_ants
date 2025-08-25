@@ -84,9 +84,6 @@
                     <div>Food: <span id="food-type">Basic</span></div>
                 </div>
                 <div id="ants">Ants: <span id="ant-count">1</span>/<span id="ant-max">10</span></div>
-                <div id="flying-ant-stats" class="hidden">Flying: <span id="flying-ant-count">0</span>/<span id="flying-ant-max">0</span></div>
-                <div id="car-ant-resource-stats" class="hidden">Car Ants: <span id="car-ant-resource-count">0</span>/<span id="car-ant-resource-max">0</span></div>
-                <div id="fire-ant-resource-stats" class="hidden">Fire Ants: <span id="fire-ant-resource-count">0</span>/<span id="fire-ant-resource-max">0</span></div>
             </div>
             <!-- New Modal-Based Action Bar -->
             <div id="action-bar">
@@ -158,10 +155,6 @@
                                 <span><i class="fas fa-plus"></i>Buy Flying Ant</span>
                                 <span id="modal-flying-ant-cost">100</span>
                             </button>
-                            <button id="modal-expand-flying-ants" class="modal-btn hidden">
-                                <span><i class="fas fa-expand"></i>Expand Flying</span>
-                                <span id="modal-expand-flying-cost">150</span>
-                            </button>
                             <button id="modal-unlock-car-ants" class="modal-btn">
                                 <span><i class="fas fa-car"></i>Unlock Car Ants</span>
                                 <span id="modal-car-ant-unlock-cost">10000</span>
@@ -169,10 +162,6 @@
                             <button id="modal-buy-car-ant" class="modal-btn hidden">
                                 <span><i class="fas fa-plus"></i>Buy Car Ant</span>
                                 <span id="modal-car-ant-cost">2500</span>
-                            </button>
-                            <button id="modal-expand-car-ants" class="modal-btn hidden">
-                                <span><i class="fas fa-expand"></i>Expand Car Ant Bay</span>
-                                <span id="modal-expand-car-ant-cost">5000</span>
                             </button>
                             <button id="modal-unlock-fire-ants" class="modal-btn">
                                 <span><i class="fas fa-fire"></i>Unlock Fire Ants</span>
@@ -182,9 +171,124 @@
                                 <span><i class="fas fa-plus"></i>Buy Fire Ant</span>
                                 <span id="modal-fire-ant-cost">5000</span>
                             </button>
-                            <button id="modal-expand-fire-ants" class="modal-btn hidden">
-                                <span><i class="fas fa-expand"></i>Expand Fire Ant Bay</span>
-                                <span id="modal-expand-fire-ant-cost">10000</span>
+                            
+                            <!-- New Ant Types -->
+                            <button id="modal-unlock-fat-ants" class="modal-btn">
+                                <span><i class="fas fa-weight"></i>Unlock Phat Ants</span>
+                                <span id="modal-fat-ant-unlock-cost">3000</span>
+                            </button>
+                            <button id="modal-buy-fat-ant" class="modal-btn hidden">
+                                <span><i class="fas fa-plus"></i>Buy Phat Ant</span>
+                                <span id="modal-fat-ant-cost">4000</span>
+                            </button>
+                            
+                            <button id="modal-unlock-gas-ants" class="modal-btn">
+                                <span><i class="fas fa-cloud"></i>Unlock Gas Ants</span>
+                                <span id="modal-gas-ant-unlock-cost">1500</span>
+                            </button>
+                            <button id="modal-buy-gas-ant" class="modal-btn hidden">
+                                <span><i class="fas fa-plus"></i>Buy Gas Ant</span>
+                                <span id="modal-gas-ant-cost">2000</span>
+                            </button>
+                            
+                            <button id="modal-unlock-electric-ants" class="modal-btn">
+                                <span><i class="fas fa-bolt"></i>Unlock Electric Ants</span>
+                                <span id="modal-electric-ant-unlock-cost">5000</span>
+                            </button>
+                            <button id="modal-buy-electric-ant" class="modal-btn hidden">
+                                <span><i class="fas fa-plus"></i>Buy Electric Ant</span>
+                                <span id="modal-electric-ant-cost">7000</span>
+                            </button>
+                            
+                            <button id="modal-unlock-banana-throwing-ants" class="modal-btn">
+                                <span><i class="fas fa-apple-alt"></i>Unlock Banana Throwing Ants</span>
+                                <span id="modal-banana-throwing-ant-unlock-cost">12000</span>
+                            </button>
+                            <button id="modal-buy-banana-throwing-ant" class="modal-btn hidden">
+                                <span><i class="fas fa-plus"></i>Buy Banana Throwing Ant</span>
+                                <span id="modal-banana-throwing-ant-cost">60000</span>
+                            </button>
+                            
+                            <button id="modal-unlock-dps-ants" class="modal-btn">
+                                <span><i class="fas fa-crosshairs"></i>Unlock DPS Ants</span>
+                                <span id="modal-dps-ant-unlock-cost">6000</span>
+                            </button>
+                            <button id="modal-buy-dps-ant" class="modal-btn hidden">
+                                <span><i class="fas fa-plus"></i>Buy DPS Ant</span>
+                                <span id="modal-dps-ant-cost">63</span>
+                            </button>
+                            <!-- Newly added special ants in modal -->
+                            <button id="modal-unlock-acid-ants" class="modal-btn">
+                                <span><i class="fas fa-flask"></i>Unlock Acid Ants</span>
+                                <span id="modal-acid-ant-unlock-cost">2000</span>
+                            </button>
+                            <button id="modal-buy-acid-ant" class="modal-btn hidden">
+                                <span><i class="fas fa-plus"></i>Buy Acid Ant</span>
+                                <span id="modal-acid-ant-cost">3000</span>
+                            </button>
+                            <button id="modal-unlock-rainbow-ants" class="modal-btn">
+                                <span><i class="fas fa-rainbow"></i>Unlock Rainbow Ants</span>
+                                <span id="modal-rainbow-ant-unlock-cost">2500</span>
+                            </button>
+                            <button id="modal-buy-rainbow-ant" class="modal-btn hidden">
+                                <span><i class="fas fa-plus"></i>Buy Rainbow Ant</span>
+                                <span id="modal-rainbow-ant-cost">3000</span>
+                            </button>
+                            <button id="modal-unlock-smoke-ants" class="modal-btn">
+                                <span><i class="fas fa-smog"></i>Unlock Smoke Ants</span>
+                                <span id="modal-smoke-ant-unlock-cost">1800</span>
+                            </button>
+                            <button id="modal-buy-smoke-ant" class="modal-btn hidden">
+                                <span><i class="fas fa-plus"></i>Buy Smoke Ant</span>
+                                <span id="modal-smoke-ant-cost">2000</span>
+                            </button>
+                            <button id="modal-unlock-leaf-cutter-ants" class="modal-btn">
+                                <span><i class="fas fa-leaf"></i>Unlock Leaf Cutter Ants</span>
+                                <span id="modal-leaf-cutter-ant-unlock-cost">6000</span>
+                            </button>
+                            <button id="modal-buy-leaf-cutter-ant" class="modal-btn hidden">
+                                <span><i class="fas fa-plus"></i>Buy Leaf Cutter Ant</span>
+                                <span id="modal-leaf-cutter-ant-cost">8000</span>
+                            </button>
+                            <button id="modal-unlock-door-ants" class="modal-btn">
+                                <span><i class="fas fa-door-closed"></i>Unlock Door Ants</span>
+                                <span id="modal-door-ant-unlock-cost">7000</span>
+                            </button>
+                            <button id="modal-buy-door-ant" class="modal-btn hidden">
+                                <span><i class="fas fa-plus"></i>Buy Door Ant</span>
+                                <span id="modal-door-ant-cost">9000</span>
+                            </button>
+                            <button id="modal-unlock-juice-ants" class="modal-btn">
+                                <span><i class="fas fa-wine-bottle"></i>Unlock Juice Ants</span>
+                                <span id="modal-juice-ant-unlock-cost">9000</span>
+                            </button>
+                            <button id="modal-buy-juice-ant" class="modal-btn hidden">
+                                <span><i class="fas fa-plus"></i>Buy Juice Ant</span>
+                                <span id="modal-juice-ant-cost">40000</span>
+                            </button>
+                            <button id="modal-unlock-crab-ants" class="modal-btn">
+                                <span><i class="fas fa-fish"></i>Unlock Crab Ants</span>
+                                <span id="modal-crab-ant-unlock-cost">8000</span>
+                            </button>
+                            <button id="modal-buy-crab-ant" class="modal-btn hidden">
+                                <span><i class="fas fa-plus"></i>Buy Crab Ant</span>
+                                <span id="modal-crab-ant-cost">40000</span>
+                            </button>
+                            <button id="modal-unlock-upside-down-ants" class="modal-btn">
+                                <span><i class="fas fa-level-up-alt"></i>Unlock Upside Down Ants</span>
+                                <span id="modal-upside-down-ant-unlock-cost">4000</span>
+                            </button>
+                            <button id="modal-buy-upside-down-ant" class="modal-btn hidden">
+                                <span><i class="fas fa-plus"></i>Buy Upside Down Ant</span>
+                                <span id="modal-upside-down-ant-cost">50000</span>
+                            </button>
+                            <button id="modal-unlock-spider-ants" class="modal-btn">
+                                <span><i class="fas fa-spider"></i>Unlock Spider Ants</span>
+                                <span id="modal-spider-ant-unlock-cost">20000</span>
+                            </button>
+                            <button id="modal-buy-spider-ant" class="modal-btn hidden">
+                                <span><i class="fas fa-plus"></i>Buy Spider Ant</span>
+                                <span id="modal-spider-ant-cost">800000</span>
                             </button>
                         </div>
                     </div>
@@ -304,7 +408,6 @@
                     <h3>Special</h3>
                     <button id="unlock-flying-ants" class="upgrade-btn special-btn"><i class="fas fa-feather-alt"></i>Flying Ants (<span id="flying-ant-unlock-cost">500</span>)</button>
                     <button id="buy-flying-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Flying Ant (<span id="flying-ant-cost">100</span>)</button>
-                    <button id="expand-flying-ants" class="upgrade-btn special-btn hidden"><i class="fas fa-expand"></i>Expand Flying (<span id="expand-flying-cost">150</span>)</button>
                     <button id="unlock-queen" class="upgrade-btn queen-btn" style="display: none;"><i class="fas fa-crown"></i>Queen Ant (<span id="unlock-queen-cost">1000</span>)</button>
                     <button id="buy-queen" class="upgrade-btn queen-btn" style="display: none;"><i class="fas fa-plus"></i>Buy Queen</button>
                     <button id="upgrade-queen" class="upgrade-btn queen-btn"><i class="fas fa-arrow-up"></i>Upgrade Queen <span id="queen-level-display">0</span>/5 (<span id="upgrade-queen-cost">2000</span>)</button>
@@ -320,19 +423,71 @@
                     <h3>Super Ants</h3>
                     <button id="unlock-car-ants" class="upgrade-btn special-btn"><i class="fas fa-car"></i>Unlock Car Ant (<span id="car-ant-unlock-cost">10000</span>)</button>
                     <button id="buy-car-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Buy Car Ant (<span id="car-ant-cost">2500</span>)</button>
-                    <button id="expand-car-ants" class="upgrade-btn special-btn hidden"><i class="fas fa-expand"></i>Expand Car Ant Bay (<span id="expand-car-ant-cost">5000</span>)</button>
-                    <div id="car-ant-stats" class="hidden" style="font-size: 0.8em; margin-top: 5px;">
-                        Car Ants: <span id="car-ant-count">0</span>/<span id="car-ant-max">0</span>
-                    </div>
 
                     <!-- Fire Ants -->
                     <button id="unlock-fire-ants" class="upgrade-btn special-btn"><i class="fas fa-fire"></i>Unlock Fire Ant (<span id="fire-ant-unlock-cost">20000</span>)</button>
                     <button id="buy-fire-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Buy Fire Ant (<span id="fire-ant-cost">5000</span>)</button>
-                    <button id="expand-fire-ants" class="upgrade-btn special-btn hidden"><i class="fas fa-expand"></i>Expand Fire Ant Bay (<span id="expand-fire-ant-cost">10000</span>)</button>
-                    <div id="fire-ant-stats" class="hidden" style="font-size: 0.8em; margin-top: 5px;">
-                        Fire Ants: <span id="fire-ant-count">0</span>/<span id="fire-ant-max">0</span>
-                    </div>
                 </div>
+                
+                 <div class="upgrade-section">
+                     <h3>New Ants</h3>
+                    <!-- Phat Ant (Basic Combat) -->
+                    <button id="unlock-fat-ants" class="upgrade-btn special-btn"><i class="fas fa-weight"></i>Unlock Phat Ant (<span id="fat-ant-unlock-cost">3000</span>)</button>
+                    <button id="buy-fat-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Buy Phat Ant (<span id="fat-ant-cost">4000</span>)</button>
+
+                    <!-- Gas Ant (Basic Combat) -->
+                    <button id="unlock-gas-ants" class="upgrade-btn special-btn"><i class="fas fa-cloud"></i>Unlock Gas Ant (<span id="gas-ant-unlock-cost">1500</span>)</button>
+                    <button id="buy-gas-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Buy Gas Ant (<span id="gas-ant-cost">2000</span>)</button>
+
+                    <!-- Electric Ant (Exploding) -->
+                    <button id="unlock-electric-ants" class="upgrade-btn special-btn"><i class="fas fa-bolt"></i>Unlock Electric Ant (<span id="electric-ant-unlock-cost">5000</span>)</button>
+                    <button id="buy-electric-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Buy Electric Ant (<span id="electric-ant-cost">7000</span>)</button>
+
+                    <!-- Banana Throwing Ant (Throwing) -->
+                    <button id="unlock-banana-throwing-ants" class="upgrade-btn special-btn"><i class="fas fa-apple-alt"></i>Unlock Banana Throwing Ant (<span id="banana-throwing-ant-unlock-cost">12000</span>)</button>
+                    <button id="buy-banana-throwing-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Buy Banana Throwing Ant (<span id="banana-throwing-ant-cost">15000</span>)</button>
+
+                     <!-- DPS Ant (Special) -->
+                     <button id="unlock-dps-ants" class="upgrade-btn special-btn"><i class="fas fa-crosshairs"></i>Unlock DPS Ant (<span id="dps-ant-unlock-cost">6000</span>)</button>
+                     <button id="buy-dps-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Buy DPS Ant (<span id="dps-ant-cost">8000</span>)</button>
+
+                    <!-- Acid Ant (Basic Combat) -->
+                    <button id="unlock-acid-ants" class="upgrade-btn special-btn"><i class="fas fa-flask"></i>Unlock Acid Ant (<span id="acid-ant-unlock-cost">2000</span>)</button>
+                    <button id="buy-acid-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Buy Acid Ant (<span id="acid-ant-cost">3000</span>)</button>
+
+                    <!-- Rainbow Ant (Basic Combat) -->
+                    <button id="unlock-rainbow-ants" class="upgrade-btn special-btn"><i class="fas fa-rainbow"></i>Unlock Rainbow Ant (<span id="rainbow-ant-unlock-cost">2500</span>)</button>
+                    <button id="buy-rainbow-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Buy Rainbow Ant (<span id="rainbow-ant-cost">3000</span>)</button>
+
+                    <!-- Smoke Ant (Exploding) -->
+                    <button id="unlock-smoke-ants" class="upgrade-btn special-btn"><i class="fas fa-smog"></i>Unlock Smoke Ant (<span id="smoke-ant-unlock-cost">1800</span>)</button>
+                    <button id="buy-smoke-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Buy Smoke Ant (<span id="smoke-ant-cost">2000</span>)</button>
+
+                    <!-- Leaf Cutter Ant (Exploding) -->
+                    <button id="unlock-leaf-cutter-ants" class="upgrade-btn special-btn"><i class="fas fa-leaf"></i>Unlock Leaf Cutter Ant (<span id="leaf-cutter-ant-unlock-cost">6000</span>)</button>
+                    <button id="buy-leaf-cutter-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Buy Leaf Cutter Ant (<span id="leaf-cutter-ant-cost">8000</span>)</button>
+
+                    <!-- Door Ant (Exploding) -->
+                    <button id="unlock-door-ants" class="upgrade-btn special-btn"><i class="fas fa-door-closed"></i>Unlock Door Ant (<span id="door-ant-unlock-cost">7000</span>)</button>
+                    <button id="buy-door-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Buy Door Ant (<span id="door-ant-cost">9000</span>)</button>
+
+                    <!-- Juice Ant (Throwing) -->
+                    <button id="unlock-juice-ants" class="upgrade-btn special-btn"><i class="fas fa-wine-bottle"></i>Unlock Juice Ant (<span id="juice-ant-unlock-cost">9000</span>)</button>
+                    <button id="buy-juice-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Buy Juice Ant (<span id="juice-ant-cost">12000</span>)</button>
+
+                    <!-- Crab Ant (Throwing) -->
+                    <button id="unlock-crab-ants" class="upgrade-btn special-btn"><i class="fas fa-fish"></i>Unlock Crab Ant (<span id="crab-ant-unlock-cost">8000</span>)</button>
+                    <button id="buy-crab-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Buy Crab Ant (<span id="crab-ant-cost">10000</span>)</button>
+
+                    <!-- Upside Down Ant (Special) -->
+                    <button id="unlock-upside-down-ants" class="upgrade-btn special-btn"><i class="fas fa-level-up-alt"></i>Unlock Upside Down Ant (<span id="upside-down-ant-unlock-cost">4000</span>)</button>
+                    <button id="buy-upside-down-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Buy Upside Down Ant (<span id="upside-down-ant-cost">5000</span>)</button>
+
+                    <!-- Spider Ant (Special) -->
+                    <button id="unlock-spider-ants" class="upgrade-btn special-btn"><i class="fas fa-spider"></i>Unlock Spider Ant (<span id="spider-ant-unlock-cost">20000</span>)</button>
+                    <button id="buy-spider-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Buy Spider Ant (<span id="spider-ant-cost">25000</span>)</button>
+
+                 </div>
                 
                 <div class="upgrade-section">
                     <h3>Auto</h3>
@@ -355,6 +510,7 @@
     
     <!-- Import our game scripts in correct order -->
     <script src="src/data/FoodTypes.js"></script>
+    <script src="src/data/AntTypes.js"></script>
     <script src="src/data/BossConfigs.js"></script>
     <!-- Effect Classes -->
     <script src="src/effects/Effect.js"></script>
@@ -364,6 +520,11 @@
     <script src="src/effects/FoodCollectEffect.js"></script>
     <script src="src/effects/Trail.js"></script>
     <script src="src/effects/LarvaeEffect.js"></script>
+    <!-- New Ant Special Effects -->
+    <script src="src/effects/GasCloudEffect.js"></script>
+    <script src="src/effects/AcidPuddleEffect.js"></script>
+    <script src="src/effects/RainbowTrailEffect.js"></script>
+    <script src="src/effects/ElectricExplosionEffect.js"></script>
     <script src="src/effects/index.js"></script>
     <!-- Asset Definitions -->
     <script src="assets/AssetDefinition.js"></script>
@@ -401,6 +562,38 @@
     <script src="src/entities/Nest.js"></script>
     <script src="src/entities/FireAnt.js"></script>
     <script src="src/entities/GoldenAnt.js"></script>
+    
+    <!-- New Ant Types - Base Classes First -->
+    <script src="src/entities/exploding/ExplodingAntBase.js"></script>
+    <script src="src/entities/throwing/ThrowingAntBase.js"></script>
+    
+    <!-- New Ant Types - Basic Combat -->
+    <script src="src/entities/PhatAnt.js"></script>
+    <script src="src/entities/GasAnt.js"></script>
+    <script src="src/entities/AcidAnt.js"></script>
+    <script src="src/entities/RainbowAnt.js"></script>
+    
+    <!-- New Ant Types - Exploding -->
+    <script src="src/entities/exploding/SmokeAnt.js"></script>
+    <script src="src/entities/exploding/ElectricAnt.js"></script>
+    <script src="src/entities/exploding/LeafCutterAnt.js"></script>
+    <script src="src/entities/exploding/DoorAnt.js"></script>
+    
+    <!-- New Ant Types - Throwing -->
+    <script src="src/entities/throwing/BananaThrowingAnt.js"></script>
+    <script src="src/entities/throwing/JuiceAnt.js"></script>
+    <script src="src/entities/throwing/CrabAnt.js"></script>
+    
+    <!-- New Ant Types - Special -->
+    <script src="src/entities/special/UpsideDownAnt.js"></script>
+    <script src="src/entities/special/DPSAnt.js"></script>
+    <script src="src/entities/special/SpiderAnt.js"></script>
+    
+    <!-- New Ant Types - Other -->
+    
+    <!-- New Ant Types Integration -->
+    <script src="src/entities/NewAntTypes.js"></script>
+    
     <script src="src/entities/Enemy.js"></script>
     <script src="src/entities/GrasshopperEnemy.js"></script>
     <script src="src/entities/WoollyBearEnemy.js"></script>
@@ -609,13 +802,42 @@
             const modalUpgradeQueen = document.getElementById('modal-upgrade-queen');
             const modalUnlockFlying = document.getElementById('modal-unlock-flying-ants');
             const modalBuyFlying = document.getElementById('modal-buy-flying-ant');
-            const modalExpandFlying = document.getElementById('modal-expand-flying-ants');
             const modalUnlockCar = document.getElementById('modal-unlock-car-ants');
             const modalBuyCar = document.getElementById('modal-buy-car-ant');
-            const modalExpandCar = document.getElementById('modal-expand-car-ants');
             const modalUnlockFire = document.getElementById('modal-unlock-fire-ants');
             const modalBuyFire = document.getElementById('modal-buy-fire-ant');
-            const modalExpandFire = document.getElementById('modal-expand-fire-ants');
+            
+            // New Ant Types Modal Buttons
+            const modalUnlockFatAnts = document.getElementById('modal-unlock-fat-ants');
+            const modalBuyFatAnt = document.getElementById('modal-buy-fat-ant');
+            const modalUnlockGasAnts = document.getElementById('modal-unlock-gas-ants');
+            const modalBuyGasAnt = document.getElementById('modal-buy-gas-ant');
+            const modalUnlockElectricAnts = document.getElementById('modal-unlock-electric-ants');
+            const modalBuyElectricAnt = document.getElementById('modal-buy-electric-ant');
+            const modalUnlockBananaThrowingAnts = document.getElementById('modal-unlock-banana-throwing-ants');
+            const modalBuyBananaThrowingAnt = document.getElementById('modal-buy-banana-throwing-ant');
+            const modalUnlockDpsAnts = document.getElementById('modal-unlock-dps-ants');
+            const modalBuyDpsAnt = document.getElementById('modal-buy-dps-ant');
+
+            // Newly added modal buttons
+            const modalUnlockAcidAnts = document.getElementById('modal-unlock-acid-ants');
+            const modalBuyAcidAnt = document.getElementById('modal-buy-acid-ant');
+            const modalUnlockRainbowAnts = document.getElementById('modal-unlock-rainbow-ants');
+            const modalBuyRainbowAnt = document.getElementById('modal-buy-rainbow-ant');
+            const modalUnlockSmokeAnts = document.getElementById('modal-unlock-smoke-ants');
+            const modalBuySmokeAnt = document.getElementById('modal-buy-smoke-ant');
+            const modalUnlockLeafCutterAnts = document.getElementById('modal-unlock-leaf-cutter-ants');
+            const modalBuyLeafCutterAnt = document.getElementById('modal-buy-leaf-cutter-ant');
+            const modalUnlockDoorAnts = document.getElementById('modal-unlock-door-ants');
+            const modalBuyDoorAnt = document.getElementById('modal-buy-door-ant');
+            const modalUnlockJuiceAnts = document.getElementById('modal-unlock-juice-ants');
+            const modalBuyJuiceAnt = document.getElementById('modal-buy-juice-ant');
+            const modalUnlockCrabAnts = document.getElementById('modal-unlock-crab-ants');
+            const modalBuyCrabAnt = document.getElementById('modal-buy-crab-ant');
+            const modalUnlockUpsideDownAnts = document.getElementById('modal-unlock-upside-down-ants');
+            const modalBuyUpsideDownAnt = document.getElementById('modal-buy-upside-down-ant');
+            const modalUnlockSpiderAnts = document.getElementById('modal-unlock-spider-ants');
+            const modalBuySpiderAnt = document.getElementById('modal-buy-spider-ant');
             
             // Upgrades Modal Buttons
             const modalUpgradeFood = document.getElementById('modal-upgrade-food');
@@ -636,13 +858,41 @@
             if (modalUpgradeQueen) modalUpgradeQueen.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('upgrade-queen'); });
             if (modalUnlockFlying) modalUnlockFlying.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-flying-ants'); });
             if (modalBuyFlying) modalBuyFlying.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-flying-ant'); });
-            if (modalExpandFlying) modalExpandFlying.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('expand-flying-ants'); });
             if (modalUnlockCar) modalUnlockCar.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-car-ants'); });
             if (modalBuyCar) modalBuyCar.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-car-ant'); });
-            if (modalExpandCar) modalExpandCar.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('expand-car-ants'); });
             if (modalUnlockFire) modalUnlockFire.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-fire-ants'); });
             if (modalBuyFire) modalBuyFire.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-fire-ant'); });
-            if (modalExpandFire) modalExpandFire.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('expand-fire-ants'); });
+            
+            // New Ant Types Modal Event Listeners
+            if (modalUnlockFatAnts) modalUnlockFatAnts.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-fat-ants'); });
+            if (modalBuyFatAnt) modalBuyFatAnt.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-fat-ant'); });
+            if (modalUnlockGasAnts) modalUnlockGasAnts.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-gas-ants'); });
+            if (modalBuyGasAnt) modalBuyGasAnt.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-gas-ant'); });
+            if (modalUnlockElectricAnts) modalUnlockElectricAnts.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-electric-ants'); });
+            if (modalBuyElectricAnt) modalBuyElectricAnt.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-electric-ant'); });
+            if (modalUnlockBananaThrowingAnts) modalUnlockBananaThrowingAnts.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-banana-throwing-ants'); });
+            if (modalBuyBananaThrowingAnt) modalBuyBananaThrowingAnt.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-banana-throwing-ant'); });
+            if (modalUnlockDpsAnts) modalUnlockDpsAnts.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-dps-ants'); });
+            if (modalBuyDpsAnt) modalBuyDpsAnt.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-dps-ant'); });
+
+            if (modalUnlockAcidAnts) modalUnlockAcidAnts.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-acid-ants'); });
+            if (modalBuyAcidAnt) modalBuyAcidAnt.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-acid-ant'); });
+            if (modalUnlockRainbowAnts) modalUnlockRainbowAnts.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-rainbow-ants'); });
+            if (modalBuyRainbowAnt) modalBuyRainbowAnt.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-rainbow-ant'); });
+            if (modalUnlockSmokeAnts) modalUnlockSmokeAnts.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-smoke-ants'); });
+            if (modalBuySmokeAnt) modalBuySmokeAnt.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-smoke-ant'); });
+            if (modalUnlockLeafCutterAnts) modalUnlockLeafCutterAnts.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-leaf-cutter-ants'); });
+            if (modalBuyLeafCutterAnt) modalBuyLeafCutterAnt.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-leaf-cutter-ant'); });
+            if (modalUnlockDoorAnts) modalUnlockDoorAnts.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-door-ants'); });
+            if (modalBuyDoorAnt) modalBuyDoorAnt.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-door-ant'); });
+            if (modalUnlockJuiceAnts) modalUnlockJuiceAnts.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-juice-ants'); });
+            if (modalBuyJuiceAnt) modalBuyJuiceAnt.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-juice-ant'); });
+            if (modalUnlockCrabAnts) modalUnlockCrabAnts.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-crab-ants'); });
+            if (modalBuyCrabAnt) modalBuyCrabAnt.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-crab-ant'); });
+            if (modalUnlockUpsideDownAnts) modalUnlockUpsideDownAnts.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-upside-down-ants'); });
+            if (modalBuyUpsideDownAnt) modalBuyUpsideDownAnt.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-upside-down-ant'); });
+            if (modalUnlockSpiderAnts) modalUnlockSpiderAnts.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-spider-ants'); });
+            if (modalBuySpiderAnt) modalBuySpiderAnt.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-spider-ant'); });
             
             if (modalUpgradeFood) modalUpgradeFood.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('upgrade-food'); });
             if (modalUpgradeSpeed) modalUpgradeSpeed.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('upgrade-speed'); });
@@ -713,7 +963,41 @@
                 'settings-modal': []
             };
             
-            const mappings = buttonMappings[modalId];
+            let mappings = buttonMappings[modalId];
+            // Also sync new ants costs inside colony modal
+            if (modalId === 'colony-modal') {
+                const extra = [
+                    { modal: 'modal-fat-ant-unlock-cost', original: 'fat-ant-unlock-cost' },
+                    { modal: 'modal-fat-ant-cost', original: 'fat-ant-cost' },
+                    { modal: 'modal-gas-ant-unlock-cost', original: 'gas-ant-unlock-cost' },
+                    { modal: 'modal-gas-ant-cost', original: 'gas-ant-cost' },
+                    { modal: 'modal-electric-ant-unlock-cost', original: 'electric-ant-unlock-cost' },
+                    { modal: 'modal-electric-ant-cost', original: 'electric-ant-cost' },
+                    { modal: 'modal-banana-throwing-ant-unlock-cost', original: 'banana-throwing-ant-unlock-cost' },
+                    { modal: 'modal-banana-throwing-ant-cost', original: 'banana-throwing-ant-cost' },
+                    { modal: 'modal-dps-ant-unlock-cost', original: 'dps-ant-unlock-cost' },
+                    { modal: 'modal-dps-ant-cost', original: 'dps-ant-cost' },
+                    { modal: 'modal-acid-ant-unlock-cost', original: 'acid-ant-unlock-cost' },
+                    { modal: 'modal-acid-ant-cost', original: 'acid-ant-cost' },
+                    { modal: 'modal-rainbow-ant-unlock-cost', original: 'rainbow-ant-unlock-cost' },
+                    { modal: 'modal-rainbow-ant-cost', original: 'rainbow-ant-cost' },
+                    { modal: 'modal-smoke-ant-unlock-cost', original: 'smoke-ant-unlock-cost' },
+                    { modal: 'modal-smoke-ant-cost', original: 'smoke-ant-cost' },
+                    { modal: 'modal-leaf-cutter-ant-unlock-cost', original: 'leaf-cutter-ant-unlock-cost' },
+                    { modal: 'modal-leaf-cutter-ant-cost', original: 'leaf-cutter-ant-cost' },
+                    { modal: 'modal-door-ant-unlock-cost', original: 'door-ant-unlock-cost' },
+                    { modal: 'modal-door-ant-cost', original: 'door-ant-cost' },
+                    { modal: 'modal-juice-ant-unlock-cost', original: 'juice-ant-unlock-cost' },
+                    { modal: 'modal-juice-ant-cost', original: 'juice-ant-cost' },
+                    { modal: 'modal-crab-ant-unlock-cost', original: 'crab-ant-unlock-cost' },
+                    { modal: 'modal-crab-ant-cost', original: 'crab-ant-cost' },
+                    { modal: 'modal-upside-down-ant-unlock-cost', original: 'upside-down-ant-unlock-cost' },
+                    { modal: 'modal-upside-down-ant-cost', original: 'upside-down-ant-cost' },
+                    { modal: 'modal-spider-ant-unlock-cost', original: 'spider-ant-unlock-cost' },
+                    { modal: 'modal-spider-ant-cost', original: 'spider-ant-cost' },
+                ];
+                mappings = (mappings || []).concat(extra);
+            }
             if (mappings) {
                 mappings.forEach(mapping => {
                     const modalElement = document.getElementById(mapping.modal);
@@ -758,13 +1042,40 @@
                 syncButtonState('upgrade-queen', 'modal-upgrade-queen');
                 syncButtonState('unlock-flying-ants', 'modal-unlock-flying-ants');
                 syncButtonState('buy-flying-ant', 'modal-buy-flying-ant');
-                syncButtonState('expand-flying-ants', 'modal-expand-flying-ants');
                 syncButtonState('unlock-car-ants', 'modal-unlock-car-ants');
                 syncButtonState('buy-car-ant', 'modal-buy-car-ant');
-                syncButtonState('expand-car-ants', 'modal-expand-car-ants');
                 syncButtonState('unlock-fire-ants', 'modal-unlock-fire-ants');
                 syncButtonState('buy-fire-ant', 'modal-buy-fire-ant');
-                syncButtonState('expand-fire-ants', 'modal-expand-fire-ants');
+                // New ant types sync
+                syncButtonState('unlock-fat-ants', 'modal-unlock-fat-ants');
+                syncButtonState('buy-fat-ant', 'modal-buy-fat-ant');
+                syncButtonState('unlock-gas-ants', 'modal-unlock-gas-ants');
+                syncButtonState('buy-gas-ant', 'modal-buy-gas-ant');
+                syncButtonState('unlock-electric-ants', 'modal-unlock-electric-ants');
+                syncButtonState('buy-electric-ant', 'modal-buy-electric-ant');
+                syncButtonState('unlock-banana-throwing-ants', 'modal-unlock-banana-throwing-ants');
+                syncButtonState('buy-banana-throwing-ant', 'modal-buy-banana-throwing-ant');
+                syncButtonState('unlock-dps-ants', 'modal-unlock-dps-ants');
+                syncButtonState('buy-dps-ant', 'modal-buy-dps-ant');
+                // Newly added types
+                syncButtonState('unlock-acid-ants', 'modal-unlock-acid-ants');
+                syncButtonState('buy-acid-ant', 'modal-buy-acid-ant');
+                syncButtonState('unlock-rainbow-ants', 'modal-unlock-rainbow-ants');
+                syncButtonState('buy-rainbow-ant', 'modal-buy-rainbow-ant');
+                syncButtonState('unlock-smoke-ants', 'modal-unlock-smoke-ants');
+                syncButtonState('buy-smoke-ant', 'modal-buy-smoke-ant');
+                syncButtonState('unlock-leaf-cutter-ants', 'modal-unlock-leaf-cutter-ants');
+                syncButtonState('buy-leaf-cutter-ant', 'modal-buy-leaf-cutter-ant');
+                syncButtonState('unlock-door-ants', 'modal-unlock-door-ants');
+                syncButtonState('buy-door-ant', 'modal-buy-door-ant');
+                syncButtonState('unlock-juice-ants', 'modal-unlock-juice-ants');
+                syncButtonState('buy-juice-ant', 'modal-buy-juice-ant');
+                syncButtonState('unlock-crab-ants', 'modal-unlock-crab-ants');
+                syncButtonState('buy-crab-ant', 'modal-buy-crab-ant');
+                syncButtonState('unlock-upside-down-ants', 'modal-unlock-upside-down-ants');
+                syncButtonState('buy-upside-down-ant', 'modal-buy-upside-down-ant');
+                syncButtonState('unlock-spider-ants', 'modal-unlock-spider-ants');
+                syncButtonState('buy-spider-ant', 'modal-buy-spider-ant');
             }
             
             // Upgrades modal button states

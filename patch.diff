@@ -1,0 +1,28 @@
+*** Begin Patch
+*** Update File: src/entities/exploding/SmokeAnt.js
+@@
+-        // Dark gray smoke ant body
+-        body.beginFill(this.antType.color);
++        // Dark gray smoke ant body
++        const color = (this.antType && this.antType.color) || 0x696969;
++        body.beginFill(color);
+@@
+-        body.beginFill(this.antType.color);
++        body.beginFill(color);
+@@
+-        body.beginFill(this.antType.color);
++        body.beginFill(color);
+@@
+-        IdleAnts.app.effectManager.createEffect(
++        IdleAnts.app.effectManager.createEffect(
+             'smokeExplosion',
+             this.x,
+             this.y,
+-            this.antType.color,
++            ((this.antType && this.antType.color) || 0x696969),
+             2.0,
+             {
+@@
+-        particle.beginFill(this.antType.color, 0.6);
++        particle.beginFill(((this.antType && this.antType.color) || 0x696969), 0.6);
+*** End Patch

@@ -84,27 +84,27 @@ class VictoryScreenManager {
                     <div class="stat-category">
                         <h3>🐜 Advanced Units</h3>
                         <div class="stat-row">
-                            <span>Flying Ants:</span>
+                            <span>Total Special Ants:</span>
                             <span class="stat-value">
-                                ${gameData.resourceManager.stats.flyingAnts || 0} / ${gameData.resourceManager.stats.maxFlyingAnts || 0}
+                                ${this.calculateTotalSpecialAnts(gameData.resourceManager)}
                             </span>
                         </div>
                         <div class="stat-row">
-                            <span>Car Ants:</span>
+                            <span>Special Ant Types Unlocked:</span>
                             <span class="stat-value">
-                                ${gameData.resourceManager.stats.carAnts || 0} / ${gameData.resourceManager.stats.maxCarAnts || 0}
-                            </span>
-                        </div>
-                        <div class="stat-row">
-                            <span>Fire Ants:</span>
-                            <span class="stat-value">
-                                ${gameData.resourceManager.stats.fireAnts || 0} / ${gameData.resourceManager.stats.maxFireAnts || 0}
+                                ${this.countSpecialAntTypesUnlocked(gameData.resourceManager)}
                             </span>
                         </div>
                         <div class="stat-row">
                             <span>Queen Ant:</span>
                             <span class="stat-value">
                                 Level ${gameData.resourceManager.stats.queenUpgradeLevel || 0}/${gameData.resourceManager.stats.maxQueenUpgradeLevel || 5}
+                            </span>
+                        </div>
+                        <div class="stat-row">
+                            <span>Advanced Features Unlocked:</span>
+                            <span class="stat-value">
+                                ${this.countAdvancedFeaturesUnlocked(gameData.resourceManager)}
                             </span>
                         </div>
                     </div>
@@ -314,6 +314,7 @@ class VictoryScreenManager {
                                     <div class="score">${player.total_score.toLocaleString()}</div>
                                     <div class="stats">
                                         ${player.food_collected ? `${(player.food_collected / 1000000).toFixed(1)}M food` : ''}
+                                        ${player.play_time ? ` • ${Math.floor(player.play_time / 3600)}h ${Math.floor((player.play_time % 3600) / 60)}m` : ''}
                                         ${player.achievements_unlocked ? ` • ${player.achievements_unlocked} achievements` : ''}
                                     </div>
                                 </div>
@@ -356,6 +357,46 @@ class VictoryScreenManager {
             dailyChallengeManager: this.game.dailyChallengeManager,
             game: this.game // Include game instance for session time
         };
+    }
+
+    // Calculate total count of all special ant types
+    calculateTotalSpecialAnts(resourceManager) {
+        const specialAntTypes = [
+            'flyingAnts', 'carAnts', 'fireAnts', 'fatAnts', 'gasAnts', 'acidAnts',
+            'rainbowAnts', 'smokeAnts', 'electricAnts', 'leafCutterAnts', 'doorAnts',
+            'bananaThrowingAnts', 'juiceAnts', 'crabAnts', 'upsideDownAnts', 'dpsAnts',
+            'spiderAnts', 'bomberBeetles'
+        ];
+        
+        return specialAntTypes.reduce((total, antType) => {
+            return total + (resourceManager.stats[antType] || 0);
+        }, 0);
+    }
+
+    // Count how many special ant types have been unlocked
+    countSpecialAntTypesUnlocked(resourceManager) {
+        const specialAntUnlocks = [
+            'flyingAntsUnlocked', 'carAntsUnlocked', 'fireAntsUnlocked', 'fatAntsUnlocked',
+            'gasAntsUnlocked', 'acidAntsUnlocked', 'rainbowAntsUnlocked', 'smokeAntsUnlocked',
+            'electricAntsUnlocked', 'leafCutterAntsUnlocked', 'doorAntsUnlocked',
+            'bananaThrowingAntsUnlocked', 'juiceAntsUnlocked', 'crabAntsUnlocked',
+            'upsideDownAntsUnlocked', 'dpsAntsUnlocked', 'spiderAntsUnlocked', 'bomberBeetlesUnlocked'
+        ];
+        
+        return specialAntUnlocks.reduce((count, unlock) => {
+            return count + (resourceManager.stats[unlock] ? 1 : 0);
+        }, 0);
+    }
+
+    // Count advanced features unlocked
+    countAdvancedFeaturesUnlocked(resourceManager) {
+        const advancedFeatures = [
+            'autofeederUnlocked', 'queenUnlocked'
+        ];
+        
+        return advancedFeatures.reduce((count, feature) => {
+            return count + (resourceManager.stats[feature] ? 1 : 0);
+        }, 0);
     }
 
 

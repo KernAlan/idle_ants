@@ -2,6 +2,7 @@
 const IdleAnts = {
     Entities: {},
     Managers: {},
+    Data: {},
     Config: {
         debug: false // Global debug flag, set to false by default
     }

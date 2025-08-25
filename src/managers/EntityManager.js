@@ -17,7 +17,22 @@ IdleAnts.Managers.EntityManager = class {
             larvae: new PIXI.Container(), // New container for larvae
             carAnts: new PIXI.Container(), // New container for Car Ants
             fireAnts: new PIXI.Container(), // Container for Fire Ants
-            enemies: new PIXI.Container() // Container for Enemies
+            enemies: new PIXI.Container(), // Container for Enemies
+            // New ant type containers
+            fatAnts: new PIXI.Container(),
+            gasAnts: new PIXI.Container(),
+            acidAnts: new PIXI.Container(),
+            rainbowAnts: new PIXI.Container(),
+            smokeAnts: new PIXI.Container(),
+            electricAnts: new PIXI.Container(),
+            leafCutterAnts: new PIXI.Container(),
+            doorAnts: new PIXI.Container(),
+            bananaThrowingAnts: new PIXI.Container(),
+            juiceAnts: new PIXI.Container(),
+            crabAnts: new PIXI.Container(),
+            upsideDownAnts: new PIXI.Container(),
+            dpsAnts: new PIXI.Container(),
+            spiderAnts: new PIXI.Container(),
         };
         
         // Add containers to the world container instead of directly to the stage
@@ -30,6 +45,21 @@ IdleAnts.Managers.EntityManager = class {
         this.worldContainer.addChild(this.entitiesContainers.carAnts); // Add Car Ants container
         this.worldContainer.addChild(this.entitiesContainers.fireAnts); // Add Fire Ants container
         this.worldContainer.addChild(this.entitiesContainers.enemies); // Enemies container
+        // Add new ant type containers
+        this.worldContainer.addChild(this.entitiesContainers.fatAnts);
+        this.worldContainer.addChild(this.entitiesContainers.gasAnts);
+        this.worldContainer.addChild(this.entitiesContainers.acidAnts);
+        this.worldContainer.addChild(this.entitiesContainers.rainbowAnts);
+        this.worldContainer.addChild(this.entitiesContainers.smokeAnts);
+        this.worldContainer.addChild(this.entitiesContainers.electricAnts);
+        this.worldContainer.addChild(this.entitiesContainers.leafCutterAnts);
+        this.worldContainer.addChild(this.entitiesContainers.doorAnts);
+        this.worldContainer.addChild(this.entitiesContainers.bananaThrowingAnts);
+        this.worldContainer.addChild(this.entitiesContainers.juiceAnts);
+        this.worldContainer.addChild(this.entitiesContainers.crabAnts);
+        this.worldContainer.addChild(this.entitiesContainers.upsideDownAnts);
+        this.worldContainer.addChild(this.entitiesContainers.dpsAnts);
+        this.worldContainer.addChild(this.entitiesContainers.spiderAnts);
         
         // Entity collections
         this.entities = {
@@ -40,7 +70,22 @@ IdleAnts.Managers.EntityManager = class {
             larvae: [], // Array for larvae entities
             carAnts: [], // Array for Car Ant entities
             fireAnts: [], // Array for Fire Ant entities
-            enemies: [] // Array for enemies
+            enemies: [], // Array for enemies
+            // New ant type entity arrays
+            fatAnts: [],
+            gasAnts: [],
+            acidAnts: [],
+            rainbowAnts: [],
+            smokeAnts: [],
+            electricAnts: [],
+            leafCutterAnts: [],
+            doorAnts: [],
+            bananaThrowingAnts: [],
+            juiceAnts: [],
+            crabAnts: [],
+            upsideDownAnts: [],
+            dpsAnts: [],
+            spiderAnts: [],
         };
         
         this.nest = null;
@@ -275,6 +320,291 @@ IdleAnts.Managers.EntityManager = class {
             this.effectManager.createSpawnEffect(fireAnt.x, fireAnt.y, false, { R: 255, G: 69, B: 0 });
         }
     }
+
+    // ===============================================
+    // NEW ANT TYPE CREATION METHODS
+    // ===============================================
+
+    createFatAnt() {
+        if (!this.nestPosition) {
+            console.error("EntityManager: Nest position not available to create Fat Ant.");
+            return;
+        }
+        const ant = IdleAnts.Entities.createAntByType('fatAnt', PIXI.Texture.EMPTY, this.nestPosition, this.resourceManager.stats.speedMultiplier);
+        if (!ant) return;
+        
+        ant.x = this.nestPosition.x;
+        ant.y = this.nestPosition.y;
+        ant.capacity = this.resourceManager.stats.strengthMultiplier;
+        
+        this.entitiesContainers.fatAnts.addChild(ant);
+        this.entities.fatAnts.push(ant);
+        
+        if (this.effectManager) {
+            this.effectManager.createSpawnEffect(ant.x, ant.y);
+        }
+    }
+
+    createGasAnt() {
+        if (!this.nestPosition) {
+            console.error("EntityManager: Nest position not available to create Gas Ant.");
+            return;
+        }
+        const ant = IdleAnts.Entities.createAntByType('gasAnt', PIXI.Texture.EMPTY, this.nestPosition, this.resourceManager.stats.speedMultiplier);
+        if (!ant) return;
+        
+        ant.x = this.nestPosition.x;
+        ant.y = this.nestPosition.y;
+        ant.capacity = this.resourceManager.stats.strengthMultiplier;
+        
+        this.entitiesContainers.gasAnts.addChild(ant);
+        this.entities.gasAnts.push(ant);
+        
+        if (this.effectManager) {
+            this.effectManager.createSpawnEffect(ant.x, ant.y, false, { R: 0, G: 255, B: 0 });
+        }
+    }
+
+    createAcidAnt() {
+        if (!this.nestPosition) {
+            console.error("EntityManager: Nest position not available to create Acid Ant.");
+            return;
+        }
+        const ant = IdleAnts.Entities.createAntByType('acidAnt', PIXI.Texture.EMPTY, this.nestPosition, this.resourceManager.stats.speedMultiplier);
+        if (!ant) return;
+        
+        ant.x = this.nestPosition.x;
+        ant.y = this.nestPosition.y;
+        ant.capacity = this.resourceManager.stats.strengthMultiplier;
+        
+        this.entitiesContainers.acidAnts.addChild(ant);
+        this.entities.acidAnts.push(ant);
+        
+        if (this.effectManager) {
+            this.effectManager.createSpawnEffect(ant.x, ant.y, false, { R: 255, G: 255, B: 0 });
+        }
+    }
+
+    createRainbowAnt() {
+        if (!this.nestPosition) {
+            console.error("EntityManager: Nest position not available to create Rainbow Ant.");
+            return;
+        }
+        const ant = IdleAnts.Entities.createAntByType('rainbowAnt', PIXI.Texture.EMPTY, this.nestPosition, this.resourceManager.stats.speedMultiplier);
+        if (!ant) return;
+        
+        ant.x = this.nestPosition.x;
+        ant.y = this.nestPosition.y;
+        ant.capacity = this.resourceManager.stats.strengthMultiplier;
+        
+        this.entitiesContainers.rainbowAnts.addChild(ant);
+        this.entities.rainbowAnts.push(ant);
+        
+        if (this.effectManager) {
+            this.effectManager.createSpawnEffect(ant.x, ant.y, false, { R: 255, G: 128, B: 255 });
+        }
+    }
+
+    createSmokeAnt() {
+        if (!this.nestPosition) {
+            console.error("EntityManager: Nest position not available to create Smoke Ant.");
+            return;
+        }
+        const ant = IdleAnts.Entities.createAntByType('smokeAnt', PIXI.Texture.EMPTY, this.nestPosition, this.resourceManager.stats.speedMultiplier);
+        if (!ant) return;
+        
+        ant.x = this.nestPosition.x;
+        ant.y = this.nestPosition.y;
+        ant.capacity = this.resourceManager.stats.strengthMultiplier;
+        
+        this.entitiesContainers.smokeAnts.addChild(ant);
+        this.entities.smokeAnts.push(ant);
+        
+        if (this.effectManager) {
+            this.effectManager.createSpawnEffect(ant.x, ant.y, false, { R: 128, G: 128, B: 128 });
+        }
+    }
+
+    createElectricAnt() {
+        if (!this.nestPosition) {
+            console.error("EntityManager: Nest position not available to create Electric Ant.");
+            return;
+        }
+        const ant = IdleAnts.Entities.createAntByType('electricAnt', PIXI.Texture.EMPTY, this.nestPosition, this.resourceManager.stats.speedMultiplier);
+        if (!ant) return;
+        
+        ant.x = this.nestPosition.x;
+        ant.y = this.nestPosition.y;
+        ant.capacity = this.resourceManager.stats.strengthMultiplier;
+        
+        this.entitiesContainers.electricAnts.addChild(ant);
+        this.entities.electricAnts.push(ant);
+        
+        if (this.effectManager) {
+            this.effectManager.createSpawnEffect(ant.x, ant.y, false, { R: 0, G: 255, B: 255 });
+        }
+    }
+
+    createLeafCutterAnt() {
+        if (!this.nestPosition) {
+            console.error("EntityManager: Nest position not available to create Leaf Cutter Ant.");
+            return;
+        }
+        const ant = IdleAnts.Entities.createAntByType('leafCutterAnt', PIXI.Texture.EMPTY, this.nestPosition, this.resourceManager.stats.speedMultiplier);
+        if (!ant) return;
+        
+        ant.x = this.nestPosition.x;
+        ant.y = this.nestPosition.y;
+        ant.capacity = this.resourceManager.stats.strengthMultiplier;
+        
+        this.entitiesContainers.leafCutterAnts.addChild(ant);
+        this.entities.leafCutterAnts.push(ant);
+        
+        if (this.effectManager) {
+            this.effectManager.createSpawnEffect(ant.x, ant.y, false, { R: 34, G: 139, B: 34 });
+        }
+    }
+
+    createDoorAnt() {
+        if (!this.nestPosition) {
+            console.error("EntityManager: Nest position not available to create Door Ant.");
+            return;
+        }
+        const ant = IdleAnts.Entities.createAntByType('doorAnt', PIXI.Texture.EMPTY, this.nestPosition, this.resourceManager.stats.speedMultiplier);
+        if (!ant) return;
+        
+        ant.x = this.nestPosition.x;
+        ant.y = this.nestPosition.y;
+        ant.capacity = this.resourceManager.stats.strengthMultiplier;
+        
+        this.entitiesContainers.doorAnts.addChild(ant);
+        this.entities.doorAnts.push(ant);
+        
+        if (this.effectManager) {
+            this.effectManager.createSpawnEffect(ant.x, ant.y, false, { R: 139, G: 69, B: 19 });
+        }
+    }
+
+    createBananaThrowingAnt() {
+        if (!this.nestPosition) {
+            console.error("EntityManager: Nest position not available to create Banana Throwing Ant.");
+            return;
+        }
+        const ant = IdleAnts.Entities.createAntByType('bananaThrowingAnt', PIXI.Texture.EMPTY, this.nestPosition, this.resourceManager.stats.speedMultiplier);
+        if (!ant) return;
+        
+        ant.x = this.nestPosition.x;
+        ant.y = this.nestPosition.y;
+        ant.capacity = this.resourceManager.stats.strengthMultiplier;
+        
+        this.entitiesContainers.bananaThrowingAnts.addChild(ant);
+        this.entities.bananaThrowingAnts.push(ant);
+        
+        if (this.effectManager) {
+            this.effectManager.createSpawnEffect(ant.x, ant.y, false, { R: 255, G: 255, B: 0 });
+        }
+    }
+
+    createJuiceAnt() {
+        if (!this.nestPosition) {
+            console.error("EntityManager: Nest position not available to create Juice Ant.");
+            return;
+        }
+        const ant = IdleAnts.Entities.createAntByType('juiceAnt', PIXI.Texture.EMPTY, this.nestPosition, this.resourceManager.stats.speedMultiplier);
+        if (!ant) return;
+        
+        ant.x = this.nestPosition.x;
+        ant.y = this.nestPosition.y;
+        ant.capacity = this.resourceManager.stats.strengthMultiplier;
+        
+        this.entitiesContainers.juiceAnts.addChild(ant);
+        this.entities.juiceAnts.push(ant);
+        
+        if (this.effectManager) {
+            this.effectManager.createSpawnEffect(ant.x, ant.y, false, { R: 255, G: 165, B: 0 });
+        }
+    }
+
+    createCrabAnt() {
+        if (!this.nestPosition) {
+            console.error("EntityManager: Nest position not available to create Crab Ant.");
+            return;
+        }
+        const ant = IdleAnts.Entities.createAntByType('crabAnt', PIXI.Texture.EMPTY, this.nestPosition, this.resourceManager.stats.speedMultiplier);
+        if (!ant) return;
+        
+        ant.x = this.nestPosition.x;
+        ant.y = this.nestPosition.y;
+        ant.capacity = this.resourceManager.stats.strengthMultiplier;
+        
+        this.entitiesContainers.crabAnts.addChild(ant);
+        this.entities.crabAnts.push(ant);
+        
+        if (this.effectManager) {
+            this.effectManager.createSpawnEffect(ant.x, ant.y, false, { R: 255, G: 20, B: 147 });
+        }
+    }
+
+    createUpsideDownAnt() {
+        if (!this.nestPosition) {
+            console.error("EntityManager: Nest position not available to create Upside Down Ant.");
+            return;
+        }
+        const ant = IdleAnts.Entities.createAntByType('upsideDownAnt', PIXI.Texture.EMPTY, this.nestPosition, this.resourceManager.stats.speedMultiplier);
+        if (!ant) return;
+        
+        ant.x = this.nestPosition.x;
+        ant.y = this.nestPosition.y;
+        ant.capacity = this.resourceManager.stats.strengthMultiplier;
+        
+        this.entitiesContainers.upsideDownAnts.addChild(ant);
+        this.entities.upsideDownAnts.push(ant);
+        
+        if (this.effectManager) {
+            this.effectManager.createSpawnEffect(ant.x, ant.y, false, { R: 138, G: 43, B: 226 });
+        }
+    }
+
+    createDpsAnt() {
+        if (!this.nestPosition) {
+            console.error("EntityManager: Nest position not available to create DPS Ant.");
+            return;
+        }
+        const ant = IdleAnts.Entities.createAntByType('dpsAnt', PIXI.Texture.EMPTY, this.nestPosition, this.resourceManager.stats.speedMultiplier);
+        if (!ant) return;
+        
+        ant.x = this.nestPosition.x;
+        ant.y = this.nestPosition.y;
+        ant.capacity = this.resourceManager.stats.strengthMultiplier;
+        
+        this.entitiesContainers.dpsAnts.addChild(ant);
+        this.entities.dpsAnts.push(ant);
+        
+        if (this.effectManager) {
+            this.effectManager.createSpawnEffect(ant.x, ant.y, false, { R: 255, G: 0, B: 0 });
+        }
+    }
+
+    createSpiderAnt() {
+        if (!this.nestPosition) {
+            console.error("EntityManager: Nest position not available to create Spider Ant.");
+            return;
+        }
+        const ant = IdleAnts.Entities.createAntByType('spiderAnt', PIXI.Texture.EMPTY, this.nestPosition, this.resourceManager.stats.speedMultiplier);
+        if (!ant) return;
+        
+        ant.x = this.nestPosition.x;
+        ant.y = this.nestPosition.y;
+        ant.capacity = this.resourceManager.stats.strengthMultiplier;
+        
+        this.entitiesContainers.spiderAnts.addChild(ant);
+        this.entities.spiderAnts.push(ant);
+        
+        if (this.effectManager) {
+            this.effectManager.createSpawnEffect(ant.x, ant.y, false, { R: 0, G: 0, B: 0 });
+        }
+    }
+
     
     createFood(count = 1) {
         for (let i = 0; i < count; i++) {
@@ -361,6 +691,9 @@ IdleAnts.Managers.EntityManager = class {
         
         // Update Fire Ants
         this.updateFireAnts();
+
+        // Update new ant types (basic, exploding, throwing, special, other)
+        this.updateNewAntTypes();
         
         // Update food
         this.updateFood();
@@ -373,6 +706,40 @@ IdleAnts.Managers.EntityManager = class {
         
         // Update Enemies
         this.updateEnemies();
+    }
+
+    // Update all newly added ant categories using the generic updater
+    updateNewAntTypes() {
+        const shouldCreateTrail = this.frameCounter % this.trailInterval === 0;
+
+        // Basic combat ants
+        this.updateAntEntities(this.entities.fatAnts, shouldCreateTrail, false);
+        this.updateAntEntities(this.entities.gasAnts, shouldCreateTrail, false);
+        this.updateAntEntities(this.entities.acidAnts, shouldCreateTrail, false);
+        this.updateAntEntities(this.entities.rainbowAnts, shouldCreateTrail, false);
+
+        // Exploding ants
+        // Smoke ants: align pathing with others (no enemy pursuit)
+        this.updateAntEntities(this.entities.smokeAnts, shouldCreateTrail, false, /*pursueEnemies=*/false);
+        // Electric ants should behave like regular ants for pathing (no enemy pursuit)
+        this.updateAntEntities(this.entities.electricAnts, shouldCreateTrail, false, /*pursueEnemies=*/false);
+        // Leaf Cutter ants: same pathing as others (no enemy pursuit)
+        this.updateAntEntities(this.entities.leafCutterAnts, shouldCreateTrail, false, /*pursueEnemies=*/false);
+        // Door ants: same pathing as others (no enemy pursuit)
+        this.updateAntEntities(this.entities.doorAnts, shouldCreateTrail, false, /*pursueEnemies=*/false);
+
+        // Throwing ants
+        // Archer-like: Banana Throwers handle kiting themselves (no manager pursuit)
+        this.updateAntEntities(this.entities.bananaThrowingAnts, shouldCreateTrail, false, /*pursueEnemies=*/false);
+        this.updateAntEntities(this.entities.juiceAnts, shouldCreateTrail, false);
+        this.updateAntEntities(this.entities.crabAnts, shouldCreateTrail, false);
+
+        // Special ants
+        this.updateAntEntities(this.entities.upsideDownAnts, shouldCreateTrail, false);
+        this.updateAntEntities(this.entities.dpsAnts, shouldCreateTrail, false);
+        this.updateAntEntities(this.entities.spiderAnts, shouldCreateTrail, false);
+
+        // Other
     }
     
     // New method to update larvae
@@ -485,15 +852,15 @@ IdleAnts.Managers.EntityManager = class {
     }
     
     // Generic method to update any type of ant entities
-    updateAntEntities(antEntities, shouldCreateTrail, isFlying = false) {
+    updateAntEntities(antEntities, shouldCreateTrail, isFlying = false, pursueEnemies = true) {
         // Only process enemy detection every 3 frames for performance
-        const shouldCheckEnemies = this.frameCounter % 3 === 0;
+        const shouldCheckEnemies = pursueEnemies && this.frameCounter % 3 === 0;
         
         for (let i = 0; i < antEntities.length; i++) {
             const ant = antEntities[i];
             
             // Skip enemy detection if not needed this frame, unless ant is already targeting
-            if (shouldCheckEnemies || ant.targetEnemy) {
+            if (pursueEnemies && (shouldCheckEnemies || ant.targetEnemy)) {
                 const perceptionSq = 250 * 250; // 250-px perception radius (squared)
                 const engageDistSq = 20 * 20; // 20-px engage radius (squared)
 
@@ -1118,12 +1485,32 @@ IdleAnts.Managers.EntityManager = class {
     updateEnemies(){
         // If the boss is active, update the boss but continue with regular enemy updates
         if (this.boss && !this.boss.isDead) {
-            const ants = [...this.entities.ants, ...this.entities.flyingAnts, ...this.entities.carAnts, ...this.entities.fireAnts];
+            // Get all ant entities for boss combat
+            const ants = [
+                ...this.entities.ants,
+                ...this.entities.flyingAnts,
+                ...this.entities.carAnts, 
+                ...this.entities.fireAnts,
+                ...this.entities.fatAnts,
+                ...this.entities.gasAnts,
+                ...this.entities.acidAnts,
+                ...this.entities.rainbowAnts,
+                ...this.entities.smokeAnts,
+                ...this.entities.electricAnts,
+                ...this.entities.leafCutterAnts,
+                ...this.entities.doorAnts,
+                ...this.entities.bananaThrowingAnts,
+                ...this.entities.juiceAnts,
+                ...this.entities.crabAnts,
+                ...this.entities.upsideDownAnts,
+                ...this.entities.dpsAnts,
+                ...this.entities.spiderAnts,
+            ];
             this.boss.update(ants);
             // Don't return - continue with regular enemy updates so they don't freeze
         }
-        // Calculate total ants in colony
-        const antTotal = this.entities.ants.length + this.entities.flyingAnts.length + this.entities.carAnts.length + this.entities.fireAnts.length;
+        // Use the total ant count from ResourceManager (which includes all special ants)
+        const antTotal = this.resourceManager.stats.ants;
 
         // ---------- NEW: Update spawn level based on colony size ----------
         const maxLevel = this.enemyTiers.length - 1;

@@ -9,7 +9,12 @@ IdleAnts.Managers.EffectManager = class {
             'foodDrop': IdleAnts.Effects.FoodDropEffect,
             'foodCollect': IdleAnts.Effects.FoodCollectEffect,
             'trail': IdleAnts.Effects.Trail,
-            'larvae': IdleAnts.Effects.LarvaeEffect
+            'larvae': IdleAnts.Effects.LarvaeEffect,
+            // New ant special effects
+            'gasCloud': IdleAnts.Effects.GasCloudEffect,
+            'acidPuddle': IdleAnts.Effects.AcidPuddleEffect,
+            'rainbowTrail': IdleAnts.Effects.RainbowTrailEffect,
+            'electricExplosion': IdleAnts.Effects.ElectricExplosionEffect
         };
         
         // Call the static registerEffects method if it exists

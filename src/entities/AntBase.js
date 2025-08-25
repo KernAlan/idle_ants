@@ -231,6 +231,8 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
     }
     
     update(nestPosition, foods) {
+        // Normalize inputs to avoid undefined access
+        foods = Array.isArray(foods) ? foods : [];
         // Keep health bar fixed above the sprite regardless of rotation
         if (this.healthBarContainer) {
             this.healthBarContainer.x = this.x;
@@ -288,6 +290,8 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
     
     // Handle seeking food state - ant looks for closest food source
     updateSeekingFood(foods) {
+        // Ensure foods is a usable array
+        foods = Array.isArray(foods) ? foods : [];
         // PRIORITIZE ENEMY COMBAT OVER FOOD
         if (this.targetEnemy && !this.targetEnemy.isDead) {
             const dx = this.targetEnemy.x - this.x;
@@ -566,6 +570,8 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
     }
     
     findAndCollectFood(foods) {
+        // Ensure foods is a usable array
+        foods = Array.isArray(foods) ? foods : [];
         // If already in the process of collecting food, continue with that
         if (this.isCollecting && this.collectionTarget) {
             // Check if the food target still exists in the game world

@@ -346,7 +346,10 @@ IdleAnts.Game = class {
                 break;
                 
             case IdleAnts.Game.States.PAUSED:
-                // Resume game logic
+                // Resume game logic and hide pause overlay
+                if (this.uiManager) {
+                    this.uiManager.hidePauseOverlay();
+                }
                 break;
                 
             case IdleAnts.Game.States.UPGRADING:
@@ -1255,12 +1258,6 @@ IdleAnts.Game = class {
         }
     }
     
-    expandFlyingAntCapacity() {
-        if (this.resourceManager.expandFlyingAntCapacity()) {
-            this.uiManager.updateUI();
-            this.uiManager.showUpgradeEffect('expand-flying-ants', 'Flying ant capacity expanded!');
-        }
-    }
     
     upgradeFood() {
         const upgradeCost = this.resourceManager.stats.foodUpgradeCost;
@@ -1635,14 +1632,6 @@ IdleAnts.Game = class {
         return false;
     }
 
-    expandCarAntCapacity() {
-        if (this.resourceManager.expandCarAntCapacity()) {
-            this.uiManager.updateUI();
-            this.uiManager.showUpgradeEffect('expand-car-ants', 'Car Ant Bay Expanded!');
-            return true;
-        }
-        return false;
-    }
 
     // Fire Ant Game Logic Methods
     unlockFireAnts() {
@@ -1669,14 +1658,291 @@ IdleAnts.Game = class {
         return false;
     }
 
-    expandFireAntCapacity() {
-        if (this.resourceManager.expandFireAntCapacity()) {
+
+    // ===============================================
+    // NEW ANT TYPES PURCHASE METHODS
+    // ===============================================
+
+    // Phat Ant Methods (renamed from Fat)
+    unlockFatAnts() {
+        if (this.resourceManager.unlockFatAnts()) {
             this.uiManager.updateUI();
-            this.uiManager.showUpgradeEffect('expand-fire-ants', 'Fire Ant capacity expanded!');
+            this.uiManager.showUpgradeEffect('unlock-fat-ants', 'Phat Ants Unlocked!');
             return true;
         }
         return false;
     }
+
+    buyFatAnt() {
+        if (this.resourceManager.buyFatAnt()) {
+            this.entityManager.createFatAnt();
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('buy-fat-ant', 'Phat Ant added!');
+            return true;
+        }
+        return false;
+    }
+
+    // Gas Ant Methods
+    unlockGasAnts() {
+        if (this.resourceManager.unlockGasAnts()) {
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('unlock-gas-ants', 'Gas Ants Unlocked!');
+            return true;
+        }
+        return false;
+    }
+
+    buyGasAnt() {
+        if (this.resourceManager.buyGasAnt()) {
+            this.entityManager.createGasAnt();
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('buy-gas-ant', 'Gas Ant added!');
+            return true;
+        }
+        return false;
+    }
+
+    // Acid Ant Methods
+    unlockAcidAnts() {
+        if (this.resourceManager.unlockAcidAnts()) {
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('unlock-acid-ants', 'Acid Ants Unlocked!');
+            return true;
+        }
+        return false;
+    }
+
+    buyAcidAnt() {
+        if (this.resourceManager.buyAcidAnt()) {
+            this.entityManager.createAcidAnt();
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('buy-acid-ant', 'Acid Ant added!');
+            return true;
+        }
+        return false;
+    }
+
+    // Rainbow Ant Methods
+    unlockRainbowAnts() {
+        if (this.resourceManager.unlockRainbowAnts()) {
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('unlock-rainbow-ants', 'Rainbow Ants Unlocked!');
+            return true;
+        }
+        return false;
+    }
+
+    buyRainbowAnt() {
+        if (this.resourceManager.buyRainbowAnt()) {
+            this.entityManager.createRainbowAnt();
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('buy-rainbow-ant', 'Rainbow Ant added!');
+            return true;
+        }
+        return false;
+    }
+
+    // Smoke Ant Methods
+    unlockSmokeAnts() {
+        if (this.resourceManager.unlockSmokeAnts()) {
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('unlock-smoke-ants', 'Smoke Ants Unlocked!');
+            return true;
+        }
+        return false;
+    }
+
+    buySmokeAnt() {
+        if (this.resourceManager.buySmokeAnt()) {
+            this.entityManager.createSmokeAnt();
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('buy-smoke-ant', 'Smoke Ant added!');
+            return true;
+        }
+        return false;
+    }
+
+    // Electric Ant Methods
+    unlockElectricAnts() {
+        if (this.resourceManager.unlockElectricAnts()) {
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('unlock-electric-ants', 'Electric Ants Unlocked!');
+            return true;
+        }
+        return false;
+    }
+
+    buyElectricAnt() {
+        if (this.resourceManager.buyElectricAnt()) {
+            this.entityManager.createElectricAnt();
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('buy-electric-ant', 'Electric Ant added!');
+            return true;
+        }
+        return false;
+    }
+
+    // Leaf Cutter Ant Methods
+    unlockLeafCutterAnts() {
+        if (this.resourceManager.unlockLeafCutterAnts()) {
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('unlock-leaf-cutter-ants', 'Leaf Cutter Ants Unlocked!');
+            return true;
+        }
+        return false;
+    }
+
+    buyLeafCutterAnt() {
+        if (this.resourceManager.buyLeafCutterAnt()) {
+            this.entityManager.createLeafCutterAnt();
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('buy-leaf-cutter-ant', 'Leaf Cutter Ant added!');
+            return true;
+        }
+        return false;
+    }
+
+    // Door Ant Methods
+    unlockDoorAnts() {
+        if (this.resourceManager.unlockDoorAnts()) {
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('unlock-door-ants', 'Door Ants Unlocked!');
+            return true;
+        }
+        return false;
+    }
+
+    buyDoorAnt() {
+        if (this.resourceManager.buyDoorAnt()) {
+            this.entityManager.createDoorAnt();
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('buy-door-ant', 'Door Ant added!');
+            return true;
+        }
+        return false;
+    }
+
+    // Banana Throwing Ant Methods
+    unlockBananaThrowingAnts() {
+        if (this.resourceManager.unlockBananaThrowingAnts()) {
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('unlock-banana-throwing-ants', 'Banana Throwing Ants Unlocked!');
+            return true;
+        }
+        return false;
+    }
+
+    buyBananaThrowingAnt() {
+        if (this.resourceManager.buyBananaThrowingAnt()) {
+            this.entityManager.createBananaThrowingAnt();
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('buy-banana-throwing-ant', 'Banana Throwing Ant added!');
+            return true;
+        }
+        return false;
+    }
+
+    // Juice Ant Methods
+    unlockJuiceAnts() {
+        if (this.resourceManager.unlockJuiceAnts()) {
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('unlock-juice-ants', 'Juice Ants Unlocked!');
+            return true;
+        }
+        return false;
+    }
+
+    buyJuiceAnt() {
+        if (this.resourceManager.buyJuiceAnt()) {
+            this.entityManager.createJuiceAnt();
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('buy-juice-ant', 'Juice Ant added!');
+            return true;
+        }
+        return false;
+    }
+
+    // Crab Ant Methods
+    unlockCrabAnts() {
+        if (this.resourceManager.unlockCrabAnts()) {
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('unlock-crab-ants', 'Crab Ants Unlocked!');
+            return true;
+        }
+        return false;
+    }
+
+    buyCrabAnt() {
+        if (this.resourceManager.buyCrabAnt()) {
+            this.entityManager.createCrabAnt();
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('buy-crab-ant', 'Crab Ant added!');
+            return true;
+        }
+        return false;
+    }
+
+    // Upside Down Ant Methods
+    unlockUpsideDownAnts() {
+        if (this.resourceManager.unlockUpsideDownAnts()) {
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('unlock-upside-down-ants', 'Upside Down Ants Unlocked!');
+            return true;
+        }
+        return false;
+    }
+
+    buyUpsideDownAnt() {
+        if (this.resourceManager.buyUpsideDownAnt()) {
+            this.entityManager.createUpsideDownAnt();
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('buy-upside-down-ant', 'Upside Down Ant added!');
+            return true;
+        }
+        return false;
+    }
+
+    // DPS Ant Methods
+    unlockDpsAnts() {
+        if (this.resourceManager.unlockDpsAnts()) {
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('unlock-dps-ants', 'DPS Ants Unlocked!');
+            return true;
+        }
+        return false;
+    }
+
+    buyDpsAnt() {
+        if (this.resourceManager.buyDpsAnt()) {
+            this.entityManager.createDpsAnt();
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('buy-dps-ant', 'DPS Ant added!');
+            return true;
+        }
+        return false;
+    }
+
+    // Spider Ant Methods
+    unlockSpiderAnts() {
+        if (this.resourceManager.unlockSpiderAnts()) {
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('unlock-spider-ants', 'Spider Ants Unlocked!');
+            return true;
+        }
+        return false;
+    }
+
+    buySpiderAnt() {
+        if (this.resourceManager.buySpiderAnt()) {
+            this.entityManager.createSpiderAnt();
+            this.uiManager.updateUI();
+            this.uiManager.showUpgradeEffect('buy-spider-ant', 'Spider Ant added!');
+            return true;
+        }
+        return false;
+    }
+
 
     /* ================= Cinematic Intro ================= */
     /**

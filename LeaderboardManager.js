@@ -51,22 +51,70 @@ class LeaderboardManager {
         // === ADVANCED CONTENT (25% of total score) ===
         let advancedScore = 0;
         
-        // Balanced special unit scoring
+        // Balanced special unit scoring - All special ant types
         const flyingAnts = resourceManager.stats.flyingAnts || 0;
         const carAnts = resourceManager.stats.carAnts || 0;
         const fireAnts = resourceManager.stats.fireAnts || 0;
+        const fatAnts = resourceManager.stats.fatAnts || 0;
+        const gasAnts = resourceManager.stats.gasAnts || 0;
+        const acidAnts = resourceManager.stats.acidAnts || 0;
+        const rainbowAnts = resourceManager.stats.rainbowAnts || 0;
+        const smokeAnts = resourceManager.stats.smokeAnts || 0;
+        const electricAnts = resourceManager.stats.electricAnts || 0;
+        const leafCutterAnts = resourceManager.stats.leafCutterAnts || 0;
+        const doorAnts = resourceManager.stats.doorAnts || 0;
+        const bananaThrowingAnts = resourceManager.stats.bananaThrowingAnts || 0;
+        const juiceAnts = resourceManager.stats.juiceAnts || 0;
+        const crabAnts = resourceManager.stats.crabAnts || 0;
+        const upsideDownAnts = resourceManager.stats.upsideDownAnts || 0;
+        const dpsAnts = resourceManager.stats.dpsAnts || 0;
+        const spiderAnts = resourceManager.stats.spiderAnts || 0;
         const queenLevel = resourceManager.stats.queenUpgradeLevel || 0;
         
+        // Original special ants
         advancedScore += flyingAnts * 200; // Balanced unit values
         advancedScore += carAnts * 300;    // Slightly higher but not overpowered
         advancedScore += fireAnts * 250;   // Between flying and car ants
+        
+        // New special ant types - Balanced scoring
+        advancedScore += fatAnts * 180;         // Basic combat
+        advancedScore += gasAnts * 160;         // Basic combat
+        advancedScore += acidAnts * 200;        // Exploding
+        advancedScore += rainbowAnts * 210;     // Special effects
+        advancedScore += smokeAnts * 190;       // Exploding
+        advancedScore += electricAnts * 220;    // High-tier exploding
+        advancedScore += leafCutterAnts * 240;  // Advanced exploding
+        advancedScore += doorAnts * 250;        // Advanced exploding
+        advancedScore += bananaThrowingAnts * 280; // Throwing
+        advancedScore += juiceAnts * 270;       // Throwing
+        advancedScore += crabAnts * 260;        // Throwing
+        advancedScore += upsideDownAnts * 150;  // Special utility
+        advancedScore += dpsAnts * 300;         // High DPS special
+        advancedScore += spiderAnts * 320;      // Elite special
+        
         advancedScore += queenLevel * 600; // Queen upgrades valuable but not excessive
         
-        // Feature unlocks
+        // Feature unlocks - Original special ants
         if (resourceManager.stats.autofeederUnlocked) advancedScore += 2000;
         if (resourceManager.stats.flyingAntsUnlocked) advancedScore += 1000;
         if (resourceManager.stats.carAntsUnlocked) advancedScore += 1200;
         if (resourceManager.stats.fireAntsUnlocked) advancedScore += 1100;
+        
+        // New special ant unlock bonuses
+        if (resourceManager.stats.fatAntsUnlocked) advancedScore += 500;
+        if (resourceManager.stats.gasAntsUnlocked) advancedScore += 400;
+        if (resourceManager.stats.acidAntsUnlocked) advancedScore += 600;
+        if (resourceManager.stats.rainbowAntsUnlocked) advancedScore += 650;
+        if (resourceManager.stats.smokeAntsUnlocked) advancedScore += 550;
+        if (resourceManager.stats.electricAntsUnlocked) advancedScore += 700;
+        if (resourceManager.stats.leafCutterAntsUnlocked) advancedScore += 750;
+        if (resourceManager.stats.doorAntsUnlocked) advancedScore += 800;
+        if (resourceManager.stats.bananaThrowingAntsUnlocked) advancedScore += 900;
+        if (resourceManager.stats.juiceAntsUnlocked) advancedScore += 850;
+        if (resourceManager.stats.crabAntsUnlocked) advancedScore += 850;
+        if (resourceManager.stats.upsideDownAntsUnlocked) advancedScore += 300;
+        if (resourceManager.stats.dpsAntsUnlocked) advancedScore += 1000;
+        if (resourceManager.stats.spiderAntsUnlocked) advancedScore += 1200;
         
         // Multiplier bonuses (reward long-term investment)
         const speedMultiplier = resourceManager.stats.speedMultiplier || 1;
@@ -247,6 +295,7 @@ class LeaderboardManager {
                                 <div class="score">${player.total_score.toLocaleString()}</div>
                                 <div class="stats">
                                     ${player.food_collected ? `${(player.food_collected / 1000000).toFixed(1)}M food` : ''}
+                                    ${player.play_time ? ` • ${Math.floor(player.play_time / 3600)}h ${Math.floor((player.play_time % 3600) / 60)}m` : ''}
                                     ${player.achievements_unlocked ? ` • ${player.achievements_unlocked} achievements` : ''}
                                 </div>
                             </div>
