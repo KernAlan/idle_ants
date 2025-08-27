@@ -30,7 +30,7 @@ IdleAnts.Managers.ResourceManager = class {
             strengthMultiplier: 1, // Now represents the actual carrying capacity
             // Food tier properties
             foodTier: 1,  // Start with basic food (tier 1)
-            maxFoodTier: 9, // Now includes cake (tier 9)
+            maxFoodTier: 16, // Now includes all new food types
             // Autofeeder properties
             autofeederUnlocked: false,
             autofeederLevel: 0,
@@ -100,10 +100,6 @@ IdleAnts.Managers.ResourceManager = class {
             leafCutterAntUnlockCost: 6000,
             leafCutterAntCost: 8000,
             
-            doorAnts: 0,
-            doorAntsUnlocked: false,
-            doorAntUnlockCost: 7000,
-            doorAntCost: 9000,
             
             // New Ant Types - Throwing
             bananaThrowingAnts: 0,
@@ -122,15 +118,6 @@ IdleAnts.Managers.ResourceManager = class {
             crabAntCost: 10000,
             
             // New Ant Types - Special
-            upsideDownAnts: 0,
-            upsideDownAntsUnlocked: false,
-            upsideDownAntUnlockCost: 4000,
-            upsideDownAntCost: 5000,
-            
-            dpsAnts: 0,
-            dpsAntsUnlocked: false,
-            dpsAntUnlockCost: 6000,
-            dpsAntCost: 8000,
             
             spiderAnts: 0,
             spiderAntsUnlocked: false,
@@ -150,7 +137,14 @@ IdleAnts.Managers.ResourceManager = class {
             6: IdleAnts.Data.FoodTypes.HOT_DOG,
             7: IdleAnts.Data.FoodTypes.WATERMELON,
             8: IdleAnts.Data.FoodTypes.DONUT,
-            9: IdleAnts.Data.FoodTypes.CAKE
+            9: IdleAnts.Data.FoodTypes.CAKE,
+            10: IdleAnts.Data.FoodTypes.CANDY_CANE,
+            11: IdleAnts.Data.FoodTypes.FRENCH_FRIES_NEW,
+            12: IdleAnts.Data.FoodTypes.CHICKEN_NUGGETS_NEW,
+            13: IdleAnts.Data.FoodTypes.BROWNIE,
+            14: IdleAnts.Data.FoodTypes.COTTON_CANDY,
+            15: IdleAnts.Data.FoodTypes.BANANA_POP,
+            16: IdleAnts.Data.FoodTypes.CUPCAKE
         };
         
         // Food collection rate tracking
@@ -317,16 +311,16 @@ IdleAnts.Managers.ResourceManager = class {
     updateAntCost() {
         const oldCost = this.stats.antCost;
         // Gentle incremental increase (≈15 %)
-        this.stats.antCost = Math.floor(this.stats.antCost * 1.15);
+        this.stats.antCost = Math.floor(this.stats.antCost * 1.1);
     }
     
     updateFoodUpgradeCost() {
         // Previously ×10 ‑ now ×2 for smoother progression
-        this.stats.foodUpgradeCost = Math.floor(this.stats.foodUpgradeCost * 2);
+        this.stats.foodUpgradeCost = Math.floor(this.stats.foodUpgradeCost * 1.15);
     }
     
     updateExpandCost() {
-        this.stats.expandCost = Math.floor(this.stats.expandCost * 1.3);
+        this.stats.expandCost = Math.floor(this.stats.expandCost * 1.15);
     }
     
     upgradeFoodMultiplier(amount) {
@@ -401,7 +395,7 @@ IdleAnts.Managers.ResourceManager = class {
     }
     
     updateSpeedUpgradeCost() {
-        this.stats.speedUpgradeCost = Math.floor(this.stats.speedUpgradeCost * 1.25);
+        this.stats.speedUpgradeCost = Math.floor(this.stats.speedUpgradeCost * 1.15);
     }
     
     upgradeSpeedMultiplier(amount) {
@@ -441,7 +435,7 @@ IdleAnts.Managers.ResourceManager = class {
             this.stats.flyingAnts++;
             this.stats.ants++;
             const oldCost = this.stats.flyingAntCost;
-            this.stats.flyingAntCost = Math.floor(this.stats.flyingAntCost * 1.25);
+            this.stats.flyingAntCost = Math.floor(this.stats.flyingAntCost * 1.15);
             this.updateFoodPerSecond();
             return true;
         }
@@ -451,7 +445,7 @@ IdleAnts.Managers.ResourceManager = class {
     
     // New strength-related methods
     updateStrengthUpgradeCost() {
-        this.stats.strengthUpgradeCost = Math.floor(this.stats.strengthUpgradeCost * 1.4);
+        this.stats.strengthUpgradeCost = Math.floor(this.stats.strengthUpgradeCost * 1.2);
     }
     
     upgradeStrengthMultiplier(amount) {
@@ -509,7 +503,7 @@ IdleAnts.Managers.ResourceManager = class {
     }
     
     updateAutofeederUpgradeCost() {
-        this.stats.autofeederUpgradeCost = Math.floor(this.stats.autofeederUpgradeCost * 1.3);
+        this.stats.autofeederUpgradeCost = Math.floor(this.stats.autofeederUpgradeCost * 1.15);
     }
     
     getAutofeederFoodAmount() {
@@ -518,7 +512,7 @@ IdleAnts.Managers.ResourceManager = class {
     }
     
     updateQueenUpgradeCost() {
-        this.stats.queenUpgradeCost = Math.floor(this.stats.queenUpgradeCost * 1.15);
+        this.stats.queenUpgradeCost = Math.floor(this.stats.queenUpgradeCost * 1.1);
     }
     
     // Queen ant methods
@@ -609,7 +603,7 @@ IdleAnts.Managers.ResourceManager = class {
     }
 
     updateCarAntCost() {
-        this.stats.carAntCost = Math.floor(this.stats.carAntCost * 1.25);
+        this.stats.carAntCost = Math.floor(this.stats.carAntCost * 1.15);
     }
 
 
@@ -646,7 +640,7 @@ IdleAnts.Managers.ResourceManager = class {
     }
 
     updateFireAntCost() {
-        this.stats.fireAntCost = Math.floor(this.stats.fireAntCost * 1.25);
+        this.stats.fireAntCost = Math.floor(this.stats.fireAntCost * 1.15);
     }
 
 
@@ -679,7 +673,7 @@ IdleAnts.Managers.ResourceManager = class {
             this.spendFood(this.stats.fatAntCost);
             this.stats.fatAnts++;
             this.stats.ants++;
-            this.stats.fatAntCost = Math.floor(this.stats.fatAntCost * 1.25);
+            this.stats.fatAntCost = Math.floor(this.stats.fatAntCost * 1.15);
             return true;
         }
         return false;
@@ -710,7 +704,7 @@ IdleAnts.Managers.ResourceManager = class {
             this.spendFood(this.stats.gasAntCost);
             this.stats.gasAnts++;
             this.stats.ants++;
-            this.stats.gasAntCost = Math.floor(this.stats.gasAntCost * 1.25);
+            this.stats.gasAntCost = Math.floor(this.stats.gasAntCost * 1.15);
             return true;
         }
         return false;
@@ -741,7 +735,7 @@ IdleAnts.Managers.ResourceManager = class {
             this.spendFood(this.stats.acidAntCost);
             this.stats.acidAnts++;
             this.stats.ants++;
-            this.stats.acidAntCost = Math.floor(this.stats.acidAntCost * 1.25);
+            this.stats.acidAntCost = Math.floor(this.stats.acidAntCost * 1.15);
             return true;
         }
         return false;
@@ -772,7 +766,7 @@ IdleAnts.Managers.ResourceManager = class {
             this.spendFood(this.stats.rainbowAntCost);
             this.stats.rainbowAnts++;
             this.stats.ants++;
-            this.stats.rainbowAntCost = Math.floor(this.stats.rainbowAntCost * 1.25);
+            this.stats.rainbowAntCost = Math.floor(this.stats.rainbowAntCost * 1.15);
             return true;
         }
         return false;
@@ -803,7 +797,7 @@ IdleAnts.Managers.ResourceManager = class {
             this.spendFood(this.stats.smokeAntCost);
             this.stats.smokeAnts++;
             this.stats.ants++;
-            this.stats.smokeAntCost = Math.floor(this.stats.smokeAntCost * 1.25);
+            this.stats.smokeAntCost = Math.floor(this.stats.smokeAntCost * 1.15);
             return true;
         }
         return false;
@@ -834,7 +828,7 @@ IdleAnts.Managers.ResourceManager = class {
             this.spendFood(this.stats.electricAntCost);
             this.stats.electricAnts++;
             this.stats.ants++;
-            this.stats.electricAntCost = Math.floor(this.stats.electricAntCost * 1.25);
+            this.stats.electricAntCost = Math.floor(this.stats.electricAntCost * 1.15);
             return true;
         }
         return false;
@@ -865,42 +859,12 @@ IdleAnts.Managers.ResourceManager = class {
             this.spendFood(this.stats.leafCutterAntCost);
             this.stats.leafCutterAnts++;
             this.stats.ants++;
-            this.stats.leafCutterAntCost = Math.floor(this.stats.leafCutterAntCost * 1.25);
+            this.stats.leafCutterAntCost = Math.floor(this.stats.leafCutterAntCost * 1.15);
             return true;
         }
         return false;
     }
 
-    // Door Ant Methods
-    canUnlockDoorAnts() {
-        return this.canAfford(this.stats.doorAntUnlockCost) && !this.stats.doorAntsUnlocked;
-    }
-
-    unlockDoorAnts() {
-        if (this.canUnlockDoorAnts()) {
-            this.spendFood(this.stats.doorAntUnlockCost);
-            this.stats.doorAntsUnlocked = true;
-            return true;
-        }
-        return false;
-    }
-
-    canBuyDoorAnt() {
-        return this.stats.doorAntsUnlocked && 
-               this.canAfford(this.stats.doorAntCost) && 
-               this.stats.ants < this.stats.maxAnts;
-    }
-
-    buyDoorAnt() {
-        if (this.canBuyDoorAnt()) {
-            this.spendFood(this.stats.doorAntCost);
-            this.stats.doorAnts++;
-            this.stats.ants++;
-            this.stats.doorAntCost = Math.floor(this.stats.doorAntCost * 1.25);
-            return true;
-        }
-        return false;
-    }
 
     // Banana Throwing Ant Methods
     canUnlockBananaThrowingAnts() {
@@ -927,7 +891,7 @@ IdleAnts.Managers.ResourceManager = class {
             this.spendFood(this.stats.bananaThrowingAntCost);
             this.stats.bananaThrowingAnts++;
             this.stats.ants++;
-            this.stats.bananaThrowingAntCost = Math.floor(this.stats.bananaThrowingAntCost * 1.25);
+            this.stats.bananaThrowingAntCost = Math.floor(this.stats.bananaThrowingAntCost * 1.15);
             return true;
         }
         return false;
@@ -958,7 +922,7 @@ IdleAnts.Managers.ResourceManager = class {
             this.spendFood(this.stats.juiceAntCost);
             this.stats.juiceAnts++;
             this.stats.ants++;
-            this.stats.juiceAntCost = Math.floor(this.stats.juiceAntCost * 1.25);
+            this.stats.juiceAntCost = Math.floor(this.stats.juiceAntCost * 1.15);
             return true;
         }
         return false;
@@ -989,73 +953,13 @@ IdleAnts.Managers.ResourceManager = class {
             this.spendFood(this.stats.crabAntCost);
             this.stats.crabAnts++;
             this.stats.ants++;
-            this.stats.crabAntCost = Math.floor(this.stats.crabAntCost * 1.25);
+            this.stats.crabAntCost = Math.floor(this.stats.crabAntCost * 1.15);
             return true;
         }
         return false;
     }
 
-    // Upside Down Ant Methods
-    canUnlockUpsideDownAnts() {
-        return this.canAfford(this.stats.upsideDownAntUnlockCost) && !this.stats.upsideDownAntsUnlocked;
-    }
 
-    unlockUpsideDownAnts() {
-        if (this.canUnlockUpsideDownAnts()) {
-            this.spendFood(this.stats.upsideDownAntUnlockCost);
-            this.stats.upsideDownAntsUnlocked = true;
-            return true;
-        }
-        return false;
-    }
-
-    canBuyUpsideDownAnt() {
-        return this.stats.upsideDownAntsUnlocked && 
-               this.canAfford(this.stats.upsideDownAntCost) && 
-               this.stats.ants < this.stats.maxAnts;
-    }
-
-    buyUpsideDownAnt() {
-        if (this.canBuyUpsideDownAnt()) {
-            this.spendFood(this.stats.upsideDownAntCost);
-            this.stats.upsideDownAnts++;
-            this.stats.ants++;
-            this.stats.upsideDownAntCost = Math.floor(this.stats.upsideDownAntCost * 1.25);
-            return true;
-        }
-        return false;
-    }
-
-    // DPS Ant Methods
-    canUnlockDpsAnts() {
-        return this.canAfford(this.stats.dpsAntUnlockCost) && !this.stats.dpsAntsUnlocked;
-    }
-
-    unlockDpsAnts() {
-        if (this.canUnlockDpsAnts()) {
-            this.spendFood(this.stats.dpsAntUnlockCost);
-            this.stats.dpsAntsUnlocked = true;
-            return true;
-        }
-        return false;
-    }
-
-    canBuyDpsAnt() {
-        return this.stats.dpsAntsUnlocked && 
-               this.canAfford(this.stats.dpsAntCost) && 
-               this.stats.ants < this.stats.maxAnts;
-    }
-
-    buyDpsAnt() {
-        if (this.canBuyDpsAnt()) {
-            this.spendFood(this.stats.dpsAntCost);
-            this.stats.dpsAnts++;
-            this.stats.ants++;
-            this.stats.dpsAntCost = Math.floor(this.stats.dpsAntCost * 1.25);
-            return true;
-        }
-        return false;
-    }
 
     // Spider Ant Methods
     canUnlockSpiderAnts() {
@@ -1082,7 +986,7 @@ IdleAnts.Managers.ResourceManager = class {
             this.spendFood(this.stats.spiderAntCost);
             this.stats.spiderAnts++;
             this.stats.ants++;
-            this.stats.spiderAntCost = Math.floor(this.stats.spiderAntCost * 1.25);
+            this.stats.spiderAntCost = Math.floor(this.stats.spiderAntCost * 1.15);
             return true;
         }
         return false;
@@ -1116,7 +1020,7 @@ IdleAnts.Managers.ResourceManager = class {
             strengthUpgradeCost: 150,
             strengthMultiplier: 1,
             foodTier: 1,
-            maxFoodTier: 9,
+            maxFoodTier: 16,
             autofeederUnlocked: false,
             autofeederLevel: 0,
             maxAutofeederLevel: 10,

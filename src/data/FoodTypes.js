@@ -375,6 +375,112 @@ IdleAnts.Data.FoodTypes = {
         glowColor: 0xFFFFE0,   // Light yellow glow
         glowAlpha: 0.5,
         description: 'Refreshing lemonade to quench thirst!'
+    },
+    
+    // === NEW FOOD TYPES ===
+    CUPCAKE: {
+        id: 'cupcake',
+        name: 'Cupcake',
+        value: 200,
+        weight: 5,
+        collectionTime: 3.5,
+        rarity: 6,
+        scale: {min: 1.4, max: 2.1},
+        color: 0xFFB6C1,       // Light pink
+        shadowColor: 0xDB7093, // Pale violet red shadow
+        glowColor: 0xFF69B4,   // Hot pink glow
+        glowAlpha: 0.6,
+        description: 'Sweet cupcakes with fluffy frosting!'
+    },
+    
+    BROWNIE: {
+        id: 'brownie',
+        name: 'Brownie',
+        value: 110,
+        weight: 4,
+        collectionTime: 2.8,
+        rarity: 5,
+        scale: {min: 1.3, max: 1.9},
+        color: 0x8B4513,       // Saddle brown
+        shadowColor: 0x654321, // Dark brown shadow
+        glowColor: 0xD2691E,   // Chocolate glow
+        glowAlpha: 0.5,
+        description: 'Rich, fudgy brownies that are irresistible!'
+    },
+    
+    CANDY_CANE: {
+        id: 'candyCane',
+        name: 'Candy Cane',
+        value: 60,
+        weight: 3,
+        collectionTime: 2.2,
+        rarity: 4,
+        scale: {min: 1.2, max: 1.8},
+        color: 0xFF0000,       // Red
+        shadowColor: 0x8B0000, // Dark red shadow
+        glowColor: 0xFFFFFF,   // White glow
+        glowAlpha: 0.5,
+        description: 'Striped candy canes perfect for the holidays!'
+    },
+    
+    COTTON_CANDY: {
+        id: 'cottonCandy',
+        name: 'Cotton Candy',
+        value: 135,
+        weight: 3,
+        collectionTime: 2.5,
+        rarity: 5,
+        scale: {min: 1.5, max: 2.2},
+        color: 0xFFB6C1,       // Light pink
+        shadowColor: 0xFF69B4, // Hot pink shadow
+        glowColor: 0xFFC0CB,   // Pink glow
+        glowAlpha: 0.6,
+        description: 'Fluffy cotton candy that melts in your mouth!'
+    },
+    
+    BANANA_POP: {
+        id: 'bananaPop',
+        name: 'Banana Pop',
+        value: 160,
+        weight: 4,
+        collectionTime: 3.0,
+        rarity: 6,
+        scale: {min: 1.4, max: 2.0},
+        color: 0xFFFF00,       // Yellow
+        shadowColor: 0xFFD700, // Gold shadow
+        glowColor: 0xFFFACD,   // Lemon chiffon glow
+        glowAlpha: 0.5,
+        description: 'Frozen banana pops covered in chocolate!'
+    },
+    
+    FRENCH_FRIES_NEW: {
+        id: 'frenchFriesNew',
+        name: 'French Fries',
+        value: 75,
+        weight: 3,
+        collectionTime: 2.0,
+        rarity: 4,
+        scale: {min: 1.1, max: 1.7},
+        color: 0xFFD700,       // Golden
+        shadowColor: 0xDAA520, // Goldenrod shadow
+        glowColor: 0xFFFACD,   // Lemon chiffon glow
+        glowAlpha: 0.4,
+        description: 'Crispy golden French fries, freshly made!'
+    },
+    
+    CHICKEN_NUGGETS_NEW: {
+        id: 'chickenNuggetsNew',
+        name: 'Chicken Nuggets',
+        value: 90,
+        weight: 4,
+        collectionTime: 2.3,
+        rarity: 4,
+        scale: {min: 1.2, max: 1.8},
+        color: 0xDEB887,       // Burlywood
+        shadowColor: 0xCD853F, // Peru shadow
+        glowColor: 0xF4A460,   // Sandy brown glow
+        glowAlpha: 0.4,
+        description: 'Perfectly crispy chicken nuggets!'
     }
 };
 

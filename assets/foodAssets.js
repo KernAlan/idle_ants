@@ -302,4 +302,209 @@
         
         return watermelonGraphics;
     });
+    
+    // Register cupcake food asset
+    AssetDefinition.register('cupcakeFood', function(app) {
+        const cupcakeGraphics = AssetDefinition.createGraphics();
+        
+        // Draw cupcake base (muffin)
+        cupcakeGraphics.beginFill(0xF5DEB3); // Wheat color
+        cupcakeGraphics.drawRoundedRect(-6, -2, 12, 10, 2);
+        cupcakeGraphics.endFill();
+        
+        // Draw frosting top
+        cupcakeGraphics.beginFill(0xFFB6C1); // Light pink frosting
+        cupcakeGraphics.drawRoundedRect(-7, -8, 14, 8, 3);
+        cupcakeGraphics.endFill();
+        
+        // Add frosting swirl
+        cupcakeGraphics.beginFill(0xFF69B4); // Hot pink swirl
+        cupcakeGraphics.drawCircle(0, -5, 2);
+        cupcakeGraphics.endFill();
+        
+        // Add cherry on top
+        cupcakeGraphics.beginFill(0xFF0000); // Red cherry
+        cupcakeGraphics.drawCircle(0, -9, 1.5);
+        cupcakeGraphics.endFill();
+        
+        return cupcakeGraphics;
+    });
+    
+    // Register brownie food asset
+    AssetDefinition.register('brownieFood', function(app) {
+        const brownieGraphics = AssetDefinition.createGraphics();
+        
+        // Draw brownie base
+        brownieGraphics.beginFill(0x8B4513); // Saddle brown
+        brownieGraphics.drawRoundedRect(-8, -6, 16, 12, 1);
+        brownieGraphics.endFill();
+        
+        // Add chocolate chips
+        brownieGraphics.beginFill(0x654321); // Darker brown
+        brownieGraphics.drawCircle(-3, -2, 1);
+        brownieGraphics.drawCircle(2, 0, 1.2);
+        brownieGraphics.drawCircle(-1, 2, 0.8);
+        brownieGraphics.drawCircle(4, -3, 1);
+        brownieGraphics.endFill();
+        
+        // Add surface texture
+        brownieGraphics.beginFill(0xD2691E, 0.3); // Chocolate highlight
+        brownieGraphics.drawRoundedRect(-6, -5, 12, 3, 1);
+        brownieGraphics.endFill();
+        
+        return brownieGraphics;
+    });
+    
+    // Register candy cane food asset
+    AssetDefinition.register('candyCaneFood', function(app) {
+        const candyCaneGraphics = AssetDefinition.createGraphics();
+        
+        // Draw candy cane base (white)
+        candyCaneGraphics.beginFill(0xFFFFFF); // White
+        candyCaneGraphics.drawRoundedRect(-2, -8, 4, 16, 2);
+        candyCaneGraphics.endFill();
+        
+        // Draw curved hook at top
+        candyCaneGraphics.beginFill(0xFFFFFF);
+        candyCaneGraphics.arc(-6, -6, 4, 0, Math.PI);
+        candyCaneGraphics.endFill();
+        
+        // Add red stripes
+        candyCaneGraphics.beginFill(0xFF0000); // Red stripes
+        for (let i = 0; i < 4; i++) {
+            const y = -6 + (i * 4);
+            candyCaneGraphics.drawRoundedRect(-2, y, 4, 1.5, 0.5);
+        }
+        // Hook stripes
+        candyCaneGraphics.drawEllipse(-8, -6, 1.5, 2);
+        candyCaneGraphics.drawEllipse(-4, -6, 1.5, 2);
+        candyCaneGraphics.endFill();
+        
+        return candyCaneGraphics;
+    });
+    
+    // Register cotton candy food asset
+    AssetDefinition.register('cottonCandyFood', function(app) {
+        const cottonCandyGraphics = AssetDefinition.createGraphics();
+        
+        // Draw stick
+        cottonCandyGraphics.beginFill(0xD2B48C); // Tan stick
+        cottonCandyGraphics.drawRect(-1, 0, 2, 12);
+        cottonCandyGraphics.endFill();
+        
+        // Draw cotton candy clouds
+        const cloudColors = [0xFFB6C1, 0xFFC0CB, 0xFF69B4]; // Pink variations
+        for (let i = 0; i < 5; i++) {
+            const color = cloudColors[i % cloudColors.length];
+            const angle = (i * Math.PI * 2) / 5;
+            const x = Math.cos(angle) * 6;
+            const y = Math.sin(angle) * 4 - 6;
+            
+            cottonCandyGraphics.beginFill(color, 0.8);
+            cottonCandyGraphics.drawCircle(x, y, 4 + Math.random() * 2);
+            cottonCandyGraphics.endFill();
+        }
+        
+        // Center cloud
+        cottonCandyGraphics.beginFill(0xFFB6C1, 0.9);
+        cottonCandyGraphics.drawCircle(0, -6, 5);
+        cottonCandyGraphics.endFill();
+        
+        return cottonCandyGraphics;
+    });
+    
+    // Register banana pop food asset
+    AssetDefinition.register('bananaPopFood', function(app) {
+        const bananaPopGraphics = AssetDefinition.createGraphics();
+        
+        // Draw stick
+        bananaPopGraphics.beginFill(0xD2B48C); // Tan stick
+        bananaPopGraphics.drawRect(-0.5, 6, 1, 8);
+        bananaPopGraphics.endFill();
+        
+        // Draw banana shape
+        bananaPopGraphics.beginFill(0xFFFF00); // Yellow banana
+        bananaPopGraphics.drawEllipse(0, 0, 5, 10);
+        bananaPopGraphics.endFill();
+        
+        // Add chocolate coating
+        bananaPopGraphics.beginFill(0x8B4513, 0.7); // Semi-transparent brown
+        bananaPopGraphics.drawEllipse(0, -2, 6, 8);
+        bananaPopGraphics.endFill();
+        
+        // Add chocolate drips
+        bananaPopGraphics.beginFill(0x654321); // Dark brown drips
+        bananaPopGraphics.drawCircle(-3, 4, 1.5);
+        bananaPopGraphics.drawCircle(2, 5, 1.2);
+        bananaPopGraphics.drawCircle(0, 6, 1);
+        bananaPopGraphics.endFill();
+        
+        return bananaPopGraphics;
+    });
+    
+    // Register French fries food asset
+    AssetDefinition.register('frenchFriesNewFood', function(app) {
+        const friesGraphics = AssetDefinition.createGraphics();
+        
+        // Draw individual fries
+        const friesPositions = [
+            {x: -4, y: -2, height: 12},
+            {x: -1, y: 0, height: 14},
+            {x: 2, y: -3, height: 13},
+            {x: 5, y: -1, height: 11}
+        ];
+        
+        friesPositions.forEach(fry => {
+            // Draw fry
+            friesGraphics.beginFill(0xFFD700); // Golden
+            friesGraphics.drawRoundedRect(fry.x - 0.8, fry.y, 1.6, fry.height, 0.8);
+            friesGraphics.endFill();
+            
+            // Add highlights
+            friesGraphics.beginFill(0xFFFACD, 0.6); // Light highlight
+            friesGraphics.drawRoundedRect(fry.x - 0.6, fry.y + 1, 0.4, fry.height - 2, 0.2);
+            friesGraphics.endFill();
+        });
+        
+        // Add container edge (optional)
+        friesGraphics.lineStyle(1, 0xDAA520, 0.8);
+        friesGraphics.drawRect(-6, 8, 12, 3);
+        friesGraphics.lineStyle(0);
+        
+        return friesGraphics;
+    });
+    
+    // Register chicken nuggets food asset
+    AssetDefinition.register('chickenNuggetsNewFood', function(app) {
+        const nuggetsGraphics = AssetDefinition.createGraphics();
+        
+        // Draw multiple nuggets
+        const nuggetPositions = [
+            {x: -4, y: -2, width: 6, height: 4},
+            {x: 2, y: 0, width: 5, height: 3.5},
+            {x: -1, y: 3, width: 4, height: 3}
+        ];
+        
+        nuggetPositions.forEach(nugget => {
+            // Draw nugget base
+            nuggetsGraphics.beginFill(0xDEB887); // Burlywood
+            nuggetsGraphics.drawRoundedRect(nugget.x - nugget.width/2, nugget.y - nugget.height/2, 
+                                          nugget.width, nugget.height, 1.5);
+            nuggetsGraphics.endFill();
+            
+            // Add crispy texture
+            nuggetsGraphics.beginFill(0xF4A460, 0.6); // Sandy brown highlight
+            nuggetsGraphics.drawRoundedRect(nugget.x - nugget.width/2 + 0.5, nugget.y - nugget.height/2 + 0.5,
+                                          nugget.width - 1, nugget.height/2, 0.5);
+            nuggetsGraphics.endFill();
+            
+            // Add some texture dots
+            nuggetsGraphics.beginFill(0xCD853F, 0.8); // Peru dots
+            nuggetsGraphics.drawCircle(nugget.x - 1, nugget.y, 0.5);
+            nuggetsGraphics.drawCircle(nugget.x + 1, nugget.y, 0.4);
+            nuggetsGraphics.endFill();
+        });
+        
+        return nuggetsGraphics;
+    });
 })(); 
