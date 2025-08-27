@@ -384,6 +384,11 @@ IdleAnts.Entities.Throwing.ThrowingAntBase = class extends IdleAnts.Entities.Ant
         // Preserve AntBase behavior (movement, state, and action signalling)
         const actionResult = super.update(nestPosition, foods);
 
+        // Tick throw wind-up animation so it completes and resets
+        if (typeof this.updateThrowingAnimation === 'function') {
+            this.updateThrowingAnimation();
+        }
+
         // Maintain archer behavior
         const target = this.findTarget();
         this.currentTarget = target || null;

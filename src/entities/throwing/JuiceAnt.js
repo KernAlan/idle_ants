@@ -159,41 +159,82 @@ IdleAnts.Entities.Throwing.JuiceAnt = class extends IdleAnts.Entities.Throwing.T
         }
     }
     
-    // Override to create juice projectile
+    // Override to create juice projectile (self-animated Graphics)
     createProjectile(target, dx, dy, distance) {
-        if (!IdleAnts.app || !IdleAnts.app.effectManager || this.juiceReserves < 10) return;
-        
+        if (!IdleAnts.app || !target || this.juiceReserves < 10) return;
+
         // Consume juice reserves
         this.juiceReserves -= 10;
-        
-        // Calculate projectile trajectory
+
         const angle = Math.atan2(dy, dx);
-        const speed = 7;
-        
-        // Create juice splash projectile
-        const projectile = IdleAnts.app.effectManager.createEffect(
-            'juiceSplash',
-            this.x,
-            this.y,
-            this.currentJuiceColor,
-            1.2,
-            {
-                target: target,
-                damage: this.attackDamage,
-                speed: speed,
-                angle: angle,
-                distance: distance,
-                splashRadius: this.juiceSplashRadius,
-                stickiness: this.juiceStickiness,
-                juiceColor: this.currentJuiceColor,
-                thrower: this
-            }
-        );
-        
-        // Create throwing animation
+        const kin = (typeof this.computeShotKinematics === 'function')
+            ? this.computeShotKinematics(distance)
+            : { speed: 9, gravity: 0.22, loft: 0.8, life: Math.max(24, Math.ceil(distance / 12) + 18) };
+
+        // Droplet projectile
+        const drop = new PIXI.Graphics();
+        drop.beginFill(this.currentJuiceColor, 0.95);
+        drop.drawEllipse(0, 0, 3.2, 4.8);
+        drop.endFill();
+
+        // Soft outline for contrast
+        const outline = new PIXI.Graphics();
+        outline.lineStyle(1, 0x2A1B10, 0.6);
+        outline.drawEllipse(0, 0, 3.4, 5.0);
+        outline.endFill?.();
+
+        const container = new PIXI.Container();
+        container.addChild(outline);
+        container.addChild(drop);
+        container.x = this.x; container.y = this.y;
+        container.rotation = angle;
+        container.vx = Math.cos(angle) * kin.speed;
+        container.vy = Math.sin(angle) * kin.speed - kin.loft;
+        container.life = Math.max(18, Math.min(240, kin.life));
+        container.damaged = false;
+        container.stuckApplied = false;
+
+        const parent = IdleAnts.app.worldContainer || IdleAnts.app.stage;
+        parent.addChild(container);
+
+        // Small nozzle stream effect for feedback
         this.createJuiceThrowEffect();
-        
-        return projectile;
+
+        const animate = () => {
+            container.x += container.vx;
+            container.y += container.vy;
+            container.vy += kin.gravity;
+            container.rotation = Math.atan2(container.vy, container.vx);
+            container.life--;
+
+            // Hit check
+            const hx = target.x - container.x;
+            const hy = target.y - container.y;
+            if (!container.damaged && (hx*hx + hy*hy) <= 12*12 && typeof target.takeDamage === 'function') {
+                target.takeDamage(this.attackDamage);
+                container.damaged = true;
+                // Apply stickiness slow
+                this.applyJuiceStickinessEffect(target);
+            }
+
+            if (container.life <= 0 || container.damaged) {
+                // Fade out quickly
+                const fade = () => {
+                    container.alpha -= 0.12;
+                    if (container.alpha <= 0) {
+                        if (container.parent) container.parent.removeChild(container);
+                    } else {
+                        requestAnimationFrame(fade);
+                    }
+                };
+                fade();
+            } else {
+                requestAnimationFrame(animate);
+            }
+        };
+        animate();
+
+        return container;
     }
     
     createJuiceThrowEffect() {

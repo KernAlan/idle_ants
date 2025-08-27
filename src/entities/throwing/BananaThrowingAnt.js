@@ -65,14 +65,7 @@ IdleAnts.Entities.Throwing.BananaThrowingAnt = class extends IdleAnts.Entities.T
         body.endFill();
         
         // Banana peels as decorative elements
-        body.beginFill(0xFFFF00, 0.8);
-        for (let i = 0; i < 3; i++) {
-            const angle = (i / 3) * Math.PI * 2;
-            const x = Math.cos(angle) * 8;
-            const y = Math.sin(angle) * 4 + 8;
-            body.drawEllipse(x, y, 1.5, 3);
-        }
-        body.endFill();
+        // Removed decorative peel ellipses near legs to avoid visual overlap
         
         this.addChild(body);
     }
@@ -255,36 +248,12 @@ IdleAnts.Entities.Throwing.BananaThrowingAnt = class extends IdleAnts.Entities.T
     
     // Keep it tidy: no random spawns; just legs + subtle glow
     performAnimation() {
-        this.animateLegs();
+        // Use standardized throwing-ant leg animation
+        super.animateLegs();
         this.updateBananaGlow();
     }
     
-    // Standard leg animation from AntBase
-    animateLegs() {
-        if (!this.legs || !this.legsContainer) return;
-        
-        this.legPhase = (this.legPhase || 0) + 0.25;
-        const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-        const animationRate = Math.max(0.1, speed * 0.35);
-
-        for (let i = 0; i < this.legs.length; i++) {
-            const leg = this.legs[i];
-            let phase = this.legPhase + (leg.index * Math.PI / 3);
-            if (leg.side === 'right') phase += Math.PI;
-
-            const legMovement = Math.sin(phase * animationRate) * 2;
-            leg.clear();
-            leg.lineStyle(1.5, 0x2A1B10);
-            leg.moveTo(0, 0);
-
-            const bendFactor = Math.max(0, -Math.sin(phase));
-            const midX = (leg.side === 'left' ? -4 : 4) - bendFactor * 2 * (leg.side === 'left' ? 1 : -1);
-            const midY = legMovement - 2 - bendFactor * 2;
-            const endX = (leg.side === 'left' ? -8 : 8);
-            leg.lineTo(midX, midY);
-            leg.lineTo(endX, -5 + legMovement);
-        }
-    }
+    // Use base leg animation for consistency
 
     createBananaScent() {
         // Enhanced banana aroma particles

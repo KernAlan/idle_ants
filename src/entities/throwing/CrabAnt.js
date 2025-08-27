@@ -116,7 +116,7 @@ IdleAnts.Entities.Throwing.CrabAnt = class extends IdleAnts.Entities.Throwing.Th
         body.endFill();
     }
     
-    // Override leg creation for crab legs
+    // Override leg creation for crab legs (positions only)
     createLegs() {
         this.legsContainer = new PIXI.Container();
         this.addChild(this.legsContainer);
@@ -149,7 +149,7 @@ IdleAnts.Entities.Throwing.CrabAnt = class extends IdleAnts.Entities.Throwing.Th
             this.legs.push(leg);
         }
         
-        // Crab leg animation
+        // Crab leg animation timing (used by base animateLegs)
         this.legPhase = Math.random() * Math.PI * 2;
         this.legAnimationSpeed = 0.15;
         
@@ -256,85 +256,101 @@ IdleAnts.Entities.Throwing.CrabAnt = class extends IdleAnts.Entities.Throwing.Th
         }
     }
     
-    // Override to use crab claw projectiles
+    // Override to use crab claw projectiles (self-animated Graphics)
     createProjectile(target, dx, dy, distance) {
-        if (!IdleAnts.app || !IdleAnts.app.effectManager || this.clawInventory.length === 0) return;
-        
+        if (!IdleAnts.app || !target || this.clawInventory.length === 0) return;
+
         // Use a claw from inventory
         const claw = this.clawInventory.pop();
-        
-        // Calculate trajectory with high accuracy
+
         const angle = Math.atan2(dy, dx);
-        
-        // Create claw projectile
-        const projectile = IdleAnts.app.effectManager.createEffect(
-            'clawProjectile',
-            this.x,
-            this.y,
-            this.antType.color,
-            1.0,
-            {
-                target: target,
-                damage: Math.floor(claw.damage * claw.sharpness),
-                speed: claw.speed,
-                angle: angle,
-                distance: distance,
-                sharpness: claw.sharpness,
-                thrower: this,
-                clawData: claw
-            }
-        );
-        
-        // Create claw throwing effect
+        const speed = Math.max(5, Math.min(12, claw.speed || 8));
+
+        // Visual claw projectile
+        const proj = new PIXI.Graphics();
+        proj.beginFill(0xDC143C, 0.95);
+        proj.drawEllipse(0, 0, 3, 2);
+        proj.endFill();
+        proj.beginFill(0xB22222);
+        proj.drawEllipse(-2, -1, 1, 1.5);
+        proj.drawEllipse(-2, 1, 1, 1.5);
+        proj.endFill();
+
+        const parent = IdleAnts.app.worldContainer || IdleAnts.app.stage;
+        parent.addChild(proj);
+
+        proj.x = this.x; proj.y = this.y;
+        proj.rotation = angle;
+        const vx = Math.cos(angle) * speed;
+        const vy = Math.sin(angle) * speed;
+        let life = Math.max(18, Math.ceil(distance / speed));
+        let damaged = false;
+
+        // Throw flash
         this.createClawThrowEffect(angle);
-        
-        return projectile;
+
+        const dmgAmount = Math.floor((claw.damage || this.attackDamage) * (claw.sharpness || 1));
+
+        const animate = () => {
+            proj.x += vx;
+            proj.y += vy;
+            proj.rotation += 0.3;
+            life--;
+
+            // Hit check
+            const hx = target.x - proj.x;
+            const hy = target.y - proj.y;
+            if (!damaged && (hx*hx + hy*hy) <= 10*10 && typeof target.takeDamage === 'function') {
+                target.takeDamage(dmgAmount);
+                damaged = true;
+            }
+
+            if (life <= 0 || damaged) {
+                const fade = () => {
+                    proj.alpha -= 0.15;
+                    if (proj.alpha <= 0) {
+                        if (proj.parent) proj.parent.removeChild(proj);
+                    } else {
+                        requestAnimationFrame(fade);
+                    }
+                };
+                fade();
+            } else {
+                requestAnimationFrame(animate);
+            }
+        };
+        animate();
+
+        return proj;
     }
     
     createClawThrowEffect(angle) {
-        // Create visual claw projectile
-        const clawProjectile = new PIXI.Graphics();
-        
-        // Draw flying claw
-        clawProjectile.beginFill(0xDC143C, 0.9);
-        clawProjectile.drawEllipse(0, 0, 3, 2);
-        clawProjectile.endFill();
-        
-        // Claw pincers
-        clawProjectile.beginFill(0xB22222);
-        clawProjectile.drawEllipse(-2, -1, 1, 1.5);
-        clawProjectile.drawEllipse(-2, 1, 1, 1.5);
-        clawProjectile.endFill();
-        
-        clawProjectile.x = this.x;
-        clawProjectile.y = this.y;
-        clawProjectile.rotation = angle;
-        
-        // Animate claw flight
-        if (IdleAnts.app && IdleAnts.app.stage) {
-            IdleAnts.app.stage.addChild(clawProjectile);
-            
-            const speed = 6;
-            const vx = Math.cos(angle) * speed;
-            const vy = Math.sin(angle) * speed;
-            let life = 30;
-            
-            const animateClaw = () => {
-                clawProjectile.x += vx;
-                clawProjectile.y += vy;
-                clawProjectile.rotation += 0.3; // Spinning claw
-                life--;
-                
-                if (life <= 0) {
-                    if (clawProjectile.parent) {
-                        clawProjectile.parent.removeChild(clawProjectile);
-                    }
-                } else {
-                    requestAnimationFrame(animateClaw);
-                }
-            };
-            animateClaw();
-        }
+        // Quick muzzle flash at the claw to signal throw
+        const flash = new PIXI.Graphics();
+        flash.lineStyle(2, 0xFFFFFF, 0.9);
+        flash.moveTo(0, 0);
+        flash.lineTo(8, 0);
+        flash.moveTo(0, 0);
+        flash.lineTo(-6, 0);
+        flash.x = this.x;
+        flash.y = this.y;
+        flash.rotation = angle;
+        flash.alpha = 0.9;
+
+        const parent = IdleAnts.app.worldContainer || IdleAnts.app.stage;
+        parent.addChild(flash);
+
+        let life = 8;
+        const animate = () => {
+            life--;
+            flash.alpha = life / 8;
+            if (life <= 0) {
+                if (flash.parent) flash.parent.removeChild(flash);
+            } else {
+                requestAnimationFrame(animate);
+            }
+        };
+        animate();
     }
     
     // Override to enter threatening pose when enemies near
@@ -352,40 +368,7 @@ IdleAnts.Entities.Throwing.CrabAnt = class extends IdleAnts.Entities.Throwing.Th
         return target;
     }
     
-    // Override leg animation for crab walk
-    animateLegs() {
-        if (!this.legs) return;
-        
-        this.legPhase += this.legAnimationSpeed;
-        
-        for (let i = 0; i < this.legs.length; i++) {
-            const leg = this.legs[i];
-            
-            // Crab legs move in wave pattern
-            let phase = this.legPhase + (leg.index * Math.PI / 4);
-            if (leg.side === 'right') {
-                phase += Math.PI / 2; // Offset right legs
-            }
-            
-            const legMovement = Math.sin(phase) * 1.5;
-            
-            // Use standard leg drawing
-            
-            // Add movement animation
-            const legLength = 5 + (leg.index * 0.5);
-            const bendFactor = Math.max(0, -Math.sin(phase)) * 0.5;
-            
-            if (leg.side === 'left') {
-                const endX = -legLength + legMovement;
-                const endY = -1 + bendFactor;
-                leg.lineTo(endX - 2, 1 + bendFactor);
-            } else {
-                const endX = legLength - legMovement;
-                const endY = -1 + bendFactor;
-                leg.lineTo(endX + 2, 1 + bendFactor);
-            }
-        }
-    }
+    // Use base leg animation for consistent rendering
     
     // Override to prevent attacking when out of claws
     attemptAttack() {
