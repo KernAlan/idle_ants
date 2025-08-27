@@ -26,12 +26,9 @@ IdleAnts.Managers.EntityManager = class {
             smokeAnts: new PIXI.Container(),
             electricAnts: new PIXI.Container(),
             leafCutterAnts: new PIXI.Container(),
-            doorAnts: new PIXI.Container(),
             bananaThrowingAnts: new PIXI.Container(),
             juiceAnts: new PIXI.Container(),
             crabAnts: new PIXI.Container(),
-            upsideDownAnts: new PIXI.Container(),
-            dpsAnts: new PIXI.Container(),
             spiderAnts: new PIXI.Container(),
         };
         
@@ -53,12 +50,9 @@ IdleAnts.Managers.EntityManager = class {
         this.worldContainer.addChild(this.entitiesContainers.smokeAnts);
         this.worldContainer.addChild(this.entitiesContainers.electricAnts);
         this.worldContainer.addChild(this.entitiesContainers.leafCutterAnts);
-        this.worldContainer.addChild(this.entitiesContainers.doorAnts);
         this.worldContainer.addChild(this.entitiesContainers.bananaThrowingAnts);
         this.worldContainer.addChild(this.entitiesContainers.juiceAnts);
         this.worldContainer.addChild(this.entitiesContainers.crabAnts);
-        this.worldContainer.addChild(this.entitiesContainers.upsideDownAnts);
-        this.worldContainer.addChild(this.entitiesContainers.dpsAnts);
         this.worldContainer.addChild(this.entitiesContainers.spiderAnts);
         
         // Entity collections
@@ -79,12 +73,9 @@ IdleAnts.Managers.EntityManager = class {
             smokeAnts: [],
             electricAnts: [],
             leafCutterAnts: [],
-            doorAnts: [],
             bananaThrowingAnts: [],
             juiceAnts: [],
             crabAnts: [],
-            upsideDownAnts: [],
-            dpsAnts: [],
             spiderAnts: [],
         };
         
@@ -465,25 +456,6 @@ IdleAnts.Managers.EntityManager = class {
         }
     }
 
-    createDoorAnt() {
-        if (!this.nestPosition) {
-            console.error("EntityManager: Nest position not available to create Door Ant.");
-            return;
-        }
-        const ant = IdleAnts.Entities.createAntByType('doorAnt', PIXI.Texture.EMPTY, this.nestPosition, this.resourceManager.stats.speedMultiplier);
-        if (!ant) return;
-        
-        ant.x = this.nestPosition.x;
-        ant.y = this.nestPosition.y;
-        ant.capacity = this.resourceManager.stats.strengthMultiplier;
-        
-        this.entitiesContainers.doorAnts.addChild(ant);
-        this.entities.doorAnts.push(ant);
-        
-        if (this.effectManager) {
-            this.effectManager.createSpawnEffect(ant.x, ant.y, false, { R: 139, G: 69, B: 19 });
-        }
-    }
 
     createBananaThrowingAnt() {
         if (!this.nestPosition) {
@@ -545,45 +517,7 @@ IdleAnts.Managers.EntityManager = class {
         }
     }
 
-    createUpsideDownAnt() {
-        if (!this.nestPosition) {
-            console.error("EntityManager: Nest position not available to create Upside Down Ant.");
-            return;
-        }
-        const ant = IdleAnts.Entities.createAntByType('upsideDownAnt', PIXI.Texture.EMPTY, this.nestPosition, this.resourceManager.stats.speedMultiplier);
-        if (!ant) return;
-        
-        ant.x = this.nestPosition.x;
-        ant.y = this.nestPosition.y;
-        ant.capacity = this.resourceManager.stats.strengthMultiplier;
-        
-        this.entitiesContainers.upsideDownAnts.addChild(ant);
-        this.entities.upsideDownAnts.push(ant);
-        
-        if (this.effectManager) {
-            this.effectManager.createSpawnEffect(ant.x, ant.y, false, { R: 138, G: 43, B: 226 });
-        }
-    }
 
-    createDpsAnt() {
-        if (!this.nestPosition) {
-            console.error("EntityManager: Nest position not available to create DPS Ant.");
-            return;
-        }
-        const ant = IdleAnts.Entities.createAntByType('dpsAnt', PIXI.Texture.EMPTY, this.nestPosition, this.resourceManager.stats.speedMultiplier);
-        if (!ant) return;
-        
-        ant.x = this.nestPosition.x;
-        ant.y = this.nestPosition.y;
-        ant.capacity = this.resourceManager.stats.strengthMultiplier;
-        
-        this.entitiesContainers.dpsAnts.addChild(ant);
-        this.entities.dpsAnts.push(ant);
-        
-        if (this.effectManager) {
-            this.effectManager.createSpawnEffect(ant.x, ant.y, false, { R: 255, G: 0, B: 0 });
-        }
-    }
 
     createSpiderAnt() {
         if (!this.nestPosition) {
@@ -726,7 +660,6 @@ IdleAnts.Managers.EntityManager = class {
         // Leaf Cutter ants: same pathing as others (no enemy pursuit)
         this.updateAntEntities(this.entities.leafCutterAnts, shouldCreateTrail, false, /*pursueEnemies=*/false);
         // Door ants: same pathing as others (no enemy pursuit)
-        this.updateAntEntities(this.entities.doorAnts, shouldCreateTrail, false, /*pursueEnemies=*/false);
 
         // Throwing ants
         // Archer-like: Banana Throwers handle kiting themselves (no manager pursuit)
@@ -735,8 +668,6 @@ IdleAnts.Managers.EntityManager = class {
         this.updateAntEntities(this.entities.crabAnts, shouldCreateTrail, false);
 
         // Special ants
-        this.updateAntEntities(this.entities.upsideDownAnts, shouldCreateTrail, false);
-        this.updateAntEntities(this.entities.dpsAnts, shouldCreateTrail, false);
         this.updateAntEntities(this.entities.spiderAnts, shouldCreateTrail, false);
 
         // Other
@@ -1498,12 +1429,9 @@ IdleAnts.Managers.EntityManager = class {
                 ...this.entities.smokeAnts,
                 ...this.entities.electricAnts,
                 ...this.entities.leafCutterAnts,
-                ...this.entities.doorAnts,
                 ...this.entities.bananaThrowingAnts,
                 ...this.entities.juiceAnts,
                 ...this.entities.crabAnts,
-                ...this.entities.upsideDownAnts,
-                ...this.entities.dpsAnts,
                 ...this.entities.spiderAnts,
             ];
             this.boss.update(ants);

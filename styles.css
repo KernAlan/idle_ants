@@ -384,68 +384,61 @@ canvas {
 /* Mobile-specific UI improvements */
 @media (max-width: 768px) {
     #ui-container {
-        padding: 2px 3px;
-        max-height: 30vh;
+        padding: 6px 10px;
+        max-height: 34vh;
+        width: 100%;
+        max-width: 100%;
+        border-radius: 0 0 12px 12px;
+        box-sizing: border-box;
     }
-    
+
     #resources {
-        gap: 3px;
-        margin-bottom: 1px;
-        padding: 0 2px;
+        gap: 6px;
+        margin-bottom: 4px;
+        padding: 0 6px;
+        font-size: 12px;
     }
-    
+
     #food, #ants, #flying-ant-stats {
-        padding: 1px 3px;
-        font-size: 10px;
+        padding: 4px 8px;
+        font-size: 12px;
+        border-radius: 12px;
+    }
+
+    #food-rate {
+        padding: 4px 8px;
+        font-size: 12px;
+        line-height: 1.2;
         border-radius: 10px;
     }
-    
-    #food-rate {
-        padding: 1px 3px;
-        font-size: 9px;
-        line-height: 1.1;
-        border-radius: 8px;
-    }
-    
-    #food-rate div {
-        margin: 0;
-    }
-    
+
+    #food-rate div { margin: 0; }
+
     #upgrades {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-        gap: 3px;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 6px;
         width: 100%;
     }
-    
-    .upgrade-section {
-        min-width: 90px;
-        margin: 0;
-    }
-    
-    .upgrade-section h3 {
-        font-size: 10px;
-        margin: 2px 0;
-        text-align: center;
-    }
-    
+
+    .upgrade-section { min-width: 120px; margin: 0; }
+    .upgrade-section h3 { font-size: 12px; margin: 4px 0; text-align: center; }
+
     .upgrade-btn {
-        min-width: 85px;
-        font-size: 9px;
-        padding: 2px;
-        margin: 2px 0;
-        height: 36px; /* Reduced from 44px */
+        min-width: 110px;
+        font-size: 12px;
+        padding: 6px 8px;
+        margin: 4px 0;
+        min-height: 44px;
         display: flex;
-        flex-direction: row; /* Changed from column to row */
+        flex-direction: row;
         align-items: center;
         justify-content: center;
-        white-space: nowrap; /* Prevent text wrapping */
+        white-space: nowrap;
     }
-    
-    .upgrade-btn i {
-        margin-bottom: 2px;
-    }
-    
+
+    .upgrade-btn i { margin-bottom: 0; font-size: 14px; }
+
     /* Make UI toggle more visible */
     #ui-toggle {
         width: 44px;
@@ -454,77 +447,44 @@ canvas {
         background: rgba(0, 0, 0, 0.7);
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
     }
-    
-    /* Make the collapsed UI even more compact */
-    .ui-collapsed #ui-container {
-        max-height: 22px;
-    }
-    
-    /* Make game canvas take more space when UI is collapsed */
-    .ui-collapsed #game-canvas-container {
-        height: calc(100vh - 22px);
-    }
 }
 
-/* For phones - Ultra condensed UI to maximize game space */
+/* For phones - prioritize readability/tap targets */
 @media (max-width: 480px) {
     #ui-container {
-        padding: 1px 2px;
-        max-height: 12vh; /* Even smaller for phones - just 12% of screen */
-        border-radius: 0 0 6px 6px;
+        padding: 8px 10px;
+        max-height: 40vh;
+        border-radius: 0 0 10px 10px;
     }
-    
-    #game-title {
-        font-size: 8px; /* Tiny title */
-        min-width: auto;
-        margin-right: 2px;
-        gap: 1px;
-    }
-    
-    #resources {
-        font-size: 8px; /* Very small resource text */
-        gap: 1px;
-    }
-    
-    #food, #ants, #flying-ant-stats {
-        padding: 0px 2px; /* Minimal padding */
-        font-size: 8px;
-        border-radius: 4px;
-        margin: 0px;
-    }
-    
-    #food-rate {
-        padding: 0px 2px;
-        font-size: 7px; /* Tiny rate display */
-        border-radius: 4px;
-    }
-    
+
+    #game-title { font-size: 12px; min-width: auto; margin-right: 4px; gap: 2px; }
+
+    #resources { font-size: 13px; gap: 4px; }
+
+    #food, #ants, #flying-ant-stats { padding: 6px 8px; font-size: 13px; border-radius: 10px; margin: 0; }
+    #food-rate { padding: 6px 8px; font-size: 13px; border-radius: 10px; }
+
+    /* Bottom sticky action bar */
     #action-bar {
-        gap: 1px; /* Minimal gaps between buttons */
-        margin: 1px 0;
+        position: fixed;
+        left: 0; right: 0; bottom: 0;
+        padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0));
+        background: linear-gradient(135deg, rgba(255,107,107,0.95) 0%, rgba(78,205,196,0.95) 50%, rgba(69,183,209,0.95) 100%);
+        backdrop-filter: blur(2px);
+        z-index: 1000;
+        gap: 6px;
+        justify-content: space-around;
     }
-    
+
     .action-btn {
-        min-width: 38px; /* Very small buttons for phones */
-        height: 28px; /* Compact height */
-        font-size: 7px; /* Tiny text */
-        padding: 1px;
-        border-radius: 6px;
+        min-width: 64px;
+        height: 48px;
+        font-size: 12px;
+        padding: 6px;
+        border-radius: 10px;
     }
-    
-    .action-btn i {
-        font-size: 10px; /* Small icons */
-        margin-bottom: 0px;
-    }
-    
-    /* Make collapsed state even more minimal on phones */
-    .ui-collapsed #ui-container {
-        max-height: 18px; /* Tiny collapsed state */
-    }
-    
-    .ui-collapsed #game-canvas-container {
-        height: calc(100vh - 18px);
-    }
+
+    .action-btn i { font-size: 16px; margin-bottom: 2px; }
 }
 
 /* Ultra-condensed mode for phones */
@@ -1037,19 +997,10 @@ button.modal-btn:disabled:hover {
     text-align: center;
 }
 
-/* Mobile Modal Adjustments - Ultra condensed */
+/* Mobile Modal Adjustments */
 @media (max-width: 768px) {
-    .action-btn {
-        min-width: 52px; /* Increased from 45px for better mobile tapping */
-        height: 38px; /* Increased from 32px for better usability */
-        font-size: 9px; /* Slightly larger text */
-        padding: 3px; /* More padding for better touch targets */
-    }
-    
-    .action-btn i {
-        font-size: 12px; /* Smaller icons */
-        margin-bottom: 1px;
-    }
+    .action-btn { min-width: 64px; height: 48px; font-size: 12px; padding: 6px; }
+    .action-btn i { font-size: 16px; margin-bottom: 2px; }
     
     .modal-backdrop {
         position: fixed !important;
@@ -1067,9 +1018,9 @@ button.modal-btn:disabled:hover {
     }
     
     .modal-container {
-        padding: 15px !important;
+        padding: 16px !important;
         margin: 0 !important;
-        border-radius: 15px !important;
+        border-radius: 16px !important;
         width: 100% !important;
         height: 100% !important;
         max-height: 100% !important;
@@ -1087,7 +1038,7 @@ button.modal-btn:disabled:hover {
     }
     
     .modal-title {
-        font-size: 18px !important;
+        font-size: 20px !important;
         text-align: center !important;
         margin-bottom: 0 !important;
     }
@@ -1109,9 +1060,9 @@ button.modal-btn:disabled:hover {
     }
     
     .modal-btn {
-        font-size: 14px !important;
-        padding: 12px 8px !important;
-        min-height: 48px !important;
+        font-size: 16px !important;
+        padding: 14px 10px !important;
+        min-height: 52px !important;
         border-radius: 10px !important;
         width: 100% !important;
         box-sizing: border-box !important;

@@ -1401,13 +1401,9 @@ IdleAnts.Game = class {
     adjustSettingsForMobile() {
         // Adjust game settings for better mobile experience
         
-        // Add condensed class for ultra-small phones but keep UI expanded
-        if (window.innerWidth <= 480) {
-            // Add condensed class for ultra-small phones
-            document.body.classList.add('phone-condensed');
-            
-            // UI now stays expanded by default on mobile for better accessibility
-        }
+        // Do NOT auto-condense the UI on phones. Prioritize readability/tap targets.
+        // Previously added 'phone-condensed' made controls too small on real devices.
+        // If needed later, this can be opt-in via a settings toggle.
         
         // Store mobile detection for title screen usage
         this.isMobile = window.innerWidth <= 768;
@@ -1803,25 +1799,6 @@ IdleAnts.Game = class {
         return false;
     }
 
-    // Door Ant Methods
-    unlockDoorAnts() {
-        if (this.resourceManager.unlockDoorAnts()) {
-            this.uiManager.updateUI();
-            this.uiManager.showUpgradeEffect('unlock-door-ants', 'Door Ants Unlocked!');
-            return true;
-        }
-        return false;
-    }
-
-    buyDoorAnt() {
-        if (this.resourceManager.buyDoorAnt()) {
-            this.entityManager.createDoorAnt();
-            this.uiManager.updateUI();
-            this.uiManager.showUpgradeEffect('buy-door-ant', 'Door Ant added!');
-            return true;
-        }
-        return false;
-    }
 
     // Banana Throwing Ant Methods
     unlockBananaThrowingAnts() {
@@ -1883,45 +1860,7 @@ IdleAnts.Game = class {
         return false;
     }
 
-    // Upside Down Ant Methods
-    unlockUpsideDownAnts() {
-        if (this.resourceManager.unlockUpsideDownAnts()) {
-            this.uiManager.updateUI();
-            this.uiManager.showUpgradeEffect('unlock-upside-down-ants', 'Upside Down Ants Unlocked!');
-            return true;
-        }
-        return false;
-    }
 
-    buyUpsideDownAnt() {
-        if (this.resourceManager.buyUpsideDownAnt()) {
-            this.entityManager.createUpsideDownAnt();
-            this.uiManager.updateUI();
-            this.uiManager.showUpgradeEffect('buy-upside-down-ant', 'Upside Down Ant added!');
-            return true;
-        }
-        return false;
-    }
-
-    // DPS Ant Methods
-    unlockDpsAnts() {
-        if (this.resourceManager.unlockDpsAnts()) {
-            this.uiManager.updateUI();
-            this.uiManager.showUpgradeEffect('unlock-dps-ants', 'DPS Ants Unlocked!');
-            return true;
-        }
-        return false;
-    }
-
-    buyDpsAnt() {
-        if (this.resourceManager.buyDpsAnt()) {
-            this.entityManager.createDpsAnt();
-            this.uiManager.updateUI();
-            this.uiManager.showUpgradeEffect('buy-dps-ant', 'DPS Ant added!');
-            return true;
-        }
-        return false;
-    }
 
     // Spider Ant Methods
     unlockSpiderAnts() {

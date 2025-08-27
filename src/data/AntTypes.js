@@ -122,20 +122,6 @@ IdleAnts.Data.AntTypes = {
         description: 'Explodes in a shower of sharp leaves'
     },
     
-    DOOR_ANT: {
-        id: 'doorAnt',
-        name: 'Door Ant',
-        category: 'exploding',
-        cost: 9000,
-        damage: 570,
-        hp: 10,
-        speed: 0.8,
-        color: 0x8B4513, // Saddle brown
-        glowColor: 0xD2691E,
-        effect: 'doorSlam',
-        explosionRadius: 60,
-        description: 'Slams shut like a door, crushing nearby enemies'
-    },
     
     // Throwing Ants - Ranged attackers with projectiles
     BANANA_THROWING_ANT: {
@@ -184,34 +170,7 @@ IdleAnts.Data.AntTypes = {
     },
     
     // Special Ants - Unique mechanics and abilities
-    UPSIDE_DOWN_ANT: {
-        id: 'upsideDownAnt',
-        name: 'Upside Down Ant',
-        category: 'special',
-        cost: 5000,
-        damage: 65,
-        hp: 5,
-        speed: 1.5,
-        color: 0x9370DB, // Medium slate blue
-        glowColor: 0xDDA0DD,
-        ability: 'ceilingWalk',
-        description: 'Walks on the ceiling, confusing enemies below'
-    },
     
-    DPS_ANT: {
-        id: 'dpsAnt',
-        name: 'DPS Ant',
-        category: 'special',
-        cost: 8000,
-        damage: 370,
-        hp: 5,
-        speed: 3.0,
-        attackSpeed: 5.0, // Attacks 5x faster
-        color: 0xFF1493, // Deep pink
-        glowColor: 0xFF69B4,
-        ability: 'rapidFire',
-        description: 'Ultra-fast attacks with devastating damage per second'
-    },
     
     SPIDER_ANT: {
         id: 'spiderAnt',

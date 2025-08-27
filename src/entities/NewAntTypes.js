@@ -17,7 +17,6 @@ IdleAnts.Entities.NewAntRegistry = {
     SmokeAnt: IdleAnts.Entities.Exploding?.SmokeAnt,
     ElectricAnt: IdleAnts.Entities.Exploding?.ElectricAnt,
     LeafCutterAnt: IdleAnts.Entities.Exploding?.LeafCutterAnt,
-    DoorAnt: IdleAnts.Entities.Exploding?.DoorAnt,
     
     // Throwing Ants
     BananaThrowingAnt: IdleAnts.Entities.Throwing?.BananaThrowingAnt,
@@ -25,8 +24,6 @@ IdleAnts.Entities.NewAntRegistry = {
     CrabAnt: IdleAnts.Entities.Throwing?.CrabAnt,
     
     // Special Ants
-    UpsideDownAnt: IdleAnts.Entities.Special?.UpsideDownAnt,
-    DPSAnt: IdleAnts.Entities.Special?.DPSAnt,
     SpiderAnt: IdleAnts.Entities.Special?.SpiderAnt,
     
     // Other
@@ -44,12 +41,9 @@ IdleAnts.Entities.createAntByType = function(antTypeId, texture, nestPosition, s
         'fireAntExplosive': IdleAnts.Entities.Exploding?.ElectricAnt, // Using Electric for Fire explosive
         'electricAnt': IdleAnts.Entities.Exploding?.ElectricAnt,
         'leafCutterAnt': IdleAnts.Entities.Exploding?.LeafCutterAnt,
-        'doorAnt': IdleAnts.Entities.Exploding?.DoorAnt,
         'bananaThrowingAnt': IdleAnts.Entities.Throwing?.BananaThrowingAnt,
         'juiceAnt': IdleAnts.Entities.Throwing?.JuiceAnt,
         'crabAnt': IdleAnts.Entities.Throwing?.CrabAnt,
-        'upsideDownAnt': IdleAnts.Entities.Special?.UpsideDownAnt,
-        'dpsAnt': IdleAnts.Entities.Special?.DPSAnt,
         'spiderAnt': IdleAnts.Entities.Special?.SpiderAnt,
     };
     

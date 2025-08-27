@@ -621,14 +621,11 @@ C:\Users\kerna\source\repos\idle_ants\src\entities\RainbowAnt.js
 C:\Users\kerna\source\repos\idle_ants\src\entities\TarantulaBoss.js
 C:\Users\kerna\source\repos\idle_ants\src\entities\Trail.js
 C:\Users\kerna\source\repos\idle_ants\src\entities\WoollyBearEnemy.js
-C:\Users\kerna\source\repos\idle_ants\src\entities\exploding\DoorAnt.js
 C:\Users\kerna\source\repos\idle_ants\src\entities\exploding\ElectricAnt.js
 C:\Users\kerna\source\repos\idle_ants\src\entities\exploding\ExplodingAntBase.js
 C:\Users\kerna\source\repos\idle_ants\src\entities\exploding\LeafCutterAnt.js
 C:\Users\kerna\source\repos\idle_ants\src\entities\exploding\SmokeAnt.js
-C:\Users\kerna\source\repos\idle_ants\src\entities\special\DPSAnt.js
 C:\Users\kerna\source\repos\idle_ants\src\entities\special\SpiderAnt.js
-C:\Users\kerna\source\repos\idle_ants\src\entities\special\UpsideDownAnt.js
 C:\Users\kerna\source\repos\idle_ants\src\entities\throwing\BananaThrowingAnt.js
 C:\Users\kerna\source\repos\idle_ants\src\entities\throwing\CrabAnt.js
 C:\Users\kerna\source\repos\idle_ants\src\entities\throwing\JuiceAnt.js

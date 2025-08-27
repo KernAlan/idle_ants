@@ -209,14 +209,6 @@
                                 <span id="modal-banana-throwing-ant-cost">60000</span>
                             </button>
                             
-                            <button id="modal-unlock-dps-ants" class="modal-btn">
-                                <span><i class="fas fa-crosshairs"></i>Unlock DPS Ants</span>
-                                <span id="modal-dps-ant-unlock-cost">6000</span>
-                            </button>
-                            <button id="modal-buy-dps-ant" class="modal-btn hidden">
-                                <span><i class="fas fa-plus"></i>Buy DPS Ant</span>
-                                <span id="modal-dps-ant-cost">63</span>
-                            </button>
                             <!-- Newly added special ants in modal -->
                             <button id="modal-unlock-acid-ants" class="modal-btn">
                                 <span><i class="fas fa-flask"></i>Unlock Acid Ants</span>
@@ -250,14 +242,6 @@
                                 <span><i class="fas fa-plus"></i>Buy Leaf Cutter Ant</span>
                                 <span id="modal-leaf-cutter-ant-cost">8000</span>
                             </button>
-                            <button id="modal-unlock-door-ants" class="modal-btn">
-                                <span><i class="fas fa-door-closed"></i>Unlock Door Ants</span>
-                                <span id="modal-door-ant-unlock-cost">7000</span>
-                            </button>
-                            <button id="modal-buy-door-ant" class="modal-btn hidden">
-                                <span><i class="fas fa-plus"></i>Buy Door Ant</span>
-                                <span id="modal-door-ant-cost">9000</span>
-                            </button>
                             <button id="modal-unlock-juice-ants" class="modal-btn">
                                 <span><i class="fas fa-wine-bottle"></i>Unlock Juice Ants</span>
                                 <span id="modal-juice-ant-unlock-cost">9000</span>
@@ -273,14 +257,6 @@
                             <button id="modal-buy-crab-ant" class="modal-btn hidden">
                                 <span><i class="fas fa-plus"></i>Buy Crab Ant</span>
                                 <span id="modal-crab-ant-cost">40000</span>
-                            </button>
-                            <button id="modal-unlock-upside-down-ants" class="modal-btn">
-                                <span><i class="fas fa-level-up-alt"></i>Unlock Upside Down Ants</span>
-                                <span id="modal-upside-down-ant-unlock-cost">4000</span>
-                            </button>
-                            <button id="modal-buy-upside-down-ant" class="modal-btn hidden">
-                                <span><i class="fas fa-plus"></i>Buy Upside Down Ant</span>
-                                <span id="modal-upside-down-ant-cost">50000</span>
                             </button>
                             <button id="modal-unlock-spider-ants" class="modal-btn">
                                 <span><i class="fas fa-spider"></i>Unlock Spider Ants</span>
@@ -447,9 +423,6 @@
                     <button id="unlock-banana-throwing-ants" class="upgrade-btn special-btn"><i class="fas fa-apple-alt"></i>Unlock Banana Throwing Ant (<span id="banana-throwing-ant-unlock-cost">12000</span>)</button>
                     <button id="buy-banana-throwing-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Buy Banana Throwing Ant (<span id="banana-throwing-ant-cost">15000</span>)</button>
 
-                     <!-- DPS Ant (Special) -->
-                     <button id="unlock-dps-ants" class="upgrade-btn special-btn"><i class="fas fa-crosshairs"></i>Unlock DPS Ant (<span id="dps-ant-unlock-cost">6000</span>)</button>
-                     <button id="buy-dps-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Buy DPS Ant (<span id="dps-ant-cost">8000</span>)</button>
 
                     <!-- Acid Ant (Basic Combat) -->
                     <button id="unlock-acid-ants" class="upgrade-btn special-btn"><i class="fas fa-flask"></i>Unlock Acid Ant (<span id="acid-ant-unlock-cost">2000</span>)</button>
@@ -467,9 +440,6 @@
                     <button id="unlock-leaf-cutter-ants" class="upgrade-btn special-btn"><i class="fas fa-leaf"></i>Unlock Leaf Cutter Ant (<span id="leaf-cutter-ant-unlock-cost">6000</span>)</button>
                     <button id="buy-leaf-cutter-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Buy Leaf Cutter Ant (<span id="leaf-cutter-ant-cost">8000</span>)</button>
 
-                    <!-- Door Ant (Exploding) -->
-                    <button id="unlock-door-ants" class="upgrade-btn special-btn"><i class="fas fa-door-closed"></i>Unlock Door Ant (<span id="door-ant-unlock-cost">7000</span>)</button>
-                    <button id="buy-door-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Buy Door Ant (<span id="door-ant-cost">9000</span>)</button>
 
                     <!-- Juice Ant (Throwing) -->
                     <button id="unlock-juice-ants" class="upgrade-btn special-btn"><i class="fas fa-wine-bottle"></i>Unlock Juice Ant (<span id="juice-ant-unlock-cost">9000</span>)</button>
@@ -479,9 +449,6 @@
                     <button id="unlock-crab-ants" class="upgrade-btn special-btn"><i class="fas fa-fish"></i>Unlock Crab Ant (<span id="crab-ant-unlock-cost">8000</span>)</button>
                     <button id="buy-crab-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Buy Crab Ant (<span id="crab-ant-cost">10000</span>)</button>
 
-                    <!-- Upside Down Ant (Special) -->
-                    <button id="unlock-upside-down-ants" class="upgrade-btn special-btn"><i class="fas fa-level-up-alt"></i>Unlock Upside Down Ant (<span id="upside-down-ant-unlock-cost">4000</span>)</button>
-                    <button id="buy-upside-down-ant" class="upgrade-btn special-btn hidden"><i class="fas fa-plus"></i>Buy Upside Down Ant (<span id="upside-down-ant-cost">5000</span>)</button>
 
                     <!-- Spider Ant (Special) -->
                     <button id="unlock-spider-ants" class="upgrade-btn special-btn"><i class="fas fa-spider"></i>Unlock Spider Ant (<span id="spider-ant-unlock-cost">20000</span>)</button>
@@ -577,7 +544,6 @@
     <script src="src/entities/exploding/SmokeAnt.js"></script>
     <script src="src/entities/exploding/ElectricAnt.js"></script>
     <script src="src/entities/exploding/LeafCutterAnt.js"></script>
-    <script src="src/entities/exploding/DoorAnt.js"></script>
     
     <!-- New Ant Types - Throwing -->
     <script src="src/entities/throwing/BananaThrowingAnt.js"></script>
@@ -585,8 +551,6 @@
     <script src="src/entities/throwing/CrabAnt.js"></script>
     
     <!-- New Ant Types - Special -->
-    <script src="src/entities/special/UpsideDownAnt.js"></script>
-    <script src="src/entities/special/DPSAnt.js"></script>
     <script src="src/entities/special/SpiderAnt.js"></script>
     
     <!-- New Ant Types - Other -->
@@ -828,14 +792,10 @@
             const modalBuySmokeAnt = document.getElementById('modal-buy-smoke-ant');
             const modalUnlockLeafCutterAnts = document.getElementById('modal-unlock-leaf-cutter-ants');
             const modalBuyLeafCutterAnt = document.getElementById('modal-buy-leaf-cutter-ant');
-            const modalUnlockDoorAnts = document.getElementById('modal-unlock-door-ants');
-            const modalBuyDoorAnt = document.getElementById('modal-buy-door-ant');
             const modalUnlockJuiceAnts = document.getElementById('modal-unlock-juice-ants');
             const modalBuyJuiceAnt = document.getElementById('modal-buy-juice-ant');
             const modalUnlockCrabAnts = document.getElementById('modal-unlock-crab-ants');
             const modalBuyCrabAnt = document.getElementById('modal-buy-crab-ant');
-            const modalUnlockUpsideDownAnts = document.getElementById('modal-unlock-upside-down-ants');
-            const modalBuyUpsideDownAnt = document.getElementById('modal-buy-upside-down-ant');
             const modalUnlockSpiderAnts = document.getElementById('modal-unlock-spider-ants');
             const modalBuySpiderAnt = document.getElementById('modal-buy-spider-ant');
             
@@ -883,14 +843,10 @@
             if (modalBuySmokeAnt) modalBuySmokeAnt.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-smoke-ant'); });
             if (modalUnlockLeafCutterAnts) modalUnlockLeafCutterAnts.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-leaf-cutter-ants'); });
             if (modalBuyLeafCutterAnt) modalBuyLeafCutterAnt.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-leaf-cutter-ant'); });
-            if (modalUnlockDoorAnts) modalUnlockDoorAnts.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-door-ants'); });
-            if (modalBuyDoorAnt) modalBuyDoorAnt.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-door-ant'); });
             if (modalUnlockJuiceAnts) modalUnlockJuiceAnts.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-juice-ants'); });
             if (modalBuyJuiceAnt) modalBuyJuiceAnt.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-juice-ant'); });
             if (modalUnlockCrabAnts) modalUnlockCrabAnts.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-crab-ants'); });
             if (modalBuyCrabAnt) modalBuyCrabAnt.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-crab-ant'); });
-            if (modalUnlockUpsideDownAnts) modalUnlockUpsideDownAnts.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-upside-down-ants'); });
-            if (modalBuyUpsideDownAnt) modalBuyUpsideDownAnt.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-upside-down-ant'); });
             if (modalUnlockSpiderAnts) modalUnlockSpiderAnts.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('unlock-spider-ants'); });
             if (modalBuySpiderAnt) modalBuySpiderAnt.addEventListener('click', (e) => { e.stopPropagation(); simulateClick('buy-spider-ant'); });
             
