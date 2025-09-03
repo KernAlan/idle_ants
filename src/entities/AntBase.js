@@ -114,6 +114,11 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         this.attackCooldown = 30;
         this._attackTimer = 0;
         this.targetEnemy = null;
+        this.attackRange = 20; // Default melee range for ants
+        // Enemy scanning parameters (self-contained default combat behavior)
+        this.enemyPerceptionRange = 250;
+        this.enemyEngageRange = 20;
+        this._enemyScanCooldown = 0;
     }
     
     // Template method - subclasses can override to provide different scales
@@ -275,6 +280,53 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         
         return false; // Default no action
     }
+
+    // Simple melee combat handler for ants
+    updateFighting() {
+        // If no valid target, resume normal behavior
+        if (!this.targetEnemy || this.targetEnemy.isDead) {
+            this.targetEnemy = null;
+            this.transitionToState(IdleAnts.Entities.AntBase.States.SEEKING_FOOD);
+            return false;
+        }
+
+        // Keep health bar anchored
+        if (this.healthBarContainer) {
+            this.healthBarContainer.x = this.x;
+            this.healthBarContainer.y = this.y - 20;
+            this.healthBarContainer.rotation = 0;
+        }
+
+        // Distance to target
+        const dx = this.targetEnemy.x - this.x;
+        const dy = this.targetEnemy.y - this.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        // If enemy moved out of attack range, chase a bit or give up
+        const reengageDistance = Math.max(this.attackRange + 10, 30);
+        if (dist > reengageDistance) {
+            // Move toward target and switch back to seeking so EntityManager can drive pursuit
+            this.vx = (dx / dist) * this.speed;
+            this.vy = (dy / dist) * this.speed;
+            this.transitionToState(IdleAnts.Entities.AntBase.States.SEEKING_FOOD);
+            return false;
+        }
+
+        // In range: stop and attack on cooldown
+        this.vx = 0;
+        this.vy = 0;
+        if (this._attackTimer > 0) {
+            this._attackTimer--;
+            return false;
+        }
+
+        // Apply damage to enemy, passing self as attacker for rewards
+        if (typeof this.targetEnemy.takeDamage === 'function') {
+            this.targetEnemy.takeDamage(this.attackDamage, this);
+        }
+        this._attackTimer = this.attackCooldown;
+        return false;
+    }
     
     // Handle spawning state - ant starts at nest and prepares to move
     updateSpawning(nestPosition) {
@@ -288,16 +340,20 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         return false;
     }
     
-    // Handle seeking food state - ant looks for closest food source
+    // Handle seeking food state - ant looks for enemies first, then closest food source
     updateSeekingFood(foods) {
         // Ensure foods is a usable array
         foods = Array.isArray(foods) ? foods : [];
         // PRIORITIZE ENEMY COMBAT OVER FOOD
+        // Acquire target periodically if none or dead
+        if ((!this.targetEnemy || this.targetEnemy.isDead) && this.shouldScanForEnemies()) {
+            this.scanForEnemies();
+        }
         if (this.targetEnemy && !this.targetEnemy.isDead) {
             const dx = this.targetEnemy.x - this.x;
             const dy = this.targetEnemy.y - this.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
-            const engageDist = 20;
+            const engageDist = this.enemyEngageRange;
 
             // If within engage range, switch to fighting state
             if (distance <= engageDist) {
@@ -390,6 +446,41 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         
         this.applyMovement();
         return false;
+    }
+
+    // Throttle enemy scans to reduce per-frame cost
+    shouldScanForEnemies() {
+        if (this._enemyScanCooldown > 0) {
+            this._enemyScanCooldown--;
+            return false;
+        }
+        this._enemyScanCooldown = 5;
+        return true;
+    }
+
+    // Find nearest living enemy within perception range
+    scanForEnemies() {
+        try {
+            const em = IdleAnts && IdleAnts.app && IdleAnts.app.entityManager ? IdleAnts.app.entityManager : null;
+            if (!em || !em.entities || !Array.isArray(em.entities.enemies)) return;
+            let closest = null;
+            let closestSq = Infinity;
+            const rangeSq = this.enemyPerceptionRange * this.enemyPerceptionRange;
+            for (let i = 0; i < em.entities.enemies.length; i++) {
+                const e = em.entities.enemies[i];
+                if (!e || e.isDead) continue;
+                const dx = e.x - this.x;
+                const dy = e.y - this.y;
+                const d2 = dx * dx + dy * dy;
+                if (d2 <= rangeSq && d2 < closestSq) {
+                    closestSq = d2;
+                    closest = e;
+                }
+            }
+            this.targetEnemy = closest;
+        } catch (err) {
+            // Ignore scanning errors
+        }
     }
     
     // Handle collecting food state

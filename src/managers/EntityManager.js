@@ -652,18 +652,15 @@ IdleAnts.Managers.EntityManager = class {
         this.updateAntEntities(this.entities.acidAnts, shouldCreateTrail, false);
         this.updateAntEntities(this.entities.rainbowAnts, shouldCreateTrail, false);
 
-        // Exploding ants
-        // Smoke ants: align pathing with others (no enemy pursuit)
-        this.updateAntEntities(this.entities.smokeAnts, shouldCreateTrail, false, /*pursueEnemies=*/false);
-        // Electric ants should behave like regular ants for pathing (no enemy pursuit)
-        this.updateAntEntities(this.entities.electricAnts, shouldCreateTrail, false, /*pursueEnemies=*/false);
-        // Leaf Cutter ants: same pathing as others (no enemy pursuit)
-        this.updateAntEntities(this.entities.leafCutterAnts, shouldCreateTrail, false, /*pursueEnemies=*/false);
-        // Door ants: same pathing as others (no enemy pursuit)
+        // Exploding ants (now pursue enemies like others)
+        this.updateAntEntities(this.entities.smokeAnts, shouldCreateTrail, false, /*pursueEnemies=*/true);
+        this.updateAntEntities(this.entities.electricAnts, shouldCreateTrail, false, /*pursueEnemies=*/true);
+        this.updateAntEntities(this.entities.leafCutterAnts, shouldCreateTrail, false, /*pursueEnemies=*/true);
+        // Door ants: not implemented
 
         // Throwing ants
-        // Archer-like: Banana Throwers handle kiting themselves (no manager pursuit)
-        this.updateAntEntities(this.entities.bananaThrowingAnts, shouldCreateTrail, false, /*pursueEnemies=*/false);
+        // Enable pursuit so they will still engage when enemies are near
+        this.updateAntEntities(this.entities.bananaThrowingAnts, shouldCreateTrail, false, /*pursueEnemies=*/true);
         this.updateAntEntities(this.entities.juiceAnts, shouldCreateTrail, false);
         this.updateAntEntities(this.entities.crabAnts, shouldCreateTrail, false);
 
@@ -1499,7 +1496,24 @@ IdleAnts.Managers.EntityManager = class {
         // ------------------------------------------------------------------
 
         // Update existing enemies
-        const ants=[...this.entities.ants,...this.entities.flyingAnts,...this.entities.carAnts,...this.entities.fireAnts];
+        // Include ALL allied ant types so enemies can target any of them
+        const ants = [
+            ...this.entities.ants,
+            ...this.entities.flyingAnts,
+            ...this.entities.carAnts,
+            ...this.entities.fireAnts,
+            ...this.entities.fatAnts,
+            ...this.entities.gasAnts,
+            ...this.entities.acidAnts,
+            ...this.entities.rainbowAnts,
+            ...this.entities.smokeAnts,
+            ...this.entities.electricAnts,
+            ...this.entities.leafCutterAnts,
+            ...this.entities.bananaThrowingAnts,
+            ...this.entities.juiceAnts,
+            ...this.entities.crabAnts,
+            ...this.entities.spiderAnts,
+        ];
         for(let i=this.entities.enemies.length-1;i>=0;i--){
             const e=this.entities.enemies[i];
             if(e.isDead){this.entities.enemies.splice(i,1);continue;}

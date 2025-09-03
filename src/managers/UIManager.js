@@ -425,8 +425,8 @@ IdleAnts.Managers.UIManager = class {
             
             if (upgradeButton) {
                 if (!this.resourceManager.canUpgradeFoodTier()) {
-                    // At max tier, update button text to show that it's maxed out
-                    upgradeButton.innerHTML = `<i class="fas fa-arrow-up"></i> Food (Max)`;
+                    // At max tier, keep a cost span so modal sync shows MAX too
+                    upgradeButton.innerHTML = `<i class="fas fa-arrow-up"></i> Food (<span id="food-upgrade-cost">MAX</span>)`;
                 } else {
                     // Show the cost to upgrade to the next tier
                     upgradeButton.innerHTML = `<i class="fas fa-arrow-up"></i> Food (<span id="food-upgrade-cost">${this.resourceManager.stats.foodUpgradeCost}</span>)`;
@@ -521,7 +521,9 @@ IdleAnts.Managers.UIManager = class {
         // Regular ant buttons
         updateButtonState('buy-ant', !this.resourceManager.canBuyAnt());
         
-        updateButtonState('upgrade-food', !this.resourceManager.canUpgradeFood());
+        // Disable food upgrade if at max tier or unaffordable
+        const atMaxFoodTier = !this.resourceManager.canUpgradeFoodTier();
+        updateButtonState('upgrade-food', atMaxFoodTier || !this.resourceManager.canUpgradeFood());
         
         updateButtonState('upgrade-speed', !this.resourceManager.canAfford(this.resourceManager.stats.speedUpgradeCost));
         

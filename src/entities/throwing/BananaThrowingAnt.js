@@ -72,7 +72,7 @@ IdleAnts.Entities.Throwing.BananaThrowingAnt = class extends IdleAnts.Entities.T
     
     // Minimal, self-cleaning banana projectile (visual + damage on hit)
     createProjectile(target, dx, dy, distance) {
-        if (!IdleAnts.app || !target) return;
+        if (!IdleAnts.app || !IdleAnts.app.app || !target) return;
 
         const angle = Math.atan2(dy, dx);
         // Use shared archer kinematics for consistent feel
@@ -103,8 +103,11 @@ IdleAnts.Entities.Throwing.BananaThrowingAnt = class extends IdleAnts.Entities.T
         shadow.alpha = 0.3;
         shadow.rotation = 0;
         shadow.x = 2; shadow.y = 2;
-        
+
         const container = new PIXI.Container();
+        // Local trail layer so all child puffs get cleaned with the projectile
+        const trailLayer = new PIXI.Container();
+        container.addChild(trailLayer);
         container.addChild(shadow);
         container.addChild(banana);
         container.rotation = angle + Math.PI / 2;
@@ -117,8 +120,8 @@ IdleAnts.Entities.Throwing.BananaThrowingAnt = class extends IdleAnts.Entities.T
 
         if (IdleAnts.app && IdleAnts.app.worldContainer) {
             IdleAnts.app.worldContainer.addChild(container);
-        } else {
-            IdleAnts.app.stage.addChild(container);
+        } else if (IdleAnts.app && IdleAnts.app.app && IdleAnts.app.app.stage) {
+            IdleAnts.app.app.stage.addChild(container);
         }
 
         container.landed = false; // track landing/lingering state
@@ -126,17 +129,23 @@ IdleAnts.Entities.Throwing.BananaThrowingAnt = class extends IdleAnts.Entities.T
 
         const LINGER_FRAMES = 70; // ~1.17s at 60fps
         let trailTick = 0;
-        
-        // Brief muzzle flash for visibility
-        if (IdleAnts.app.worldContainer) {
-            const flash = new PIXI.Graphics();
-            flash.beginFill(yellow, 0.8); flash.drawCircle(0, 0, 6); flash.endFill();
-            flash.x = container.x; flash.y = container.y;
-            IdleAnts.app.worldContainer.addChild(flash);
-            let f = 8; const fadeF = () => { f--; flash.alpha = f / 8; if (f<=0) { if (flash.parent) flash.parent.removeChild(flash);} else { requestAnimationFrame(fadeF);} }; fadeF();
-        }
 
-        const animate = () => {
+        // Brief muzzle flash for visibility (attached to projectile for guaranteed cleanup)
+        const flash = new PIXI.Graphics();
+        flash.beginFill(yellow, 0.8); flash.drawCircle(0, 0, 6); flash.endFill();
+        flash.x = 0; flash.y = 0;
+        flash.life = 8;
+        container.addChild(flash);
+
+        const ticker = IdleAnts.app.app.ticker;
+        const tickFn = () => {
+            // Fade muzzle flash
+            if (flash.parent) {
+                flash.life -= 1;
+                flash.alpha = Math.max(0, flash.life / 8);
+                if (flash.life <= 0 && flash.parent) flash.parent.removeChild(flash);
+            }
+
             if (!container.landed) {
                 // Flight phase
                 container.x += container.vx;
@@ -146,31 +155,41 @@ IdleAnts.Entities.Throwing.BananaThrowingAnt = class extends IdleAnts.Entities.T
                 container.rotation = Math.atan2(container.vy, container.vx) + Math.PI / 2;
                 container.life--;
 
-                // Add a small quick-fading trail for visibility
-                if ((trailTick++ % 3) === 0 && IdleAnts.app && IdleAnts.app.worldContainer) {
+                // Add a small quick-fading trail for visibility (as children, not globals)
+                if ((trailTick++ % 3) === 0) {
                     const puff = new PIXI.Graphics();
                     puff.beginFill(yellow, 0.5);
                     puff.drawCircle(0, 0, 2.5);
                     puff.endFill();
-                    puff.x = container.x; puff.y = container.y;
-                    let life = 12; IdleAnts.app.worldContainer.addChild(puff);
-                    const fade = () => {
-                        life--; puff.alpha = life / 12; puff.scale.set(1 + (1 - life / 12) * 0.5);
-                        if (life <= 0) { if (puff.parent) puff.parent.removeChild(puff); } else { requestAnimationFrame(fade); }
-                    };
-                    fade();
+                    puff.x = 0; puff.y = 0; // relative to projectile
+                    puff.life = 12; puff.initialLife = 12;
+                    trailLayer.addChild(puff);
                 }
 
-                // Hit proximity check
-                const dxh = (target.x - container.x);
-                const dyh = (target.y - container.y);
+                // Update existing trail puffs
+                for (let i = trailLayer.children.length - 1; i >= 0; i--) {
+                    const puff = trailLayer.children[i];
+                    puff.life -= 1;
+                    const t = Math.max(0, puff.life) / puff.initialLife;
+                    puff.alpha = t;
+                    puff.scale.set(1 + (1 - t) * 0.5);
+                    if (puff.life <= 0) {
+                        trailLayer.removeChild(puff);
+                    }
+                }
+
+                // Hit proximity check; if target is gone, treat as miss and land
+                const tx = (target && target.x) || container.x;
+                const ty = (target && target.y) || container.y;
+                const dxh = (tx - container.x);
+                const dyh = (ty - container.y);
                 const hit = (dxh*dxh + dyh*dyh) <= 14*14;
-                if (hit && typeof target.takeDamage === 'function' && !container.damaged) {
+                if (hit && typeof target?.takeDamage === 'function' && !container.damaged) {
                     target.takeDamage(this.attackDamage);
                     container.damaged = true;
                 }
 
-                if (container.life <= 0 || hit) {
+                if (container.life <= 0 || hit || !target || !target.parent) {
                     // Transition to linger phase
                     container.landed = true;
                     container.life = LINGER_FRAMES;
@@ -181,16 +200,26 @@ IdleAnts.Entities.Throwing.BananaThrowingAnt = class extends IdleAnts.Entities.T
             } else {
                 // Linger phase: fade out where it landed
                 container.life--;
-                container.alpha = container.life / LINGER_FRAMES;
+                container.alpha = Math.max(0, container.life / LINGER_FRAMES);
+
+                // Also tick down and clear any remaining puffs
+                for (let i = trailLayer.children.length - 1; i >= 0; i--) {
+                    const puff = trailLayer.children[i];
+                    puff.life -= 1;
+                    const t = Math.max(0, puff.life) / (puff.initialLife || 12);
+                    puff.alpha = t;
+                    puff.scale.set(1 + (1 - t) * 0.5);
+                    if (puff.life <= 0) trailLayer.removeChild(puff);
+                }
             }
 
             if (container.life <= 0) {
                 if (container.parent) container.parent.removeChild(container);
-            } else {
-                requestAnimationFrame(animate);
+                if (ticker) ticker.remove(tickFn);
             }
         };
-        animate();
+        // Drive via PIXI ticker to avoid rAF desync and ensure cleanup
+        if (ticker) ticker.add(tickFn);
 
         this.bananasThrown++;
         this.createThrowingEffect();
