@@ -25,7 +25,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Apple Slice',
         value: 3,              // Simple progression
         weight: 1,             // Still manageable
-        collectionTime: 0.5,   // Quick to collect
+        collectionTime: 0,     // Instant collection
         rarity: 2,             // Common
         scale: {min: 0.8, max: 1.4},
         color: 0xFF4500,       // Red apple color
@@ -41,7 +41,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Cookie Crumb',
         value: 5,              // Worth 5x the basic food
         weight: 2,             // Takes up 2 capacity slots
-        collectionTime: 1.5,   // Takes 1.5 seconds to collect
+        collectionTime: 0,     // Instant collection
         rarity: 3,             // More rare than basic food
         scale: {min: 1.0, max: 1.8},  // Larger than basic food
         color: 0xC68E17,       // Cookie brown
@@ -57,7 +57,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Marshmallow',
         value: 8,              // Sweet and valuable
         weight: 1,             // Light despite size
-        collectionTime: 2.0,   // Takes time to collect
+        collectionTime: 0,     // Instant collection
         rarity: 4,             // More rare
         scale: {min: 1.2, max: 1.8},
         color: 0xFFF8DC,       // Cornsilk white
@@ -73,7 +73,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Mango Piece',
         value: 15,             // Tropical and valuable
         weight: 3,             // Heavier fruit
-        collectionTime: 2.5,   // Takes time to collect
+        collectionTime: 0,     // Instant collection
         rarity: 5,             // Rare tropical fruit
         scale: {min: 1.3, max: 2.0},
         color: 0xFF8C00,       // Dark orange
@@ -89,7 +89,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Hot Dog Piece',
         value: 20,             // Protein-rich food
         weight: 4,             // Heavy protein
-        collectionTime: 3.0,   // Takes time to collect
+        collectionTime: 0,     // Instant collection
         rarity: 6,             // Rare protein source
         scale: {min: 1.4, max: 2.1},
         color: 0xDEB887,       // Burlywood tan to match bun
@@ -105,7 +105,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Watermelon Piece',
         value: 25,             // Worth 5x the cookie (following the progression)
         weight: 4,             // Takes up 4 capacity slots (heavier than cookie)
-        collectionTime: 3.0,   // Takes 3 seconds to collect (harder to gather)
+        collectionTime: 0,     // Instant collection
         rarity: 5,             // More rare than cookies
         scale: {min: 1.5, max: 2.2},  // Larger than cookies
         color: 0xFF3B3F,       // Watermelon red
@@ -121,7 +121,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Donut Piece',
         value: 35,             // Premium treat
         weight: 5,             // Heavy and filling
-        collectionTime: 4.0,   // Takes time due to size
+        collectionTime: 0,     // Instant collection
         rarity: 7,             // Very rare treat
         scale: {min: 1.6, max: 2.3},
         color: 0xDDA0DD,       // Plum color (glazed)
@@ -137,7 +137,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Cake Slice',
         value: 50,             // Ultimate premium food
         weight: 6,             // Heaviest food
-        collectionTime: 5.0,   // Takes longest to collect
+        collectionTime: 0,     // Instant collection
         rarity: 8,             // Ultra rare
         scale: {min: 1.8, max: 2.5},
         color: 0xFFB6C1,       // Light pink
@@ -153,7 +153,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'French Fries',
         value: 24,
         weight: 2,
-        collectionTime: 1.8,
+        collectionTime: 0,
         rarity: 4,
         scale: {min: 1.0, max: 1.6},
         color: 0xFFD700,       // Golden
@@ -168,7 +168,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Chicken Nuggets',
         value: 8,
         weight: 1,
-        collectionTime: 1.0,
+        collectionTime: 0,
         rarity: 3,
         scale: {min: 0.8, max: 1.4},
         color: 0xDEB887,       // Burlywood
@@ -183,7 +183,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Hot Dog',
         value: 21,
         weight: 3,
-        collectionTime: 2.2,
+        collectionTime: 0,
         rarity: 5,
         scale: {min: 1.2, max: 1.8},
         color: 0xDEB887,       // Burlywood
@@ -199,7 +199,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Carrots',
         value: 23,
         weight: 2,
-        collectionTime: 1.5,
+        collectionTime: 0,
         rarity: 3,
         scale: {min: 1.0, max: 1.5},
         color: 0xFF8C00,       // Dark orange
@@ -214,7 +214,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Lettuce',
         value: 22,
         weight: 1,
-        collectionTime: 1.2,
+        collectionTime: 0,
         rarity: 2,
         scale: {min: 1.1, max: 1.7},
         color: 0x90EE90,       // Light green
@@ -229,7 +229,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Bananas',
         value: 23,
         weight: 2,
-        collectionTime: 1.8,
+        collectionTime: 0,
         rarity: 4,
         scale: {min: 1.2, max: 1.8},
         color: 0xFFFF00,       // Yellow
@@ -244,7 +244,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Grapes',
         value: 24,
         weight: 1,
-        collectionTime: 1.3,
+        collectionTime: 0,
         rarity: 4,
         scale: {min: 0.9, max: 1.4},
         color: 0x9370DB,       // Medium slate blue
@@ -260,7 +260,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Ice Cream Cone',
         value: 65,
         weight: 4,
-        collectionTime: 4.5,
+        collectionTime: 0,
         rarity: 7,
         scale: {min: 1.6, max: 2.2},
         color: 0xFFF8DC,       // Cornsilk
@@ -275,7 +275,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Snow Cone',
         value: 65,
         weight: 3,
-        collectionTime: 4.0,
+        collectionTime: 0,
         rarity: 7,
         scale: {min: 1.4, max: 2.0},
         color: 0x87CEEB,       // Sky blue
@@ -290,7 +290,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Cookies',
         value: 14,
         weight: 2,
-        collectionTime: 1.8,
+        collectionTime: 0,
         rarity: 4,
         scale: {min: 1.0, max: 1.6},
         color: 0xC68E17,       // Cookie brown
@@ -306,7 +306,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Candy',
         value: 19,
         weight: 1,
-        collectionTime: 1.0,
+        collectionTime: 0,
         rarity: 3,
         scale: {min: 0.8, max: 1.3},
         color: 0xFF1493,       // Deep pink
@@ -321,7 +321,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Chocolate Chips',
         value: 22,
         weight: 1,
-        collectionTime: 1.2,
+        collectionTime: 0,
         rarity: 4,
         scale: {min: 0.7, max: 1.2},
         color: 0x8B4513,       // Saddle brown
@@ -337,7 +337,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Chocolate Milk',
         value: 23,
         weight: 3,
-        collectionTime: 2.0,
+        collectionTime: 0,
         rarity: 5,
         scale: {min: 1.3, max: 1.9},
         color: 0xD2B48C,       // Tan
@@ -352,7 +352,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Cereal',
         value: 24,
         weight: 2,
-        collectionTime: 1.8,
+        collectionTime: 0,
         rarity: 4,
         scale: {min: 1.1, max: 1.6},
         color: 0xDAA520,       // Goldenrod
@@ -367,7 +367,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Lemonade',
         value: 17,
         weight: 2,
-        collectionTime: 1.5,
+        collectionTime: 0,
         rarity: 3,
         scale: {min: 1.2, max: 1.7},
         color: 0xFFFACD,       // Lemon chiffon
@@ -383,7 +383,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Cupcake',
         value: 200,
         weight: 5,
-        collectionTime: 3.5,
+        collectionTime: 0,
         rarity: 6,
         scale: {min: 1.4, max: 2.1},
         color: 0xFFB6C1,       // Light pink
@@ -398,7 +398,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Brownie',
         value: 110,
         weight: 4,
-        collectionTime: 2.8,
+        collectionTime: 0,
         rarity: 5,
         scale: {min: 1.3, max: 1.9},
         color: 0x8B4513,       // Saddle brown
@@ -413,7 +413,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Candy Cane',
         value: 60,
         weight: 3,
-        collectionTime: 2.2,
+        collectionTime: 0,
         rarity: 4,
         scale: {min: 1.2, max: 1.8},
         color: 0xFF0000,       // Red
@@ -428,7 +428,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Cotton Candy',
         value: 135,
         weight: 3,
-        collectionTime: 2.5,
+        collectionTime: 0,
         rarity: 5,
         scale: {min: 1.5, max: 2.2},
         color: 0xFFB6C1,       // Light pink
@@ -443,7 +443,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Banana Pop',
         value: 160,
         weight: 4,
-        collectionTime: 3.0,
+        collectionTime: 0,
         rarity: 6,
         scale: {min: 1.4, max: 2.0},
         color: 0xFFFF00,       // Yellow
@@ -458,7 +458,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'French Fries',
         value: 75,
         weight: 3,
-        collectionTime: 2.0,
+        collectionTime: 0,
         rarity: 4,
         scale: {min: 1.1, max: 1.7},
         color: 0xFFD700,       // Golden
@@ -473,7 +473,7 @@ IdleAnts.Data.FoodTypes = {
         name: 'Chicken Nuggets',
         value: 90,
         weight: 4,
-        collectionTime: 2.3,
+        collectionTime: 0,
         rarity: 4,
         scale: {min: 1.2, max: 1.8},
         color: 0xDEB887,       // Burlywood
