@@ -27,9 +27,9 @@ class VictoryScreenManager {
         overlay.className = 'victory-screen-overlay';
         
         // Calculate time played - use a session-based approach instead of lifetime
-        const sessionStartTime = gameData.game?.sessionStartTime || Date.now();
+        const sessionStartTime = gameData.game?.sessionStartTime;
         const currentTime = Date.now();
-        const sessionTime = Math.floor((currentTime - sessionStartTime) / 1000);
+        const sessionTime = sessionStartTime ? Math.floor((currentTime - sessionStartTime) / 1000) : 0;
         const playTimeHours = Math.floor(sessionTime / 3600);
         const playTimeMinutes = Math.floor((sessionTime % 3600) / 60);
         
@@ -125,10 +125,7 @@ class VictoryScreenManager {
                 </div>
                 
                 <div class="victory-score-section">
-                    <div class="final-score">
-                        <h2>Final Score</h2>
-                        <div class="score-value">${this.finalScore.toLocaleString()}</div>
-                    </div>
+                    ${this.renderScoreBreakdown()}
                 </div>
                 
                 <div class="victory-buttons">
@@ -393,13 +390,124 @@ class VictoryScreenManager {
         const advancedFeatures = [
             'autofeederUnlocked', 'queenUnlocked'
         ];
-        
+
         return advancedFeatures.reduce((count, feature) => {
             return count + (resourceManager.stats[feature] ? 1 : 0);
         }, 0);
     }
 
+    // Render detailed score breakdown with time multiplier
+    renderScoreBreakdown() {
+        const breakdown = this.leaderboardManager.getLastScoreBreakdown();
 
+        if (!breakdown) {
+            // Fallback if breakdown not available
+            return `
+                <div class="final-score">
+                    <h2>Final Score</h2>
+                    <div class="score-value">${this.finalScore.toLocaleString()}</div>
+                </div>
+            `;
+        }
+
+        // Format time display
+        const minutes = Math.floor(breakdown.sessionMinutes);
+        const seconds = Math.round((breakdown.sessionMinutes - minutes) * 60);
+        const timeDisplay = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+        // Determine efficiency rating
+        let efficiencyRating = '';
+        let efficiencyStars = '';
+        if (breakdown.timeMultiplier >= 1.7) {
+            efficiencyRating = 'LIGHTNING FAST! 🚀';
+            efficiencyStars = '⭐⭐⭐⭐⭐';
+        } else if (breakdown.timeMultiplier >= 1.3) {
+            efficiencyRating = 'Excellent Efficiency! 💨';
+            efficiencyStars = '⭐⭐⭐⭐';
+        } else if (breakdown.timeMultiplier >= 0.9) {
+            efficiencyRating = 'Good Pace 👍';
+            efficiencyStars = '⭐⭐⭐';
+        } else if (breakdown.timeMultiplier >= 0.5) {
+            efficiencyRating = 'Room for Improvement 📈';
+            efficiencyStars = '⭐⭐';
+        } else {
+            efficiencyRating = 'Take Your Time ⏰';
+            efficiencyStars = '⭐';
+        }
+
+        return `
+            <div class="score-breakdown">
+                <h2 style="color: #FFD700; margin: 0 0 20px 0;">📊 SCORE BREAKDOWN</h2>
+
+                <div class="breakdown-grid">
+                    <div class="breakdown-row">
+                        <span>🍯 Resource Management:</span>
+                        <span class="breakdown-value">${breakdown.resourceScore.toLocaleString()} pts</span>
+                    </div>
+                    <div class="breakdown-row">
+                        <span>📈 Progression:</span>
+                        <span class="breakdown-value">${breakdown.progressionScore.toLocaleString()} pts</span>
+                    </div>
+                    <div class="breakdown-row">
+                        <span>🐜 Advanced Content:</span>
+                        <span class="breakdown-value">${breakdown.advancedScore.toLocaleString()} pts</span>
+                    </div>
+                    <div class="breakdown-row">
+                        <span>🏆 Achievements:</span>
+                        <span class="breakdown-value">${breakdown.achievementScore.toLocaleString()} pts</span>
+                    </div>
+                    <div class="breakdown-separator"></div>
+                    <div class="breakdown-row base-score-row">
+                        <span><strong>BASE TOTAL:</strong></span>
+                        <span class="breakdown-value"><strong>${breakdown.baseScore.toLocaleString()} pts</strong></span>
+                    </div>
+                </div>
+
+                <div class="time-multiplier-section">
+                    <h3 style="color: #FFA500; margin: 20px 0 10px 0;">⏱️ EFFICIENCY BONUS</h3>
+                    <div class="time-display">
+                        <div class="time-stat">
+                            <div class="time-label">Completion Time</div>
+                            <div class="time-value">${timeDisplay}</div>
+                        </div>
+                        <div class="multiplier-indicator">
+                            <div class="multiplier-label">Time Multiplier</div>
+                            <div class="multiplier-value" style="color: ${breakdown.timeMultiplier >= 1.0 ? '#00FF00' : '#FFA500'}">
+                                ×${breakdown.timeMultiplier.toFixed(2)}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="efficiency-rating">
+                        <div class="efficiency-text">${efficiencyRating}</div>
+                        <div class="efficiency-stars">${efficiencyStars}</div>
+                    </div>
+                    <div class="optimization-tip">
+                        ${this.getOptimizationTip(breakdown)}
+                    </div>
+                </div>
+
+                <div class="final-score-display">
+                    <h2 style="color: #FFD700; margin: 20px 0 10px 0;">🎯 FINAL SCORE</h2>
+                    <div class="score-value">${breakdown.finalScore.toLocaleString()}</div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Get optimization tip based on time multiplier
+    getOptimizationTip(breakdown) {
+        if (breakdown.timeMultiplier >= 1.7) {
+            return '<div class="tip">💡 Perfect run! Can you beat your own record?</div>';
+        } else if (breakdown.timeMultiplier >= 1.3) {
+            return `<div class="tip">💡 Great job! Finish ${Math.round((breakdown.sessionMinutes - 5) * 60)}s faster for max multiplier!</div>`;
+        } else if (breakdown.timeMultiplier >= 0.9) {
+            return `<div class="tip">💡 Try to finish around 10 minutes for the sweet spot! You were ${Math.round((breakdown.sessionMinutes - 10) * 60)}s over.</div>`;
+        } else if (breakdown.timeMultiplier >= 0.5) {
+            return `<div class="tip">💡 Speed up your strategy! Aim for 10-15 minutes to boost your score significantly.</div>`;
+        } else {
+            return '<div class="tip">💡 Focus on efficiency! Try rushing key upgrades and bosses faster.</div>';
+        }
+    }
 
     getRankSuffix(rank) {
         const lastDigit = rank % 10;
@@ -626,12 +734,124 @@ class VictoryScreenManager {
                 border: 2px solid #FFD700;
                 border-radius: 10px;
             }
-            
+
+            .score-breakdown {
+                text-align: left;
+            }
+
+            .breakdown-grid {
+                margin: 15px 0;
+            }
+
+            .breakdown-row {
+                display: flex;
+                justify-content: space-between;
+                padding: 8px 15px;
+                margin: 5px 0;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 5px;
+            }
+
+            .breakdown-row.base-score-row {
+                background: rgba(255, 215, 0, 0.15);
+                border-top: 2px solid #FFD700;
+                margin-top: 10px;
+                padding-top: 12px;
+            }
+
+            .breakdown-value {
+                color: #FFA500;
+                font-weight: bold;
+            }
+
+            .breakdown-separator {
+                height: 1px;
+                background: rgba(255, 215, 0, 0.3);
+                margin: 10px 0;
+            }
+
+            .time-multiplier-section {
+                margin: 25px 0;
+                padding: 20px;
+                background: rgba(0, 150, 255, 0.1);
+                border: 2px solid #4CAF50;
+                border-radius: 10px;
+            }
+
+            .time-display {
+                display: flex;
+                justify-content: space-around;
+                gap: 20px;
+                margin: 15px 0;
+            }
+
+            .time-stat, .multiplier-indicator {
+                flex: 1;
+                text-align: center;
+                padding: 15px;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 8px;
+            }
+
+            .time-label, .multiplier-label {
+                font-size: 0.9em;
+                color: #AAA;
+                margin-bottom: 8px;
+            }
+
+            .time-value {
+                font-size: 2em;
+                font-weight: bold;
+                color: #FFA500;
+            }
+
+            .multiplier-value {
+                font-size: 2.5em;
+                font-weight: bold;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            }
+
+            .efficiency-rating {
+                text-align: center;
+                margin: 20px 0;
+            }
+
+            .efficiency-text {
+                font-size: 1.3em;
+                font-weight: bold;
+                color: #4CAF50;
+                margin-bottom: 8px;
+            }
+
+            .efficiency-stars {
+                font-size: 1.5em;
+                letter-spacing: 5px;
+            }
+
+            .optimization-tip {
+                margin-top: 15px;
+            }
+
+            .optimization-tip .tip {
+                padding: 12px 20px;
+                background: rgba(76, 175, 80, 0.2);
+                border-left: 4px solid #4CAF50;
+                border-radius: 5px;
+                color: #CCC;
+                font-size: 1.05em;
+                line-height: 1.5;
+            }
+
+            .final-score-display {
+                text-align: center;
+                margin-top: 25px;
+            }
+
             .final-score h2 {
                 margin: 0 0 10px 0;
                 color: #FFD700;
             }
-            
+
             .score-value {
                 font-size: 2.5em;
                 font-weight: bold;

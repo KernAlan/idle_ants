@@ -3,50 +3,54 @@ class LeaderboardManager {
         this.githubLeaderboard = new GitHubLeaderboard();
     }
 
-    // Calculate composite score based on game metrics (Balanced 25/25/25/25 approach)
+    // Calculate composite score based on game metrics with TIME PENALTY for optimization
     calculateScore(gameData) {
         const {
             resourceManager,
             achievementManager,
-            dailyChallengeManager
+            dailyChallengeManager,
+            game
         } = gameData;
 
-        let score = 0;
-        const BASE_SCORE = 10000; // Baseline score for completing the game
+        // Calculate session time (for optimization runs)
+        // If session hasn't started yet (on title screen), use 0
+        const sessionStartTime = game?.sessionStartTime;
+        const sessionTimeSeconds = sessionStartTime ? Math.floor((Date.now() - sessionStartTime) / 1000) : 0;
+        const sessionMinutes = sessionTimeSeconds / 60;
 
-        // === RESOURCE MANAGEMENT (25% of total score) ===
+        // === BASE SCORE CALCULATION (without time penalty) ===
+        let baseScore = 0;
+        const BASELINE_SCORE = 10000; // Starting score
+
+        // === RESOURCE MANAGEMENT (30% of total score) ===
         let resourceScore = 0;
-        
-        // Food collection with logarithmic scaling (no harsh cap)
+
+        // Food collection with logarithmic scaling
         const foodCollected = achievementManager.progress.foodCollected || 0;
-        const foodScore = Math.log10(Math.max(foodCollected, 1)) * 2000; // Scales well with growth
-        
+        const foodScore = Math.log10(Math.max(foodCollected, 1)) * 2500;
+
         // Peak concurrent ants (reward good colony management)
         const peakAnts = achievementManager.progress.peakConcurrentAnts || 0;
-        const antScore = peakAnts * 150; // 150 points per peak concurrent ant
-        
-        // Average efficiency over lifetime
+        const antScore = peakAnts * 200;
+
+        // Average efficiency
         const averageFoodPerSecond = this.calculateAverageFoodPerSecond(achievementManager);
-        const efficiencyScore = Math.log10(Math.max(averageFoodPerSecond, 0.1)) * 1500;
-        
+        const efficiencyScore = Math.log10(Math.max(averageFoodPerSecond, 0.1)) * 2000;
+
         resourceScore = foodScore + antScore + efficiencyScore;
 
-        // === PROGRESSION (25% of total score) ===  
+        // === PROGRESSION (30% of total score) ===
         let progressionScore = 0;
-        
+
         // Upgrades and tiers
-        const upgradeScore = (achievementManager.progress.upgradesPurchased || 0) * 300;
-        const tierScore = (resourceManager.stats.foodTier || 1) * 800;
-        
-        // Time played (no harsh cap, diminishing returns)
-        const hoursPlayed = (achievementManager.progress.playTime || 0) / 3600;
-        const timeScore = Math.log10(Math.max(hoursPlayed, 0.1)) * 3000;
-        
+        const upgradeScore = (achievementManager.progress.upgradesPurchased || 0) * 400;
+        const tierScore = (resourceManager.stats.foodTier || 1) * 1000;
+
         // Colony capacity expansions
         const maxAnts = resourceManager.stats.maxAnts || 10;
-        const capacityScore = (maxAnts - 10) * 100; // Bonus for each expansion beyond base 10
-        
-        progressionScore = upgradeScore + tierScore + timeScore + capacityScore;
+        const capacityScore = (maxAnts - 10) * 150;
+
+        progressionScore = upgradeScore + tierScore + capacityScore;
 
         // === ADVANCED CONTENT (25% of total score) ===
         let advancedScore = 0;
@@ -139,10 +143,47 @@ class LeaderboardManager {
             // No additional multiplier - the bonus itself is the reward
         }
 
-        // Combine all categories with equal weight
-        score = BASE_SCORE + (resourceScore + progressionScore + advancedScore + achievementScore);
+        // === CALCULATE BASE SCORE ===
+        baseScore = BASELINE_SCORE + resourceScore + progressionScore + advancedScore + achievementScore;
 
-        return Math.round(score);
+        // === TIME MULTIPLIER (Optimization Scoring) ===
+        // TARGET_TIME = 10 minutes (600 seconds)
+        // Formula: multiplier = max(0.25, 2.0 - (minutes / 10))
+        //
+        // Time Curve:
+        //  2 mins:  1.8x (aggressive speedrun)
+        //  5 mins:  1.5x (fast and efficient)
+        // 10 mins:  1.0x (baseline - sweet spot)
+        // 15 mins:  0.5x (slow but acceptable)
+        // 20 mins:  0.25x (floor - very slow)
+        // 30+ mins: 0.25x (minimum multiplier)
+        const TARGET_MINUTES = 10;
+        const timeMultiplier = Math.max(0.25, 2.0 - (sessionMinutes / TARGET_MINUTES));
+
+        // Apply time multiplier to final score
+        const finalScore = Math.round(baseScore * timeMultiplier);
+
+        // Store breakdown for display (attach to result)
+        const scoreBreakdown = {
+            baseScore: Math.round(baseScore),
+            resourceScore: Math.round(resourceScore),
+            progressionScore: Math.round(progressionScore),
+            advancedScore: Math.round(advancedScore),
+            achievementScore: Math.round(achievementScore),
+            sessionMinutes: Math.round(sessionMinutes * 10) / 10, // 1 decimal place
+            timeMultiplier: Math.round(timeMultiplier * 100) / 100, // 2 decimal places
+            finalScore: finalScore
+        };
+
+        // Store breakdown for later access
+        this.lastScoreBreakdown = scoreBreakdown;
+
+        return finalScore;
+    }
+
+    // Get the last score breakdown (for display purposes)
+    getLastScoreBreakdown() {
+        return this.lastScoreBreakdown || null;
     }
 
     // Count unlocked achievements
@@ -179,13 +220,19 @@ class LeaderboardManager {
 
     // Prepare leaderboard data from game state
     prepareLeaderboardData(playerName, gameData) {
-        const { resourceManager, achievementManager, dailyChallengeManager } = gameData;
-        
+        const { resourceManager, achievementManager, dailyChallengeManager, game } = gameData;
+
+        // Calculate session time
+        // If session hasn't started yet, use 0
+        const sessionStartTime = game?.sessionStartTime;
+        const sessionTimeSeconds = sessionStartTime ? Math.floor((Date.now() - sessionStartTime) / 1000) : 0;
+
         return {
             player_name: playerName.substring(0, 50), // Limit to 50 chars
             total_score: this.calculateScore(gameData),
             food_collected: achievementManager.progress.foodCollected,
-            play_time: achievementManager.progress.playTime,
+            play_time: sessionTimeSeconds, // Use session time instead of lifetime playTime
+            session_minutes: Math.round((sessionTimeSeconds / 60) * 10) / 10,
             achievements_unlocked: this.countUnlockedAchievements(achievementManager),
             upgrades_purchased: achievementManager.progress.upgradesPurchased,
             highest_food_tier: resourceManager.stats.foodTier,

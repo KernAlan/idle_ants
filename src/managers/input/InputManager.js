@@ -112,16 +112,39 @@ IdleAnts.Managers.InputManager = class {
             this.game.togglePause();
             return;
         }
-        
+
+        // Ability shortcuts (1-6 keys) - during PLAYING, BOSS_INTRO, and BOSS_FIGHT states
+        const allowAbilities = this.game.state === IdleAnts.Game.States.PLAYING ||
+                              this.game.state === IdleAnts.Game.States.BOSS_INTRO ||
+                              this.game.state === IdleAnts.Game.States.BOSS_FIGHT;
+
+        if (allowAbilities && this.game.abilityManager) {
+            const abilityMap = {
+                '1': 'foodRain',
+                '2': 'speedSurge',
+                '3': 'antFrenzy',
+                '4': 'berserkerMode',
+                '5': 'cloneArmy',
+                '6': 'meteorShower'
+            };
+
+            const abilityId = abilityMap[e.key];
+            if (abilityId) {
+                e.preventDefault();
+                this.game.abilityManager.useAbility(abilityId);
+                return;
+            }
+        }
+
         // Allow camera controls during PLAYING, BOSS_INTRO, and BOSS_FIGHT states
-        const allowCameraControls = this.game.state === IdleAnts.Game.States.PLAYING || 
-                                   this.game.state === IdleAnts.Game.States.BOSS_INTRO || 
+        const allowCameraControls = this.game.state === IdleAnts.Game.States.PLAYING ||
+                                   this.game.state === IdleAnts.Game.States.BOSS_INTRO ||
                                    this.game.state === IdleAnts.Game.States.BOSS_FIGHT;
-        
+
         if (!allowCameraControls) {
             return;
         }
-        
+
         if (this.keysPressed.hasOwnProperty(e.key)) {
             e.preventDefault();
             this.keysPressed[e.key] = true;

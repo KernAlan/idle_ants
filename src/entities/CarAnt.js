@@ -4,9 +4,9 @@ if (typeof IdleAnts.Entities === 'undefined') IdleAnts.Entities = {};
 
 IdleAnts.Entities.CarAnt = class extends IdleAnts.Entities.AntBase {
     constructor(texture, nestPosition, speedMultiplier = 1) {
-        // CarAnts are super fast! Let's give them a high speedFactor.
-        // Assuming FlyingAnts might be around 5-10, let's make this 15.
-        super(texture, nestPosition, speedMultiplier, 5); // High speedFactor
+        // CarAnts are fast but not too fast (prevents circling food with speed upgrades)
+        // Reduced from 5 to 2.5 to fix circling bug
+        super(texture, nestPosition, speedMultiplier, 2.5); // Moderate speedFactor
 
         // CRITICAL: Ensure position is set directly at the nest
         this.x = nestPosition.x;

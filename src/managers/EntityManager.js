@@ -989,8 +989,19 @@ IdleAnts.Managers.EntityManager = class {
     deliverFood(ant) {
         // Drop food and add to resources based on ant's strength and food value
         const foodResult = ant.dropFood();
-        const foodAmount = foodResult.totalValue * this.resourceManager.stats.foodMultiplier;
-        
+        let foodAmount = foodResult.totalValue * this.resourceManager.stats.foodMultiplier;
+
+        // BERSERKER BONUS: If this ant is a berserker, apply massive multiplier!
+        if (ant.isBerserker && ant.foodValueMultiplier) {
+            foodAmount *= ant.foodValueMultiplier;
+
+            // Epic visual feedback for berserker collection
+            if (this.effectManager) {
+                this.effectManager.createFoodCollectEffect(ant.x, ant.y, 0xFF0000, 2.0);
+                this.effectManager.createFoodCollectEffect(ant.x, ant.y, 0xFF4500, 1.5);
+            }
+        }
+
         // Add food to resources and track it for food rate calculation
         this.resourceManager.addFood(foodAmount);
         

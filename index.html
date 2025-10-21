@@ -85,6 +85,43 @@
                 </div>
                 <div id="ants">Ants: <span id="ant-count">1</span>/<span id="ant-max">10</span></div>
             </div>
+
+            <!-- Subtle Score Display -->
+            <div id="score-display" style="display: none;">
+                <span style="opacity: 0.7; font-size: 9px;">⏱️ Time</span> <span id="session-timer">0:00</span> |
+                <span style="opacity: 0.7; font-size: 9px;">🏆 Score</span> <span id="current-score">0</span>
+                <span id="score-multiplier" style="display: none;">×2.00</span>
+                <span id="efficiency-rating" style="display: none;">⭐⭐⭐⭐⭐</span>
+            </div>
+
+            <!-- Abilities Bar (God Powers) -->
+            <div id="abilities-bar" style="display: none;">
+                <button id="ability-foodRain" class="ability-btn" data-ability="foodRain" title="[1] Food Rain: EPIC 15-SECOND STORM! 80 mixed food items + ants move 50% faster + lightning effects! (60s cooldown)">
+                    <span class="ability-icon">🌧️</span>
+                    <span class="ability-cooldown"></span>
+                </button>
+                <button id="ability-speedSurge" class="ability-btn" data-ability="speedSurge" title="[2] Speed Surge: All ants move 3x faster for 15s (45s cooldown)">
+                    <span class="ability-icon">⚡</span>
+                    <span class="ability-cooldown"></span>
+                </button>
+                <button id="ability-antFrenzy" class="ability-btn" data-ability="antFrenzy" title="[3] Mecha Minions: Summon 10 robotic worker ants for 30s! (90s cooldown)">
+                    <span class="ability-icon">🤖</span>
+                    <span class="ability-cooldown"></span>
+                </button>
+                <button id="ability-berserkerMode" class="ability-btn" data-ability="berserkerMode" title="[4] Berserker Mode: ONE ant becomes GIANT (5x size), 5x speed, 10x collection for 45s! (120s cooldown)">
+                    <span class="ability-icon">💪</span>
+                    <span class="ability-cooldown"></span>
+                </button>
+                <button id="ability-cloneArmy" class="ability-btn" data-ability="cloneArmy" title="[5] Clone Army: EVERY ant spawns a shadow clone for 30s! (90s cooldown)">
+                    <span class="ability-icon">👥</span>
+                    <span class="ability-cooldown"></span>
+                </button>
+                <button id="ability-meteorShower" class="ability-btn" data-ability="meteorShower" title="[6] Meteor Shower: Click to target! 50 meteors rain down dealing AOE damage to enemies + leaving food! (75s cooldown)">
+                    <span class="ability-icon">☄️</span>
+                    <span class="ability-cooldown"></span>
+                </button>
+            </div>
+
             <!-- New Modal-Based Action Bar -->
             <div id="action-bar">
                 <button id="colony-btn" class="action-btn">
@@ -515,6 +552,8 @@
     <script src="src/managers/AchievementManager.js"></script>
     <!-- Daily Challenge Manager -->
     <script src="src/managers/DailyChallengeManager.js"></script>
+    <!-- Ability Manager (God Powers System) -->
+    <script src="src/managers/AbilityManager.js"></script>
     <script src="src/managers/camera/CameraManager.js"></script>
     <script src="src/managers/input/InputManager.js"></script>
     <script src="src/managers/CombatManager.js"></script>

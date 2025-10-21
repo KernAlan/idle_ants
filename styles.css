@@ -95,6 +95,127 @@ html {
     position: relative;
 }
 
+/* Subtle Score Display */
+#score-display {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    margin: 2px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-weight: 500;
+}
+
+#score-display #session-timer,
+#score-display #current-score {
+    font-weight: bold;
+    color: white;
+}
+
+/* Abilities Bar (God Powers) */
+#abilities-bar {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    margin: 4px 2px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.ability-btn {
+    position: relative;
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, rgba(100, 50, 200, 0.4), rgba(150, 100, 255, 0.3));
+    border: 2px solid rgba(150, 100, 255, 0.5);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.ability-btn:hover:not(.on-cooldown) {
+    background: linear-gradient(135deg, rgba(100, 50, 200, 0.6), rgba(150, 100, 255, 0.5));
+    border-color: rgba(200, 150, 255, 0.8);
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(150, 100, 255, 0.6);
+}
+
+.ability-btn:active:not(.on-cooldown) {
+    transform: scale(0.95);
+}
+
+.ability-btn.on-cooldown {
+    cursor: not-allowed;
+    opacity: 0.5;
+    background: linear-gradient(135deg, rgba(50, 50, 50, 0.4), rgba(80, 80, 80, 0.3));
+    border-color: rgba(100, 100, 100, 0.5);
+}
+
+.ability-btn.active {
+    border-color: rgba(255, 215, 0, 0.9);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+    animation: pulse-ability 1s ease-in-out infinite;
+}
+
+@keyframes pulse-ability {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(255, 215, 0, 1);
+    }
+}
+
+.ability-icon {
+    font-size: 24px;
+    z-index: 2;
+}
+
+.ability-cooldown {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 1px 4px;
+    border-radius: 3px;
+    z-index: 3;
+    display: none;
+}
+
+.ability-btn.on-cooldown .ability-cooldown {
+    display: block;
+}
+
+/* Cooldown overlay */
+.ability-btn::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 0%;
+    background: rgba(0, 0, 0, 0.6);
+    transition: height 0.1s linear;
+    z-index: 1;
+}
+
+.ability-btn.on-cooldown::after {
+    height: var(--cooldown-percent, 0%);
+}
+
 #food::before {
     content: '';
     display: inline-block;
@@ -468,23 +589,23 @@ canvas {
     #action-bar {
         position: fixed;
         left: 0; right: 0; bottom: 0;
-        padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0));
+        padding: 10px 8px calc(10px + env(safe-area-inset-bottom, 0));
         background: linear-gradient(135deg, rgba(255,107,107,0.95) 0%, rgba(78,205,196,0.95) 50%, rgba(69,183,209,0.95) 100%);
         backdrop-filter: blur(2px);
         z-index: 1000;
-        gap: 6px;
+        gap: 8px;
         justify-content: space-around;
     }
 
     .action-btn {
-        min-width: 64px;
-        height: 48px;
-        font-size: 12px;
-        padding: 6px;
-        border-radius: 10px;
+        min-width: 70px;
+        height: 54px;
+        font-size: 13px;
+        padding: 8px 6px;
+        border-radius: 12px;
     }
 
-    .action-btn i { font-size: 16px; margin-bottom: 2px; }
+    .action-btn i { font-size: 20px; margin-bottom: 3px; }
 }
 
 /* Ultra-condensed mode for phones */
@@ -765,20 +886,20 @@ input, textarea {
     }
 }
 
-/* Action Bar Modal System */
+/* Action Bar Modal System - Enhanced for Better Readability */
 #action-bar {
     display: flex;
     justify-content: center;
-    gap: 6px;
-    margin: 4px 0;
+    gap: 8px;
+    margin: 6px 0;
     flex-wrap: wrap;
 }
 
 /* Mobile action bar - much more condensed */
 @media (max-width: 768px) {
     #action-bar {
-        gap: 2px; /* Much tighter spacing */
-        margin: 2px 0; /* Reduced margin */
+        gap: 4px;
+        margin: 4px 0;
     }
 }
 
@@ -787,29 +908,30 @@ input, textarea {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 4px;
-    min-width: 50px;
-    height: 35px;
+    padding: 8px 6px;
+    min-width: 70px;
+    height: 50px;
     background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%);
     color: white;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 10px;
     cursor: pointer;
     font-weight: bold;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    font-size: 9px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+    font-size: 11px;
 }
 
 .action-btn i {
-    font-size: 14px;
-    margin-bottom: 2px;
+    font-size: 18px;
+    margin-bottom: 3px;
 }
 
 .action-btn:hover {
     background: linear-gradient(135deg, #FF8E8E 0%, #66D9D6 50%, #67C3F3 100%);
     transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    border-color: rgba(255, 255, 255, 0.6);
 }
 
 /* Override for disabled action buttons - must come after regular styles */
@@ -999,8 +1121,8 @@ button.modal-btn:disabled:hover {
 
 /* Mobile Modal Adjustments */
 @media (max-width: 768px) {
-    .action-btn { min-width: 64px; height: 48px; font-size: 12px; padding: 6px; }
-    .action-btn i { font-size: 16px; margin-bottom: 2px; }
+    .action-btn { min-width: 70px; height: 54px; font-size: 13px; padding: 8px 6px; }
+    .action-btn i { font-size: 20px; margin-bottom: 3px; }
     
     .modal-backdrop {
         position: fixed !important;

@@ -30,6 +30,10 @@ IdleAnts.Managers.UIManager = class {
         this.elements = {
             foodCount: document.getElementById('food-count'),
             antCount: document.getElementById('ant-count'),
+            // Score display elements (subtle)
+            scoreDisplay: document.getElementById('score-display'),
+            sessionTimer: document.getElementById('session-timer'),
+            currentScore: document.getElementById('current-score'),
             antMax: document.getElementById('ant-max'),
             flyingAntCount: document.getElementById('flying-ant-count'),
             flyingAntMax: document.getElementById('flying-ant-max'),
@@ -206,6 +210,18 @@ IdleAnts.Managers.UIManager = class {
         addSafeClickListener('unlock-spider-ants', () => this.game.unlockSpiderAnts());
         addSafeClickListener('buy-spider-ant', () => this.game.buySpiderAnt());
 
+        // Ability buttons
+        const abilityButtons = document.querySelectorAll('.ability-btn');
+        abilityButtons.forEach(button => {
+            const abilityId = button.dataset.ability;
+            if (abilityId) {
+                button.addEventListener('click', () => {
+                    if (this.game && this.game.abilityManager) {
+                        this.game.abilityManager.onAbilityClick(abilityId);
+                    }
+                });
+            }
+        });
     }
     
     // Add UI toggle functionality
@@ -290,7 +306,7 @@ IdleAnts.Managers.UIManager = class {
                 element.textContent = value;
             }
         };
-        
+
         try {
             // Update food counter directly for immediate feedback
             if (this.elements.foodCount) {
@@ -298,6 +314,9 @@ IdleAnts.Managers.UIManager = class {
                 // Also update the display food value to match the actual food value
                 this.resourceManager.resources.displayFood = this.resourceManager.resources.food;
             }
+
+            // Update live score display during gameplay
+            this.updateLiveScore();
             
             // Update ant counts using cached elements
             updateCachedElementText(this.elements.antCount, this.resourceManager.stats.ants);
@@ -470,8 +489,11 @@ IdleAnts.Managers.UIManager = class {
         
         // Update button states
         this.updateButtonStates();
+
+        // Update ability buttons (cooldowns and states)
+        this.updateAbilityButtons();
     }
-    
+
     // New method to handle button states separately
     updateButtonStates() {
         // Helper function to update button state (both original and modal versions)
@@ -820,6 +842,62 @@ IdleAnts.Managers.UIManager = class {
 
     /* ================= Boss UI ================= */
 
+    // Update subtle score display during gameplay
+    updateLiveScore() {
+        // Only show score display during PLAYING state
+        if (!this.game || this.game.state !== IdleAnts.Game.States.PLAYING) {
+            if (this.elements.scoreDisplay) {
+                this.elements.scoreDisplay.style.display = 'none';
+            }
+            return;
+        }
+
+        // Don't show score if session hasn't started yet
+        if (!this.game.sessionStartTime) {
+            if (this.elements.scoreDisplay) {
+                this.elements.scoreDisplay.style.display = 'none';
+            }
+            return;
+        }
+
+        // Show score display
+        if (this.elements.scoreDisplay) {
+            this.elements.scoreDisplay.style.display = 'flex';
+        }
+
+        // Calculate session time
+        const sessionTimeSeconds = Math.floor((Date.now() - this.game.sessionStartTime) / 1000);
+
+        // Format time display (M:SS)
+        const minutes = Math.floor(sessionTimeSeconds / 60);
+        const seconds = sessionTimeSeconds % 60;
+        const timeDisplay = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+        // Calculate current score (estimate)
+        const gameData = {
+            resourceManager: this.resourceManager,
+            achievementManager: this.game.achievementManager,
+            dailyChallengeManager: this.game.dailyChallengeManager,
+            game: this.game
+        };
+
+        // Get leaderboard manager if available
+        const leaderboardManager = this.game.leaderboardManager || this.game.victoryScreenManager?.leaderboardManager;
+
+        let currentScore = 0;
+        if (leaderboardManager) {
+            currentScore = leaderboardManager.calculateScore(gameData);
+        }
+
+        // Update DOM elements (just timer and score)
+        if (this.elements.sessionTimer) {
+            this.elements.sessionTimer.textContent = timeDisplay;
+        }
+        if (this.elements.currentScore) {
+            this.elements.currentScore.textContent = currentScore.toLocaleString();
+        }
+    }
+
     setupBossBar() {
         this.bossBarContainer = document.createElement('div');
         this.bossBarContainer.id = 'boss-bar-container';
@@ -992,7 +1070,65 @@ IdleAnts.Managers.UIManager = class {
         
         document.body.appendChild(this.pauseOverlay);
     }
-    
+
+    // Ability button update methods
+    updateAbilityButtons() {
+        if (!this.game || !this.game.abilityManager) return;
+
+        // Show abilities bar during PLAYING, BOSS_INTRO, and BOSS_FIGHT states
+        const abilitiesBar = document.getElementById('abilities-bar');
+        if (abilitiesBar) {
+            const showAbilities = this.game.state === IdleAnts.Game.States.PLAYING ||
+                                 this.game.state === IdleAnts.Game.States.BOSS_INTRO ||
+                                 this.game.state === IdleAnts.Game.States.BOSS_FIGHT;
+            abilitiesBar.style.display = showAbilities ? 'flex' : 'none';
+        }
+
+        // Get current ability states
+        const abilitiesState = this.game.abilityManager.getAbilitiesState();
+
+        // Update each ability button
+        Object.keys(abilitiesState).forEach(abilityId => {
+            const ability = abilitiesState[abilityId];
+            const button = document.getElementById(`ability-${abilityId}`);
+
+            if (!button) return;
+
+            // Update cooldown display
+            const cooldownSpan = button.querySelector('.ability-cooldown');
+
+            if (ability.ready) {
+                // Ready to use
+                button.classList.remove('on-cooldown');
+                button.classList.remove('active');
+                button.style.setProperty('--cooldown-percent', '0%');
+                if (cooldownSpan) {
+                    cooldownSpan.textContent = '';
+                }
+            } else {
+                // On cooldown
+                button.classList.add('on-cooldown');
+
+                // Calculate cooldown progress
+                const percent = (ability.remainingCooldown / ability.cooldown) * 100;
+                button.style.setProperty('--cooldown-percent', `${percent}%`);
+
+                // Display remaining seconds
+                const seconds = Math.ceil(ability.remainingCooldown / 1000);
+                if (cooldownSpan) {
+                    cooldownSpan.textContent = `${seconds}s`;
+                }
+            }
+
+            // Mark as active if ability effect is currently active
+            if (ability.active) {
+                button.classList.add('active');
+            } else {
+                button.classList.remove('active');
+            }
+        });
+    }
+
     // Upgrade menu methods
     showUpgradeMenu() {
         // This could be implemented to show a specific upgrade modal

@@ -18,7 +18,7 @@ IdleAnts.Managers.ResourceManager = class {
             foodPerClick: 1,
             foodPerSecond: 0,
             antCost: 10,
-            flyingAntCost: 100,  // Flying ants are more expensive
+            flyingAntCost: 75,  // Rebalanced: Better mid-game option for 7-8 min runs (was 100)
             flyingAntUnlockCost: 500,  // Initial cost to unlock flying ants
             foodUpgradeCost: 1000, // Changed from 50 to 1000 as requested
             expandCost: 100,
@@ -53,14 +53,14 @@ IdleAnts.Managers.ResourceManager = class {
             // Car Ant properties
             carAnts: 0,
             carAntsUnlocked: false,
-            carAntUnlockCost: 10000, // Example: High cost to unlock
-            carAntCost: 2500,       // Example: High cost per Car Ant
-            carAntFoodPerSecond: 5, // Example: Car ants are very efficient
+            carAntUnlockCost: 10000, // High cost to unlock (mid-late game)
+            carAntCost: 800,        // Rebalanced: Viable for 12-15 min runs (was 2500)
+            carAntFoodPerSecond: 5, // Efficient but not overpowered
             // Fire Ant properties
             fireAnts: 0,
             fireAntsUnlocked: false,
             fireAntUnlockCost: 20000,
-            fireAntCost: 700,
+            fireAntCost: 350,  // Rebalanced: Viable for 10-min optimization runs (was 700)
             fireAntFoodPerSecond: 8,
             
             // New Ant Types - Basic Combat

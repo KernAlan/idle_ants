@@ -19,9 +19,9 @@ IdleAnts.Game = class {
         
         // Initialize game state - start with title screen
         this.state = IdleAnts.Game.States.TITLE;
-        
-        // Track session start time for accurate play time in victory screen
-        this.sessionStartTime = Date.now();
+
+        // Session start time will be set when gameplay actually begins (not on load)
+        this.sessionStartTime = null;
         
         // Detect if running on mobile device
         this.isMobileDevice = this.detectMobileDevice();
@@ -230,7 +230,10 @@ IdleAnts.Game = class {
             
             // Initialize daily challenge manager
             this.dailyChallengeManager = new IdleAnts.Managers.DailyChallengeManager(this.resourceManager, this.achievementManager);
-            
+
+            // Initialize ability manager (god powers system)
+            this.abilityManager = new IdleAnts.AbilityManager(this);
+
             // Make it accessible globally for UI interactions
             IdleAnts.game = this;
             
@@ -249,9 +252,13 @@ IdleAnts.Game = class {
             this.updateMinimap();
             
             this.cameraManager.centerCameraOnNest();
-            
+
             this.setupAudioResumeOnInteraction();
             this.startBackgroundMusic();
+
+            // Start the session timer NOW (when gameplay actually begins)
+            this.sessionStartTime = Date.now();
+
             this.transitionToState(IdleAnts.Game.States.PLAYING);
         });
     }
@@ -848,10 +855,15 @@ IdleAnts.Game = class {
         
         // Update entities
         this.entityManager.update();
-        
+
         // Update effects
         this.effectManager.update();
-        
+
+        // Update ability manager (cooldowns, active effects)
+        if (this.abilityManager) {
+            this.abilityManager.update();
+        }
+
         // Update UI every 60 frames (approximately once per second at 60fps)
         // This is frequent enough for smooth updates but not too frequent to cause performance issues
         if (this.frameCounter % 60 === 0) {
