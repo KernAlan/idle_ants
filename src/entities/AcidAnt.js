@@ -364,18 +364,23 @@ IdleAnts.Entities.AcidAnt = class extends IdleAnts.Entities.AntBase {
             IdleAnts.app.stage.addChild(bubble);
             
             const animateBubble = () => {
+                // BUGFIX: Check if bubble still has a parent before continuing animation
+                if (!bubble.parent) {
+                    return; // Stop animation if parent was removed
+                }
+
                 bubble.x += bubble.vx;
                 bubble.y += bubble.vy;
                 bubble.life--;
                 bubble.alpha = (bubble.life / bubble.initialLife) * 0.7;
-                
+
                 // Chance to "pop" with a small effect
                 if (Math.random() < bubble.popChance) {
                     bubble.scale.set(bubble.scale.x * 1.5);
                     bubble.alpha *= 0.5;
                     bubble.life = Math.min(bubble.life, 5);
                 }
-                
+
                 if (bubble.life <= 0) {
                     if (bubble.parent) {
                         bubble.parent.removeChild(bubble);
@@ -384,7 +389,7 @@ IdleAnts.Entities.AcidAnt = class extends IdleAnts.Entities.AntBase {
                     requestAnimationFrame(animateBubble);
                 }
             };
-            animateBubble();
+            requestAnimationFrame(animateBubble); // BUGFIX: Use requestAnimationFrame for consistency
         }
     }
 
@@ -405,10 +410,15 @@ IdleAnts.Entities.AcidAnt = class extends IdleAnts.Entities.AntBase {
             IdleAnts.app.stage.addChild(aura);
             
             const animateAura = () => {
+                // BUGFIX: Check if aura still has a parent before continuing animation
+                if (!aura.parent) {
+                    return; // Stop animation if parent was removed
+                }
+
                 aura.life--;
                 aura.alpha = (aura.life / aura.initialLife) * 0.5;
                 aura.rotation += 0.05;
-                
+
                 if (aura.life <= 0) {
                     if (aura.parent) {
                         aura.parent.removeChild(aura);
@@ -417,7 +427,7 @@ IdleAnts.Entities.AcidAnt = class extends IdleAnts.Entities.AntBase {
                     requestAnimationFrame(animateAura);
                 }
             };
-            animateAura();
+            requestAnimationFrame(animateAura); // BUGFIX: Use requestAnimationFrame for consistency
         }
     }
 
@@ -461,6 +471,11 @@ IdleAnts.Entities.AcidAnt = class extends IdleAnts.Entities.AntBase {
 
             this.parent.addChild(drop);
             const animate = () => {
+                // BUGFIX: Check if drop still has a parent before continuing animation
+                if (!drop.parent) {
+                    return; // Stop animation if parent was removed
+                }
+
                 drop.x += drop.vx;
                 drop.life--;
                 drop.alpha = drop.life / drop.initialLife * 0.5;
@@ -469,7 +484,7 @@ IdleAnts.Entities.AcidAnt = class extends IdleAnts.Entities.AntBase {
                     if (drop.parent) drop.parent.removeChild(drop);
                 } else { requestAnimationFrame(animate); }
             };
-            animate();
+            requestAnimationFrame(animate); // BUGFIX: Use requestAnimationFrame for consistency
         }
     }
 
@@ -485,13 +500,18 @@ IdleAnts.Entities.AcidAnt = class extends IdleAnts.Entities.AntBase {
             speck.life = 18;
             this.parent.addChild(speck);
             const animate = () => {
+                // BUGFIX: Check if speck still has a parent before continuing animation
+                if (!speck.parent) {
+                    return; // Stop animation if parent was removed
+                }
+
                 speck.life--;
                 speck.alpha = speck.life / 18;
                 if (speck.life <= 0) {
                     if (speck.parent) speck.parent.removeChild(speck);
                 } else { requestAnimationFrame(animate); }
             };
-            animate();
+            requestAnimationFrame(animate); // BUGFIX: Use requestAnimationFrame for consistency
         }
     }
 

@@ -211,20 +211,27 @@ IdleAnts.Effects.AcidPuddleEffect = class extends IdleAnts.Effects.Effect {
             
             // Animate splash
             const animateSplash = () => {
+                // BUGFIX: Check if splash still has a parent before continuing animation
+                if (!splash.parent) {
+                    return; // Stop animation if parent was removed
+                }
+
                 splash.x += splash.vx;
                 splash.y += splash.vy;
                 splash.vx *= 0.9;
                 splash.vy *= 0.9;
                 splash.life--;
                 splash.alpha = splash.life / 15;
-                
+
                 if (splash.life <= 0) {
-                    this.container.removeChild(splash);
+                    if (splash.parent) {
+                        this.container.removeChild(splash);
+                    }
                 } else {
-                    setTimeout(animateSplash, 16);
+                    requestAnimationFrame(animateSplash); // BUGFIX: Use requestAnimationFrame instead of setTimeout
                 }
             };
-            setTimeout(animateSplash, 16);
+            requestAnimationFrame(animateSplash); // BUGFIX: Use requestAnimationFrame instead of setTimeout
         }
     }
     
@@ -273,10 +280,15 @@ IdleAnts.Effects.AcidPuddleEffect = class extends IdleAnts.Effects.Effect {
             
             // Animate acid splatter
             const updateSplatter = () => {
+                // BUGFIX: Check if splatter still has a parent before continuing animation
+                if (!acidSplatter.parent) {
+                    return; // Stop animation if parent was removed
+                }
+
                 acidSplatter.life--;
                 acidSplatter.alpha = acidSplatter.life / 20;
                 acidSplatter.scale.set(1 + (1 - acidSplatter.life / 20) * 0.5);
-                
+
                 if (acidSplatter.life <= 0) {
                     if (acidSplatter.parent) {
                         acidSplatter.parent.removeChild(acidSplatter);
@@ -285,7 +297,7 @@ IdleAnts.Effects.AcidPuddleEffect = class extends IdleAnts.Effects.Effect {
                     requestAnimationFrame(updateSplatter);
                 }
             };
-            updateSplatter();
+            requestAnimationFrame(updateSplatter); // BUGFIX: Use requestAnimationFrame for consistency
         }
     }
     

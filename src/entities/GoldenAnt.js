@@ -340,15 +340,20 @@ IdleAnts.Entities.GoldenAnt = class extends IdleAnts.Entities.AntBase {
                     // Animate sparkle with spin and expansion
                     let sparkleLife = 0;
                     const animateSparkle = () => {
+                        // BUGFIX: Check if sparkle still has a parent before continuing animation
+                        if (!sparkle.parent) {
+                            return; // Stop animation if parent was removed
+                        }
+
                         sparkleLife++;
                         sparkle.alpha = 1 - (sparkleLife / 40);
                         sparkle.scale.set((0.8 + sparkleLife / 80) * (1 + Math.random() * 0.2));
                         sparkle.rotation += 0.2 + Math.random() * 0.1;
-                        
+
                         // Move outward
                         sparkle.x += Math.cos(angle) * 0.5;
                         sparkle.y += Math.sin(angle) * 0.5;
-                        
+
                         if (sparkleLife >= 40) {
                             if (sparkle.parent) {
                                 sparkle.parent.removeChild(sparkle);
@@ -357,7 +362,7 @@ IdleAnts.Entities.GoldenAnt = class extends IdleAnts.Entities.AntBase {
                             requestAnimationFrame(animateSparkle);
                         }
                     };
-                    animateSparkle();
+                    requestAnimationFrame(animateSparkle); // BUGFIX: Use requestAnimationFrame for consistency
                 }
             }, wave * 100); // Stagger the waves
         }
@@ -381,10 +386,15 @@ IdleAnts.Entities.GoldenAnt = class extends IdleAnts.Entities.AntBase {
         // Animate the flash
         let flashLife = 0;
         const animateFlash = () => {
+            // BUGFIX: Check if flash still has a parent before continuing animation
+            if (!flash.parent) {
+                return; // Stop animation if parent was removed
+            }
+
             flashLife++;
             flash.alpha = 0.8 - (flashLife / 10);
             flash.scale.set(1 + flashLife / 20);
-            
+
             if (flashLife >= 10) {
                 if (flash.parent) {
                     flash.parent.removeChild(flash);
@@ -393,7 +403,7 @@ IdleAnts.Entities.GoldenAnt = class extends IdleAnts.Entities.AntBase {
                 requestAnimationFrame(animateFlash);
             }
         };
-        animateFlash();
+        requestAnimationFrame(animateFlash); // BUGFIX: Use requestAnimationFrame for consistency
     }
     
     update(nestPosition, foods) {
@@ -508,11 +518,16 @@ IdleAnts.Entities.GoldenAnt = class extends IdleAnts.Entities.AntBase {
             // Animate sparkle
             let sparkleLife = 0;
             const animateSparkle = () => {
+                // BUGFIX: Check if sparkle still has a parent before continuing animation
+                if (!sparkle.parent) {
+                    return; // Stop animation if parent was removed
+                }
+
                 sparkleLife++;
                 sparkle.alpha = 1 - (sparkleLife / 30);
                 sparkle.scale.set(0.5 + sparkleLife / 60);
                 sparkle.rotation += 0.1;
-                
+
                 if (sparkleLife >= 30) {
                     if (sparkle.parent) {
                         sparkle.parent.removeChild(sparkle);
@@ -521,7 +536,7 @@ IdleAnts.Entities.GoldenAnt = class extends IdleAnts.Entities.AntBase {
                     requestAnimationFrame(animateSparkle);
                 }
             };
-            animateSparkle();
+            requestAnimationFrame(animateSparkle); // BUGFIX: Use requestAnimationFrame for consistency
         }
     }
     
@@ -539,10 +554,15 @@ IdleAnts.Entities.GoldenAnt = class extends IdleAnts.Entities.AntBase {
         // Animate healing ring
         let scale = 1;
         const animateHeal = () => {
+            // BUGFIX: Check if healEffect still has a parent before continuing animation
+            if (!healEffect.parent) {
+                return; // Stop animation if parent was removed
+            }
+
             scale += 0.05;
             healEffect.scale.set(scale);
             healEffect.alpha = 2 - scale;
-            
+
             if (scale >= 2) {
                 if (healEffect.parent) {
                     healEffect.parent.removeChild(healEffect);
@@ -551,7 +571,7 @@ IdleAnts.Entities.GoldenAnt = class extends IdleAnts.Entities.AntBase {
                 requestAnimationFrame(animateHeal);
             }
         };
-        animateHeal();
+        requestAnimationFrame(animateHeal); // BUGFIX: Use requestAnimationFrame for consistency
     }
     
     createDamageResistEffect() {
@@ -619,12 +639,17 @@ IdleAnts.Entities.GoldenAnt = class extends IdleAnts.Entities.AntBase {
             // Animate particle
             let life = 0;
             const animateParticle = () => {
+                // BUGFIX: Check if particle still has a parent before continuing animation
+                if (!particle.parent) {
+                    return; // Stop animation if parent was removed
+                }
+
                 life++;
                 particle.x += particle.vx;
                 particle.y += particle.vy;
                 particle.alpha = 1 - (life / 60);
                 particle.scale.set(1 - life / 120);
-                
+
                 if (life >= 60) {
                     if (particle.parent) {
                         particle.parent.removeChild(particle);
@@ -633,7 +658,7 @@ IdleAnts.Entities.GoldenAnt = class extends IdleAnts.Entities.AntBase {
                     requestAnimationFrame(animateParticle);
                 }
             };
-            animateParticle();
+            requestAnimationFrame(animateParticle); // BUGFIX: Use requestAnimationFrame for consistency
         }
     }
 };

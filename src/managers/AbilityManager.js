@@ -140,7 +140,7 @@ class AbilityManager {
         const entityManager = this.game.entityManager;
         const mapWidth = 3000;
         const mapHeight = 2000;
-        const foodCount = 80; // MASSIVE FOOD STORM!
+        const foodCount = 50; // OPTIMIZED: Reduced from 80 for better performance
         const rainDuration = 15000; // 15 SECOND EPIC STORM!
 
         // Lightning flash effect!
@@ -185,26 +185,19 @@ class AbilityManager {
 
             // Stagger spawns with falling effect
             setTimeout(() => {
-                // Create falling raindrop effect from sky
+                // Create falling raindrop effect from sky (optimized - no intervals)
                 this.createFallingFoodEffect(x, y, foodType.color);
 
                 // Spawn actual food after "fall time"
                 setTimeout(() => {
                     entityManager.addFood({ x, y }, foodType);
 
-                    // Epic splash effect on landing
-                    if (this.game.effectManager) {
+                    // OPTIMIZED: Reduced effects - only spawn effect, no extra particles except for rare food
+                    if (this.game.effectManager && foodType === IdleAnts.Data.FoodTypes.MANGO) {
                         this.game.effectManager.createFoodSpawnEffect(x, y, foodType.color);
-
-                        // Extra sparkles for rare food
-                        if (foodType === IdleAnts.Data.FoodTypes.MANGO) {
-                            setTimeout(() => {
-                                this.game.effectManager.createFoodCollectEffect(x, y, 0xFFD700, 2.0);
-                            }, 100);
-                        }
                     }
                 }, 400); // Food appears after falling
-            }, i * 188); // Stagger spawns over full 15 seconds
+            }, i * 300); // OPTIMIZED: Increased spacing from 188ms to 300ms
         }
 
         // BONUS: Ants get excited and move faster during the rain!
@@ -255,7 +248,7 @@ class AbilityManager {
         if (!this.game.app) return;
 
         const raindrops = [];
-        const raindropCount = 400; // HEAVY RAIN!
+        const raindropCount = 150; // OPTIMIZED: Reduced from 400 for better performance
 
         // Create lots of raindrops
         for (let i = 0; i < raindropCount; i++) {
@@ -303,31 +296,26 @@ class AbilityManager {
     createFallingFoodEffect(targetX, targetY, color) {
         if (!this.game.app) return;
 
-        // Create a particle that falls from top to target position
-        const particle = new PIXI.Graphics();
-        particle.beginFill(color, 0.8);
-        particle.drawCircle(0, 0, 8);
-        particle.endFill();
+        // OPTIMIZED: Create simple visual trail without expensive setInterval
+        // Just create a few particles along the fall path
+        for (let i = 0; i < 3; i++) {
+            const particle = new PIXI.Graphics();
+            particle.beginFill(color, 0.6 - i * 0.15);
+            particle.drawCircle(0, 0, 6 - i);
+            particle.endFill();
 
-        // Start at top of screen, same X as target
-        particle.x = targetX;
-        particle.y = -50;
+            particle.x = targetX;
+            particle.y = -50 + (i * 30);
 
-        this.game.worldContainer.addChild(particle);
+            this.game.worldContainer.addChild(particle);
 
-        // Animate falling
-        const fallSpeed = 15;
-        const fallInterval = setInterval(() => {
-            particle.y += fallSpeed;
-
-            // Stop when reaching target
-            if (particle.y >= targetY) {
-                clearInterval(fallInterval);
+            // Simple fade and remove - no interval needed
+            setTimeout(() => {
                 if (particle.parent) {
                     this.game.worldContainer.removeChild(particle);
                 }
-            }
-        }, 16);
+            }, 300 + (i * 100));
+        }
     }
 
     activateRainSpeedBoost(duration) {
@@ -598,9 +586,9 @@ class AbilityManager {
                         ants.splice(index, 1);
                     }
 
-                    // Update resource manager count
+                    // No need to update resource manager count - mecha minions don't affect ant count
+                    // Just update the food per second calculation
                     if (this.game.resourceManager) {
-                        this.game.resourceManager.stats.ants = Math.max(0, this.game.resourceManager.stats.ants - 1);
                         this.game.resourceManager.updateFoodPerSecond();
                     }
                 }
@@ -1232,22 +1220,14 @@ class AbilityManager {
                         const index = arr.indexOf(clone);
                         if (index !== -1) {
                             arr.splice(index, 1);
-
-                            // Update resource manager count
-                            if (this.game.resourceManager) {
-                                if (arr === this.game.entityManager.entities.ants) {
-                                    this.game.resourceManager.stats.ants = Math.max(0, this.game.resourceManager.stats.ants - 1);
-                                } else if (arr === this.game.entityManager.entities.flyingAnts) {
-                                    this.game.resourceManager.stats.flyingAnts = Math.max(0, this.game.resourceManager.stats.flyingAnts - 1);
-                                } else if (arr === this.game.entityManager.entities.carAnts) {
-                                    this.game.resourceManager.stats.carAnts = Math.max(0, this.game.resourceManager.stats.carAnts - 1);
-                                } else if (arr === this.game.entityManager.entities.fireAnts) {
-                                    this.game.resourceManager.stats.fireAnts = Math.max(0, this.game.resourceManager.stats.fireAnts - 1);
-                                }
-                                this.game.resourceManager.updateFoodPerSecond();
-                            }
                         }
                     });
+
+                    // No need to update resource manager counts - shadow clones don't affect ant count
+                    // Just update the food per second calculation once after all clones removed
+                    if (this.game.resourceManager) {
+                        this.game.resourceManager.updateFoodPerSecond();
+                    }
                 }
             });
 
