@@ -59,7 +59,7 @@ IdleAnts.Managers.DailyChallengeManager = class {
                 type: 'unlock',
                 baseTarget: 1,
                 multiplier: 1,
-                reward: { type: 'food', amount: 10000 },
+                reward: { type: 'food', amount: 3000 },
                 icon: '🚁',
                 category: 'milestone'
             },
@@ -70,7 +70,7 @@ IdleAnts.Managers.DailyChallengeManager = class {
                 type: 'foodPerSecond',
                 baseTarget: 100,
                 multiplier: 1,
-                reward: { type: 'food', amount: 20000 },
+                reward: { type: 'food', amount: 2500 },
                 icon: '📈',
                 category: 'milestone'
             },
@@ -81,11 +81,11 @@ IdleAnts.Managers.DailyChallengeManager = class {
                 type: 'foodCollected',
                 baseTarget: 100000,
                 multiplier: 1,
-                reward: { type: 'food', amount: 25000 },
+                reward: { type: 'food', amount: 4000 },
                 icon: '🍯',
                 category: 'milestone'
             },
-            // Late Game (9-12)
+            // Late Game (9-11)
             largeColony: {
                 id: 'largeColony',
                 name: '🏛️ Ant Empire',
@@ -93,19 +93,8 @@ IdleAnts.Managers.DailyChallengeManager = class {
                 type: 'antCount',
                 baseTarget: 50,
                 multiplier: 1,
-                reward: { type: 'food', amount: 30000 },
+                reward: { type: 'food', amount: 5000 },
                 icon: '🏛️',
-                category: 'milestone'
-            },
-            allUnits: {
-                id: 'allUnits',
-                name: '🎖️ Full Arsenal',
-                description: 'Unlock all special ant types',
-                type: 'unlockAll',
-                baseTarget: 1,
-                multiplier: 1,
-                reward: { type: 'food', amount: 35000 },
-                icon: '🎖️',
                 category: 'milestone'
             },
             tarantulaSlayer: {
@@ -115,7 +104,7 @@ IdleAnts.Managers.DailyChallengeManager = class {
                 type: 'boss',
                 baseTarget: 1,
                 multiplier: 1,
-                reward: { type: 'food', amount: 40000 },
+                reward: { type: 'food', amount: 5000 },
                 icon: '🕸️',
                 category: 'milestone'
             },
@@ -126,7 +115,7 @@ IdleAnts.Managers.DailyChallengeManager = class {
                 type: 'foodPerSecond',
                 baseTarget: 800,
                 multiplier: 1,
-                reward: { type: 'food', amount: 50000 },
+                reward: { type: 'food', amount: 5000 },
                 icon: '🚀',
                 category: 'milestone'
             }
@@ -145,7 +134,6 @@ IdleAnts.Managers.DailyChallengeManager = class {
             efficiency100: 0,
             foodHoarder: 0,
             largeColony: 0,
-            allUnits: 0,
             tarantulaSlayer: 0,
             efficiency800: 0
         };
@@ -264,20 +252,6 @@ IdleAnts.Managers.DailyChallengeManager = class {
         if (unitType === 'flyingAnts') {
             this.updateChallengeProgress('flyingAnts', 1);
         }
-        
-        // Check if all units are unlocked after any unlock
-        this.checkAllUnitsUnlocked();
-    }
-    
-    // Check if all special units are unlocked
-    checkAllUnitsUnlocked() {
-        const allUnlocked = this.resourceManager.stats.flyingAntsUnlocked && 
-                          this.resourceManager.stats.carAntsUnlocked && 
-                          this.resourceManager.stats.fireAntsUnlocked && 
-                          this.resourceManager.stats.queenUnlocked;
-        if (allUnlocked) {
-            this.updateChallengeProgress('allUnits', 1);
-        }
     }
     
     // Track boss defeats
@@ -293,11 +267,8 @@ IdleAnts.Managers.DailyChallengeManager = class {
         const totalFoodCollected = this.achievementManager.progress.foodCollected || 0;
         this.updateChallengeProgress('firstMilestone', totalFoodCollected);
         this.updateChallengeProgress('foodHoarder', totalFoodCollected);
-        
-        // Track efficiency milestones using actual food rate (rounded to whole numbers)
-        const actualFoodPerSecond = Math.floor(this.resourceManager.getActualFoodRate() || 0);
-        this.updateChallengeProgress('efficiency100', actualFoodPerSecond);
-        this.updateChallengeProgress('efficiency800', actualFoodPerSecond);
+
+        // Don't track efficiency here - it's tracked in updateTracking() to avoid spikes from manual clicking
     }
     
     // Update tracking - simplified for milestone challenges
@@ -331,10 +302,7 @@ IdleAnts.Managers.DailyChallengeManager = class {
         if (this.resourceManager.stats.flyingAntsUnlocked) {
             this.updateChallengeProgress('flyingAnts', 1);
         }
-        
-        // Check if all units are unlocked
-        this.checkAllUnitsUnlocked();
-        
+
         // Check boss defeats (these need to be tracked when bosses are defeated)
         if (this.bossesDefeated.tarantula) {
             this.updateChallengeProgress('tarantulaSlayer', 1);
