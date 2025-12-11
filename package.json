@@ -18,7 +18,8 @@
   "devDependencies": {
     "http-server": "^14.1.1",
     "vite": "^5.0.0",
-    "@capacitor/cli": "^6.0.0"
+    "@capacitor/cli": "^6.0.0",
+    "typescript": "^5.6.0"
   },
   "dependencies": {
     "@capacitor/core": "^6.0.0",
