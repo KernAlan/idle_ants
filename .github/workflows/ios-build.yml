@@ -29,6 +29,33 @@ jobs:
           npx cap add ios || true
           npx cap sync ios
 
+      - name: Install signing certificate and provisioning profile
+        run: |
+          set -e
+
+          KEYCHAIN_PASSWORD="$IOS_CERT_PASSWORD"
+
+          echo "$IOS_CERT_P12_BASE64" | base64 --decode > signing_cert.p12
+          echo "$IOS_PROFILE_BASE64" | base64 --decode > ios_profile.mobileprovision
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security set-keychain-settings -lut 21600 build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+
+          security import signing_cert.p12 -k build.keychain -P "$IOS_CERT_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+          security list-keychains -d user -s build.keychain login.keychain-db
+
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin <<< "$(security cms -D -i ios_profile.mobileprovision)")
+          UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" /dev/stdin <<< "$(security cms -D -i ios_profile.mobileprovision)")
+          cp ios_profile.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/$UUID.mobileprovision"
+
+          echo "PROVISIONING_PROFILE_SPECIFIER=$PROFILE_NAME" >> "$GITHUB_ENV"
+        env:
+          IOS_CERT_P12_BASE64: ${{ secrets.IOS_CERT_P12_BASE64 }}
+          IOS_CERT_PASSWORD: ${{ secrets.IOS_CERT_PASSWORD }}
+          IOS_PROFILE_BASE64: ${{ secrets.IOS_PROFILE_BASE64 }}
+
       - name: Build iOS archive
         run: |
           set -e
@@ -42,10 +69,11 @@ jobs:
             clean archive \
             DEVELOPMENT_TEAM=${APPLE_TEAM_ID} \
             PRODUCT_BUNDLE_IDENTIFIER=${BUNDLE_ID} \
-            -allowProvisioningUpdates
+            PROVISIONING_PROFILE_SPECIFIER="${PROVISIONING_PROFILE_SPECIFIER}"
         env:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           BUNDLE_ID: ${{ secrets.BUNDLE_ID }}
+          PROVISIONING_PROFILE_SPECIFIER: ${{ env.PROVISIONING_PROFILE_SPECIFIER }}
 
       - name: Create ExportOptions.plist
         run: |
