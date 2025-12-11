@@ -35,8 +35,19 @@ jobs:
 
           KEYCHAIN_PASSWORD="$IOS_CERT_PASSWORD"
 
-          echo "$IOS_CERT_P12_BASE64" | base64 --decode > signing_cert.p12
-          echo "$IOS_PROFILE_BASE64" | base64 --decode > ios_profile.mobileprovision
+          # Decode secrets robustly (strip whitespace/newlines).
+          printf '%s' "$IOS_CERT_P12_BASE64" | tr -d '\n\r ' | base64 -D > signing_cert.p12
+          printf '%s' "$IOS_PROFILE_BASE64" | tr -d '\n\r ' | base64 -D > ios_profile.mobileprovision
+
+          echo "Decoded signing_cert.p12 bytes: $(stat -f%z signing_cert.p12)"
+          echo "Decoded ios_profile.mobileprovision bytes: $(stat -f%z ios_profile.mobileprovision)"
+          echo "signing_cert.p12 sha256: $(shasum -a 256 signing_cert.p12 | awk '{print $1}')"
+          if [ -n "${IOS_CERT_P12_SHA256:-}" ]; then
+            if [ "$(shasum -a 256 signing_cert.p12 | awk '{print $1}')" != "$IOS_CERT_P12_SHA256" ]; then
+              echo "P12 SHA256 mismatch; check IOS_CERT_P12_BASE64 secret."
+              exit 1
+            fi
+          fi
 
           security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
           security set-keychain-settings -lut 21600 build.keychain
