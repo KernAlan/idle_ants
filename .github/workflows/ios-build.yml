@@ -1,0 +1,107 @@
+name: iOS App Store Build
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-upload:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Add and sync Capacitor iOS
+        run: |
+          npx cap add ios || true
+          npx cap sync ios
+
+      - name: Build iOS archive
+        run: |
+          set -e
+          cd ios/App
+          xcodebuild \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$PWD/build/App.xcarchive" \
+            clean archive \
+            DEVELOPMENT_TEAM=${APPLE_TEAM_ID} \
+            PRODUCT_BUNDLE_IDENTIFIER=${BUNDLE_ID} \
+            -allowProvisioningUpdates
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          BUNDLE_ID: ${{ secrets.BUNDLE_ID }}
+
+      - name: Create ExportOptions.plist
+        run: |
+          cd ios/App
+          cat > ExportOptions.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>uploadBitcode</key>
+            <false/>
+            <key>uploadSymbols</key>
+            <true/>
+            <key>compileBitcode</key>
+            <true/>
+            <key>signingStyle</key>
+            <string>automatic</string>
+            <key>teamID</key>
+            <string>${APPLE_TEAM_ID}</string>
+          </dict>
+          </plist>
+          EOF
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+
+      - name: Export .ipa
+        run: |
+          cd ios/App
+          xcodebuild -exportArchive \
+            -archivePath "$PWD/build/App.xcarchive" \
+            -exportOptionsPlist ExportOptions.plist \
+            -exportPath "$PWD/build/export" \
+            -allowProvisioningUpdates
+
+      - name: Upload .ipa to App Store Connect
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          KEY_PATH="$HOME/.appstoreconnect/private_keys/AuthKey_${APP_STORE_KEY_ID}.p8"
+          printf '%s' "${APP_STORE_KEY_CONTENT}" > "$KEY_PATH"
+          chmod 600 "$KEY_PATH"
+
+          IPA_PATH="ios/App/build/export/App.ipa"
+          xcrun altool --upload-app \
+            -f "$IPA_PATH" \
+            -t ios \
+            --apiKey "${APP_STORE_KEY_ID}" \
+            --apiIssuer "${APP_STORE_ISSUER_ID}"
+        env:
+          APP_STORE_KEY_ID: ${{ secrets.APP_STORE_KEY_ID }}
+          APP_STORE_ISSUER_ID: ${{ secrets.APP_STORE_ISSUER_ID }}
+          APP_STORE_KEY_CONTENT: ${{ secrets.APP_STORE_KEY_CONTENT }}
+
+      - name: Save .ipa as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa
+          path: ios/App/build/export/App.ipa

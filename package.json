@@ -9,13 +9,20 @@
     "build": "vite build",
     "preview": "vite preview",
     "legacy:bundle": "node build.js",
-    "legacy:serve": "http-server -o -c-1"
+    "legacy:serve": "http-server -o -c-1",
+    "cap:init": "npx cap init IdleAnts com.alankern.idleants --web-dir=dist || true",
+    "cap:sync": "npx cap sync",
+    "cap:copy": "npx cap copy",
+    "cap:ios": "npm run build && npx cap sync ios && npx cap open ios"
   },
   "devDependencies": {
     "http-server": "^14.1.1",
-    "vite": "^5.0.0"
+    "vite": "^5.0.0",
+    "@capacitor/cli": "^6.0.0"
   },
   "dependencies": {
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/ios": "^6.0.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "pg": "^8.16.3"
