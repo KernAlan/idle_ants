@@ -61,9 +61,10 @@ jobs:
           PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin <<< "$PROFILE_PLIST")
           UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" /dev/stdin <<< "$PROFILE_PLIST")
           DIST_TYPE=$(/usr/libexec/PlistBuddy -c "Print :ProfileDistributionType" /dev/stdin <<< "$PROFILE_PLIST" || true)
+          # Apple profiles may omit ProfileDistributionType; treat that as "unknown" and continue.
           if [ -n "$DIST_TYPE" ] && [ "$DIST_TYPE" != "APPSTORE" ]; then
-            echo "Provisioning profile '$PROFILE_NAME' is '$DIST_TYPE' (expected APPSTORE)."
-            echo "Create and use an iOS App Store provisioning profile for ${BUNDLE_ID}."
+            echo "Provisioning profile '$PROFILE_NAME' is '$DIST_TYPE' (expected APPSTORE or empty)."
+            echo "Create and use an App Store Connect distribution provisioning profile for ${BUNDLE_ID}."
             exit 1
           fi
           cp ios_profile.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/$UUID.mobileprovision"
