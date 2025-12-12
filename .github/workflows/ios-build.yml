@@ -67,9 +67,15 @@ jobs:
             echo "Create and use an App Store Connect distribution provisioning profile for ${BUNDLE_ID}."
             exit 1
           fi
+          if /usr/libexec/PlistBuddy -c "Print :ProvisionedDevices" /dev/stdin <<< "$PROFILE_PLIST" >/dev/null 2>&1; then
+            echo "Provisioning profile '$PROFILE_NAME' contains ProvisionedDevices (not App Store Connect distribution)."
+            echo "Create and use an App Store Connect distribution provisioning profile for ${BUNDLE_ID}."
+            exit 1
+          fi
           cp ios_profile.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/$UUID.mobileprovision"
 
           echo "PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
+          echo "Using provisioning profile: $PROFILE_NAME ($UUID)"
         env:
           IOS_CERT_P12_BASE64: ${{ secrets.IOS_CERT_P12_BASE64 }}
           IOS_CERT_PASSWORD: ${{ secrets.IOS_CERT_PASSWORD }}
@@ -110,21 +116,12 @@ jobs:
             <key>teamID</key>
             <string>${APPLE_TEAM_ID}</string>
             <key>signingStyle</key>
-            <string>manual</string>
-            <key>signingCertificate</key>
-            <string>Apple Distribution</string>
-            <key>provisioningProfiles</key>
-            <dict>
-              <key>${BUNDLE_ID}</key>
-              <string>${PROFILE_NAME}</string>
-            </dict>
+            <string>automatic</string>
           </dict>
           </plist>
           EOF
         env:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          BUNDLE_ID: ${{ secrets.BUNDLE_ID }}
-          PROFILE_NAME: ${{ env.PROFILE_NAME }}
 
       - name: Export .ipa
         run: |
