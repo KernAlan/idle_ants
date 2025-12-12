@@ -125,8 +125,6 @@ jobs:
         run: |
           cd ios/App
           xcodebuild -exportArchive \
-            -workspace App.xcworkspace \
-            -scheme App \
             -archivePath "$PWD/build/App.xcarchive" \
             -exportOptionsPlist ExportOptions.plist \
             -exportPath "$PWD/build/export"
