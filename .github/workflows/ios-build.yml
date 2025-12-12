@@ -79,8 +79,9 @@ jobs:
             -destination 'generic/platform=iOS' \
             -archivePath "$PWD/build/App.xcarchive" \
             clean archive \
-            DEVELOPMENT_TEAM=${APPLE_TEAM_ID} \
-            PRODUCT_BUNDLE_IDENTIFIER=${BUNDLE_ID}
+            PRODUCT_BUNDLE_IDENTIFIER=${BUNDLE_ID} \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO
         env:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           BUNDLE_ID: ${{ secrets.BUNDLE_ID }}
