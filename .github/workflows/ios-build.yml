@@ -57,8 +57,15 @@ jobs:
           security list-keychains -d user -s build.keychain login.keychain-db
 
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin <<< "$(security cms -D -i ios_profile.mobileprovision)")
-          UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" /dev/stdin <<< "$(security cms -D -i ios_profile.mobileprovision)")
+          PROFILE_PLIST="$(security cms -D -i ios_profile.mobileprovision)"
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin <<< "$PROFILE_PLIST")
+          UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" /dev/stdin <<< "$PROFILE_PLIST")
+          DIST_TYPE=$(/usr/libexec/PlistBuddy -c "Print :ProfileDistributionType" /dev/stdin <<< "$PROFILE_PLIST" || true)
+          if [ -n "$DIST_TYPE" ] && [ "$DIST_TYPE" != "APPSTORE" ]; then
+            echo "Provisioning profile '$PROFILE_NAME' is '$DIST_TYPE' (expected APPSTORE)."
+            echo "Create and use an iOS App Store provisioning profile for ${BUNDLE_ID}."
+            exit 1
+          fi
           cp ios_profile.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/$UUID.mobileprovision"
 
           echo "PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
@@ -66,6 +73,7 @@ jobs:
           IOS_CERT_P12_BASE64: ${{ secrets.IOS_CERT_P12_BASE64 }}
           IOS_CERT_PASSWORD: ${{ secrets.IOS_CERT_PASSWORD }}
           IOS_PROFILE_BASE64: ${{ secrets.IOS_PROFILE_BASE64 }}
+          BUNDLE_ID: ${{ secrets.BUNDLE_ID }}
 
       - name: Build iOS archive
         run: |
@@ -95,12 +103,8 @@ jobs:
           <plist version="1.0">
           <dict>
             <key>method</key>
-            <string>app-store</string>
-            <key>uploadBitcode</key>
-            <false/>
+            <string>app-store-connect</string>
             <key>uploadSymbols</key>
-            <true/>
-            <key>compileBitcode</key>
             <true/>
             <key>teamID</key>
             <string>${APPLE_TEAM_ID}</string>
