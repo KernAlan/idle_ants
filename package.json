@@ -7,13 +7,14 @@
     "dev": "vite",
     "start": "vite",
     "build": "vite build",
+    "build:cap": "node scripts/build-capacitor-web.mjs",
     "preview": "vite preview",
     "legacy:bundle": "node build.js",
     "legacy:serve": "http-server -o -c-1",
-    "cap:init": "npx cap init IdleAnts com.alankern.idleants --web-dir=dist || true",
+    "cap:init": "npx cap init IdleAnts com.alankern.idleants --web-dir=web || true",
     "cap:sync": "npx cap sync",
     "cap:copy": "npx cap copy",
-    "cap:ios": "npm run build && npx cap sync ios && npx cap open ios"
+    "cap:ios": "npm run build:cap && npx cap sync ios && npx cap open ios"
   },
   "devDependencies": {
     "http-server": "^14.1.1",

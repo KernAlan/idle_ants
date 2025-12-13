@@ -3,8 +3,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.alankern.idleants',
   appName: 'Idle Ants',
-  webDir: 'dist',
-  bundledWebRuntime: false,
+  webDir: 'web',
   ios: {
     contentInset: 'never',
     backgroundColor: '#000000'

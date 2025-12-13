@@ -21,8 +21,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build web app
-        run: npm run build
+      - name: Build web app (Capacitor)
+        run: npm run build:cap
 
       - name: Add and sync Capacitor iOS
         run: |

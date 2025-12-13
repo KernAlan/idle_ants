@@ -4,6 +4,8 @@ node_modules/
 # Build outputs
 dist/
 bundle.js
+web/
+signing/
 
 # Development
 .vite/

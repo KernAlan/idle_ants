@@ -19,10 +19,10 @@ This installs Vite, Capacitor, and related tooling.
 ## 2. Build the web app
 
 ```bash
-npm run build
+npm run build:cap
 ```
 
-This produces the production build in `dist/`, which Capacitor will bundle.
+This produces the Capacitor web bundle in `web/`, which Capacitor will bundle.
 
 ## 3. Initialize Capacitor (first time only)
 
