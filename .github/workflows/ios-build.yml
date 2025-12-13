@@ -61,6 +61,8 @@ jobs:
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
 
           security import signing_cert.p12 -k build.keychain -P "$IOS_CERT_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+          # Allow codesign/xcodebuild to use the imported key without interactive prompts.
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" build.keychain
           security list-keychains -d user -s build.keychain login.keychain-db
 
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
@@ -166,6 +168,22 @@ jobs:
           path: |
             ios/App/build/export.xcresult
             ios/App/build/export
+
+      - name: Collect Xcode distribution logs
+        if: always()
+        run: |
+          set -e
+          mkdir -p ios/App/build/xcdistributionlogs
+          find /var/folders -type d -name "*.xcdistributionlogs" -maxdepth 5 2>/dev/null | head -n 20
+          find /var/folders -type d -name "*.xcdistributionlogs" -maxdepth 5 2>/dev/null | xargs -I {} cp -R "{}" ios/App/build/xcdistributionlogs/ 2>/dev/null || true
+
+      - name: Upload distribution logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-xcdistributionlogs
+          if-no-files-found: ignore
+          path: ios/App/build/xcdistributionlogs
 
       - name: Upload .ipa to App Store Connect
         run: |
