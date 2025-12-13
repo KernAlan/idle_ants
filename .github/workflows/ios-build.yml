@@ -106,7 +106,6 @@ jobs:
             -archivePath "$PWD/build/App.xcarchive" \
             clean archive \
             DEVELOPMENT_TEAM=${APPLE_TEAM_ID} \
-            PRODUCT_BUNDLE_IDENTIFIER=${BUNDLE_ID} \
             CODE_SIGN_STYLE=Automatic \
             -allowProvisioningUpdates \
             -authenticationKeyPath "${AUTH_KEY_PATH}" \
@@ -114,7 +113,6 @@ jobs:
             -authenticationKeyIssuerID "${APP_STORE_ISSUER_ID}"
         env:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          BUNDLE_ID: ${{ secrets.BUNDLE_ID }}
           APP_STORE_KEY_ID: ${{ secrets.APP_STORE_KEY_ID }}
           APP_STORE_ISSUER_ID: ${{ secrets.APP_STORE_ISSUER_ID }}
           AUTH_KEY_PATH: ${{ env.AUTH_KEY_PATH }}
@@ -158,6 +156,24 @@ jobs:
           APP_STORE_KEY_ID: ${{ secrets.APP_STORE_KEY_ID }}
           APP_STORE_ISSUER_ID: ${{ secrets.APP_STORE_ISSUER_ID }}
           AUTH_KEY_PATH: ${{ env.AUTH_KEY_PATH }}
+
+      - name: Inspect .ipa bundle identifiers
+        if: always()
+        run: |
+          set -e
+          IPA="ios/App/build/export/App.ipa"
+          if [ ! -f "$IPA" ]; then
+            echo "No IPA found at $IPA"
+            exit 0
+          fi
+          rm -rf ios/App/build/ipa_inspect
+          mkdir -p ios/App/build/ipa_inspect
+          (cd ios/App/build/ipa_inspect && unzip -q "../export/App.ipa")
+          echo "Bundle identifiers in IPA:"
+          find ios/App/build/ipa_inspect/Payload -name Info.plist -print0 | while IFS= read -r -d '' plist; do
+            bid=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$plist" 2>/dev/null || true)
+            echo "$bid  ($plist)"
+          done | sort
 
       - name: Upload export diagnostics
         if: always()
