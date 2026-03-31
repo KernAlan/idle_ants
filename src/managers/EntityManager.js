@@ -572,24 +572,41 @@ IdleAnts.Managers.EntityManager = class {
         // Ensure position is within map bounds
         const x = Math.max(20, Math.min(position.x, this.mapBounds.width - 20));
         const y = Math.max(20, Math.min(position.y, this.mapBounds.height - 20));
-        
+
+        // Easter egg: bottom-left corner (150x150 zone) activates god tier
+        if (position.clickPlaced && !this.resourceManager.stats.godTierUnlocked
+            && x <= 150 && y >= this.mapBounds.height - 150) {
+            if (this.resourceManager.activateGodTier()) {
+                // Play the explosion effect instead of placing food
+                if (this.effectManager) {
+                    this.effectManager.createEasterEggExplosion(x, y);
+                }
+                // Spawn a god tier food item at the spot after a short delay
+                setTimeout(() => {
+                    const godType = IdleAnts.Data.FoodTypes.GOD_TIER;
+                    this.addFood({ x, y, clickPlaced: false }, godType);
+                }, 1500);
+                return; // Don't place the original food
+            }
+        }
+
         // Ensure we have a valid food type with required properties
-        const validFoodType = foodType && foodType.scale && typeof foodType.scale.min !== 'undefined' 
-            ? foodType 
+        const validFoodType = foodType && foodType.scale && typeof foodType.scale.min !== 'undefined'
+            ? foodType
             : IdleAnts.Data.FoodTypes.BASIC;
-        
+
         try {
             const food = new IdleAnts.Entities.Food(
                 this.assetManager.getTexture('food'),
                 { x, y, clickPlaced: position.clickPlaced || false },
                 validFoodType
             );
-            
+
             // Check if this food was placed by the player's click
             if (position.clickPlaced && this.effectManager) {
                 this.effectManager.createFoodSpawnEffect(x, y, validFoodType.glowColor);
             }
-            
+
             this.entitiesContainers.food.addChild(food);
             this.entities.foods.push(food);
         } catch (error) {

@@ -481,6 +481,23 @@ IdleAnts.Data.FoodTypes = {
         glowColor: 0xF4A460,   // Sandy brown glow
         glowAlpha: 0.4,
         description: 'Perfectly crispy chicken nuggets!'
+    },
+
+    // === GOD TIER - Easter Egg Unlock ===
+    GOD_TIER: {
+        id: 'godTier',
+        name: 'Ambrosia',
+        value: 9999,
+        weight: 1,
+        collectionTime: 0,
+        rarity: 10,
+        scale: {min: 1.8, max: 2.5},
+        color: 0xFFD700,       // Golden
+        shadowColor: 0xDAA520, // Goldenrod shadow
+        glowColor: 0xFFF8DC,   // Warm cornsilk glow
+        glowAlpha: 0.9,        // Maximum glow
+        isGodTier: true,       // Flag for special cube rendering
+        description: 'Food of the gods. Found by those who seek the forgotten corner.'
     }
 };
 

@@ -14,7 +14,8 @@ IdleAnts.Managers.EffectManager = class {
             'gasCloud': IdleAnts.Effects.GasCloudEffect,
             'acidPuddle': IdleAnts.Effects.AcidPuddleEffect,
             'rainbowTrail': IdleAnts.Effects.RainbowTrailEffect,
-            'electricExplosion': IdleAnts.Effects.ElectricExplosionEffect
+            'electricExplosion': IdleAnts.Effects.ElectricExplosionEffect,
+            'easterEggExplosion': IdleAnts.Effects.EasterEggExplosionEffect
         };
         
         // Call the static registerEffects method if it exists
@@ -121,6 +122,10 @@ IdleAnts.Managers.EffectManager = class {
         return this.createEffect('larvae', x, y, color, scale);
     }
     
+    createEasterEggExplosion(x, y) {
+        return this.createEffect('easterEggExplosion', x, y);
+    }
+
     createFoodRewardEffect(x, y, amount) {
         // Create multiple food collect effects to show reward
         const numEffects = Math.min(8, Math.floor(amount / 20) + 1);

@@ -85,17 +85,22 @@ IdleAnts.Entities.Food = class extends PIXI.Sprite {
         
         // Apply food type-specific visual enhancements
         this.applyFoodTypeVisuals();
-        
+
         // Add a glowing effect
         this.createGlow();
-        
+
         // Add a shadow
         this.createShadow();
-        
+
+        // God tier: draw golden cube overlay and shimmer
+        if (this.foodType.isGodTier) {
+            this.createGodTierCube();
+        }
+
         // Add a slight pulsing animation
         this.glowPulse = true;
         this.glowCounter = Math.random() * Math.PI * 2; // Random start phase
-        this.glowPulseSpeed = 1;
+        this.glowPulseSpeed = this.foodType.isGodTier ? 2.5 : 1;
         
         // Track ants currently collecting this food item
         this.collectingAnts = [];
@@ -288,16 +293,26 @@ IdleAnts.Entities.Food = class extends PIXI.Sprite {
         if (this.glowPulse && this.glow) {
             this.glowCounter += 0.05 * (this.glowPulseSpeed || 1);
             const pulseFactor = 0.6 + Math.sin(this.glowCounter) * 0.4;
-            
+
             // Apply pulse to the glow
             if (!this.glow.baseScale) {
                 // Store the initial scale as the base scale
                 this.glow.baseScale = 1.0;
             }
-            
+
             // Scale the glow based on the pulse factor
-            // We don't modify the actual scale.x/y values directly to avoid compounding scaling effects
             this.glow.scale.set(this.glow.baseScale * pulseFactor);
+        }
+
+        // God tier shimmer: orbit sparkles around the cube
+        if (this.shimmerParticles) {
+            for (const spark of this.shimmerParticles) {
+                spark.phase += 0.04;
+                spark.x = Math.cos(spark.phase) * spark.orbitRadius;
+                spark.y = Math.sin(spark.phase) * spark.orbitRadius * 0.5; // squashed for isometric feel
+                spark.alpha = 0.5 + Math.sin(spark.phase * 3) * 0.5;
+                spark.scale.set(0.6 + Math.sin(spark.phase * 2) * 0.4);
+            }
         }
     }
     
@@ -503,6 +518,58 @@ IdleAnts.Entities.Food = class extends PIXI.Sprite {
         }
     }
     
+    createGodTierCube() {
+        // Draw an isometric golden cube
+        const cube = new PIXI.Graphics();
+        const s = 10; // half-size of the cube face
+
+        // Top face (brightest gold)
+        cube.beginFill(0xFFE34D);
+        cube.moveTo(0, -s);
+        cube.lineTo(s, -s * 0.5);
+        cube.lineTo(0, 0);
+        cube.lineTo(-s, -s * 0.5);
+        cube.closePath();
+        cube.endFill();
+
+        // Left face (medium gold)
+        cube.beginFill(0xDAA520);
+        cube.moveTo(-s, -s * 0.5);
+        cube.lineTo(0, 0);
+        cube.lineTo(0, s);
+        cube.lineTo(-s, s * 0.5);
+        cube.closePath();
+        cube.endFill();
+
+        // Right face (dark gold)
+        cube.beginFill(0xB8860B);
+        cube.moveTo(s, -s * 0.5);
+        cube.lineTo(0, 0);
+        cube.lineTo(0, s);
+        cube.lineTo(s, s * 0.5);
+        cube.closePath();
+        cube.endFill();
+
+        this.godCube = cube;
+        this.addChild(cube);
+
+        // Add shimmer sparkles around the cube
+        this.shimmerParticles = [];
+        for (let i = 0; i < 6; i++) {
+            const spark = new PIXI.Graphics();
+            spark.beginFill(0xFFFFF0);
+            spark.drawStar ? spark.drawStar(0, 0, 4, 1, 3) : spark.drawCircle(0, 0, 1.5);
+            spark.endFill();
+            spark.phase = (i / 6) * Math.PI * 2;
+            spark.orbitRadius = s * 1.5 + Math.random() * 4;
+            this.shimmerParticles.push(spark);
+            this.addChild(spark);
+        }
+
+        // Override rotation so cube stays upright
+        this.rotation = 0;
+    }
+
     // Get the value of this food
     getValue() {
         return this.foodType && this.foodType.value ? this.foodType.value : 1;
