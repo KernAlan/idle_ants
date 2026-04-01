@@ -30,8 +30,8 @@ IdleAnts.Managers.ResourceManager = class {
             strengthMultiplier: 1, // Now represents the actual carrying capacity
             // Food tier properties
             foodTier: 1,  // Start with basic food (tier 1)
-            maxFoodTier: 17, // 16 normal tiers + 1 god tier easter egg
-            godTierUnlocked: false, // Easter egg flag
+            maxFoodTier: 16, // Now includes all new food types
+            godTierUnlocked: false, // Easter egg: ambrosia trove discovered
             // Autofeeder properties
             autofeederUnlocked: false,
             autofeederLevel: 0,
@@ -145,8 +145,7 @@ IdleAnts.Managers.ResourceManager = class {
             13: IdleAnts.Data.FoodTypes.BROWNIE,
             14: IdleAnts.Data.FoodTypes.COTTON_CANDY,
             15: IdleAnts.Data.FoodTypes.BANANA_POP,
-            16: IdleAnts.Data.FoodTypes.CUPCAKE,
-            17: IdleAnts.Data.FoodTypes.GOD_TIER
+            16: IdleAnts.Data.FoodTypes.CUPCAKE
         };
         
         // Food collection rate tracking
@@ -386,14 +385,6 @@ IdleAnts.Managers.ResourceManager = class {
         }
     }
     
-    // Easter egg: activate god tier food, skipping all previous tiers
-    activateGodTier() {
-        if (this.stats.godTierUnlocked) return false;
-        this.stats.godTierUnlocked = true;
-        this.stats.foodTier = 17;
-        return true;
-    }
-
     // Check if food can be upgraded further
     canUpgradeFoodTier() {
         return this.stats.foodTier < this.stats.maxFoodTier;

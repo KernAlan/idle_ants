@@ -573,21 +573,31 @@ IdleAnts.Managers.EntityManager = class {
         const x = Math.max(20, Math.min(position.x, this.mapBounds.width - 20));
         const y = Math.max(20, Math.min(position.y, this.mapBounds.height - 20));
 
-        // Easter egg: bottom-left corner (150x150 zone) activates god tier
+        // Easter egg: bottom-left corner (150x150 zone) spawns ambrosia trove
         if (position.clickPlaced && !this.resourceManager.stats.godTierUnlocked
             && x <= 150 && y >= this.mapBounds.height - 150) {
-            if (this.resourceManager.activateGodTier()) {
-                // Play the explosion effect instead of placing food
-                if (this.effectManager) {
-                    this.effectManager.createEasterEggExplosion(x, y);
-                }
-                // Spawn a god tier food item at the spot after a short delay
-                setTimeout(() => {
-                    const godType = IdleAnts.Data.FoodTypes.GOD_TIER;
-                    this.addFood({ x, y, clickPlaced: false }, godType);
-                }, 1500);
-                return; // Don't place the original food
+            this.resourceManager.stats.godTierUnlocked = true;
+            // Play the explosion effect
+            if (this.effectManager) {
+                this.effectManager.createEasterEggExplosion(x, y);
             }
+            // Spawn a massive trove of ambrosia scattered around the click point
+            const godType = IdleAnts.Data.FoodTypes.GOD_TIER;
+            const troveCount = 30;
+            for (let i = 0; i < troveCount; i++) {
+                const delay = 1500 + i * 80;
+                setTimeout(() => {
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = 30 + Math.random() * 250;
+                    const fx = Math.max(20, Math.min(x + Math.cos(angle) * dist, this.mapBounds.width - 20));
+                    const fy = Math.max(20, Math.min(y + Math.sin(angle) * dist, this.mapBounds.height - 20));
+                    this.addFood({ x: fx, y: fy, clickPlaced: false }, godType);
+                    if (this.effectManager) {
+                        this.effectManager.createFoodSpawnEffect(fx, fy, godType.glowColor);
+                    }
+                }, delay);
+            }
+            return; // Don't place the original food
         }
 
         // Ensure we have a valid food type with required properties
