@@ -1040,12 +1040,17 @@ IdleAnts.Game = class {
             return;
         }
         
-        // Pre-position camera to show boss entrance area BEFORE spawning boss
+        // Pre-position camera to show boss entrance area BEFORE spawning boss.
+        // Derive the pan target from the pending boss config so bosses that enter
+        // from different y-values (hornet=100, spider/tarantula=200, etc.) are framed.
         if (this.cameraManager) {
-            const bossSpawnX = this.mapConfig.width / 2;  // 1500 - center X
-            const bossSpawnY = 150;                       // Near top of map
-            
-            this.cameraManager.startCinematicPanTo(bossSpawnX, bossSpawnY, 1000); // 1 second to get into position
+            const panConfig = this.pendingBossConfig || IdleAnts.Data.BossConfigUtils.getBossConfig('anteater');
+            const panTarget = IdleAnts.Data.BossConfigUtils.calculateSpawnPosition(
+                panConfig,
+                { width: this.mapConfig.width, height: this.mapConfig.height }
+            );
+
+            this.cameraManager.startCinematicPanTo(panTarget.x, panTarget.y, 1000); // 1 second to get into position
             
             // Delay boss spawn until camera is in position
             setTimeout(() => {
@@ -1913,13 +1918,14 @@ IdleAnts.Game = class {
             IdleAnts.AudioManager.stopBGM();
         }
         
-        // Boss should be at the top of the map (where it was spawned)
-        const bossStartX = boss.x; // Should be mapWidth/2 = 1500
-        const bossStartY = boss.y; // Should be 100 (top of map)
-        
-        // FAILSAFE: Explicitly ensure boss is at the correct position
-        const expectedBossX = this.mapConfig.width / 2;  // 1500
-        const expectedBossY = 150; // Top of map for invasion
+        // Boss should be at the position defined by its config's spawnPosition.
+        // Different bosses use different entrance y-values (ANTEATER=150, HORNET=100,
+        // TARANTULA/SPIDER=200, etc.), so derive the expected position from the config
+        // rather than hardcoding one value.
+        const mapBounds = { width: this.mapConfig.width, height: this.mapConfig.height };
+        const expectedSpawn = IdleAnts.Data.BossConfigUtils.calculateSpawnPosition(config, mapBounds);
+        const expectedBossX = expectedSpawn.x;
+        const expectedBossY = expectedSpawn.y;
 
         if (Math.abs(boss.x - expectedBossX) > 1 || Math.abs(boss.y - expectedBossY) > 1) {
             console.warn(`[CINEMATIC] Boss position incorrect! Expected: (${expectedBossX}, ${expectedBossY}), Actual: (${boss.x}, ${boss.y})`);

@@ -365,10 +365,7 @@ IdleAnts.Entities.RainbowAnt = class extends IdleAnts.Entities.AntBase {
         
         // Start attack cooldown
         this._attackTimer = this.attackCooldown;
-        
-        // Create rainbow burst effect
-        this.createRainbowBurst();
-        
+
         // Deal damage to nearby enemies
         for (const enemy of enemies) {
             if (enemy.takeDamage) {
@@ -376,25 +373,7 @@ IdleAnts.Entities.RainbowAnt = class extends IdleAnts.Entities.AntBase {
             }
         }
     }
-    
-    createRainbowBurst() {
-        if (!IdleAnts.app || !IdleAnts.app.effectManager) return;
-        
-        // Create colorful burst effect
-        IdleAnts.app.effectManager.createEffect(
-            'rainbowBurst',
-            this.x,
-            this.y,
-            this.getCurrentRainbowColor(),
-            1.5,
-            {
-                colors: this.rainbowColors,
-                duration: 30,
-                radius: 50
-            }
-        );
-    }
-    
+
     createRainbowParticles() {
         // Create floating rainbow particles around the ant
         if (Math.random() < 0.15 && IdleAnts.app && IdleAnts.app.stage) {

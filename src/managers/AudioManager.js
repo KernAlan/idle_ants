@@ -122,9 +122,12 @@ IdleAnts.AudioManager = (function() {
             
             // Play the sound
             sound.audio.play().catch(e => {
+                // AbortError is a benign race: play() was interrupted by the next
+                // pause()/currentTime reset when the SFX is retriggered rapidly. Ignore it.
+                if (e && e.name === 'AbortError') return;
                 console.warn(`Failed to play sound ${id}:`, e);
-                // This usually happens due to browser policy requiring user interaction
-                // before audio can play. We'll ignore this error.
+                // Other failures typically come from browser autoplay policy requiring
+                // user interaction before audio can play. We'll ignore this error.
             });
         } catch (error) {
             console.error(`Error playing sound ${id}:`, error);

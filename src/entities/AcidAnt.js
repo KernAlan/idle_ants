@@ -195,7 +195,6 @@ IdleAnts.Entities.AcidAnt = class extends IdleAnts.Entities.AntBase {
     performAnimation() {
         this.animateLegs();
         this.animateAcidSacs();
-        this.createAcidDrips();
         this.createAcidBubbles();
         this.createCorrosiveAura();
         this.updateAcidGlow();
@@ -249,32 +248,6 @@ IdleAnts.Entities.AcidAnt = class extends IdleAnts.Entities.AntBase {
             sac.scale.set(pulseFactor);
             sac.alpha = 0.5 + Math.sin(phase) * 0.3;
         }
-    }
-    
-    createAcidDrips() {
-        // Occasionally create small acid drip effects while moving
-        const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-        
-        if (speed > 0.5 && Math.random() < 0.02) {
-            this.createSmallAcidDroplet();
-        }
-    }
-    
-    createSmallAcidDroplet() {
-        if (!IdleAnts.app || !IdleAnts.app.effectManager) return;
-        
-        // Create a small acid droplet effect
-        IdleAnts.app.effectManager.createEffect(
-            'acidDrip',
-            this.x + (Math.random() - 0.5) * 10,
-            this.y + 8,
-            this.antType.color,
-            0.3,
-            {
-                duration: 60,
-                fadeOut: true
-            }
-        );
     }
     
     // Find nearby enemies to attack
