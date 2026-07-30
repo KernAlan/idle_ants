@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Idle Ants - Ant Colony Simulation Game</title>
+    <!-- Without an icon link the browser probes /favicon.ico on every load
+         and logs a 404. -->
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="apple-touch-icon" href="assets/favicon.svg">
     <link rel="stylesheet" href="styles.css">
     
     <!-- Font Awesome for icons -->
@@ -126,35 +130,35 @@
             <div id="action-bar">
                 <button id="colony-btn" class="action-btn">
                     <i class="fas fa-bug"></i>
-                    <span>Colony</span>
+                    <span data-short="Colony">Colony</span>
                 </button>
                 <button id="upgrades-btn" class="action-btn">
                     <i class="fas fa-arrow-up"></i>
-                    <span>Upgrades</span>
+                    <span data-short="Upgrades">Upgrades</span>
                 </button>
                 <button id="automation-btn" class="action-btn">
                     <i class="fas fa-cog"></i>
-                    <span>Automation</span>
+                    <span data-short="Auto">Automation</span>
                 </button>
                 <button id="challenges-btn" class="action-btn">
                     <i class="fas fa-trophy"></i>
-                    <span>Challenges</span>
+                    <span data-short="Daily">Challenges</span>
                 </button>
                 <button id="leaderboard-btn" class="action-btn">
                     <i class="fas fa-crown"></i>
-                    <span>Leaderboard</span>
+                    <span data-short="Ranks">Leaderboard</span>
                 </button>
-                <button id="debug-victory-btn" class="action-btn" style="background: #ff6b6b; display: none;">
+                <button id="debug-victory-btn" class="action-btn action-btn--debug" style="display: none;">
                     <i class="fas fa-bug"></i>
-                    <span>Debug Victory</span>
+                    <span data-short="Win">Debug Victory</span>
                 </button>
-                <button id="debug-challenges-btn" class="action-btn" style="background: #ff9800; display: none;">
+                <button id="debug-challenges-btn" class="action-btn action-btn--debug" style="display: none;">
                     <i class="fas fa-trophy"></i>
-                    <span>Debug Challenges</span>
+                    <span data-short="Chal">Debug Challenges</span>
                 </button>
                 <button id="settings-btn" class="action-btn">
                     <i class="fas fa-sliders-h"></i>
-                    <span>Settings</span>
+                    <span data-short="Settings">Settings</span>
                 </button>
             </div>
 

@@ -1,10 +1,53 @@
+/* ============================================================
+   Design tokens
+   ------------------------------------------------------------
+   One earthy palette shared by every menu surface. The UI is
+   meant to look like it belongs to the same world as the
+   sprites: soil browns, bark edges, amber lamplight.
+   ============================================================ */
+:root {
+    /* Panel depths, darkest to lightest */
+    --soil-900: #140f09;
+    --soil-800: #211a10;
+    --soil-700: #2f2517;
+    --soil-600: #3f3120;
+    --soil-500: #52402a;
+    --soil-400: #6b5335;
+
+    /* Edges and rules */
+    --bark: #5c4629;
+    --bark-lit: #8a6c42;
+
+    /* Amber accent - section labels, costs, focus */
+    --amber: #e8b23a;
+    --amber-lit: #ffd97a;
+    --amber-dim: #a87c22;
+
+    /* Type */
+    --cream: #f4ead6;
+    --cream-dim: #bfae90;
+    --cream-faint: #8d7f68;
+
+    /* Semantic */
+    --moss: #7cb342;
+    --rust: #c2562e;
+
+    --shadow-panel: 0 18px 44px rgba(0, 0, 0, 0.55), 0 2px 0 rgba(255, 226, 168, 0.06) inset;
+    --shadow-row: 0 1px 0 rgba(255, 226, 168, 0.07) inset, 0 2px 4px rgba(0, 0, 0, 0.35);
+
+    --radius-panel: 14px;
+    --radius-row: 9px;
+
+    --ui-font: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+}
+
 body {
     margin: 0;
     padding: 0;
-    font-family: 'Comic Sans MS', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #87CEEB 0%, #98FB98 50%, #FFE4B5 100%);
+    font-family: var(--ui-font);
+    background: #1b2412;
     overflow: hidden;
-    color: #2C3E50;
+    color: var(--cream);
     /* Prevent text selection and callouts on mobile */
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -25,6 +68,29 @@ html {
     overflow: hidden;
 }
 
+/* Touch behaviour.
+   ----------------
+   `manipulation` keeps panning and pinch-zoom but drops double-tap zoom and
+   the ~300ms tap delay that comes with it, so buttons fire immediately and
+   repeat taps all register. This replaces a document-level touchend handler
+   that achieved the same thing with preventDefault() - and swallowed the
+   click on every rapid second tap as a side effect. */
+#ui-container,
+#action-bar,
+#abilities-bar,
+#ui-toggle,
+.modal-backdrop,
+button {
+    touch-action: manipulation;
+}
+
+/* The game canvas handles its own pan, pinch and tap gestures in
+   InputManager, so the browser should not claim any of them. */
+#game-canvas-container,
+#game-canvas-container canvas {
+    touch-action: none;
+}
+
 #game-container {
     display: flex;
     flex-direction: column;
@@ -39,140 +105,161 @@ html {
 #ui-container {
     display: flex;
     align-items: center;
-    padding: 4px 8px;
-    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%);
-    color: white;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    gap: 14px;
+    padding: 8px 16px;
+    /* Solid, not translucent: the HUD used to let the moving world show
+       through, which made every label hard to read. */
+    background:
+        linear-gradient(180deg, var(--soil-700) 0%, var(--soil-800) 100%);
+    color: var(--cream);
+    box-shadow: var(--shadow-panel);
+    border: 1px solid var(--bark);
+    border-top: none;
     z-index: 10;
     flex-wrap: wrap;
     max-height: 20vh;
     overflow-y: auto;
-    border-radius: 0 0 15px 15px;
+    border-radius: 0 0 var(--radius-panel) var(--radius-panel);
     position: relative;
     width: fit-content;
     margin: 0 auto;
-    max-width: 90%;
+    max-width: 94%;
+}
+
+/* Warm lamplight along the bar's bottom edge. */
+#ui-container::after {
+    content: '';
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--amber-dim), transparent);
+    opacity: 0.6;
+    pointer-events: none;
 }
 
 #game-title {
-    font-size: 14px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #FFFFFF;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    letter-spacing: 1.4px;
     display: flex;
     align-items: center;
-    gap: 4px;
-    min-width: 90px;
-    background: linear-gradient(45deg, #FFD700, #FFA500);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.3));
+    gap: 7px;
+    min-width: 92px;
+    padding-right: 14px;
+    border-right: 1px solid var(--bark);
+    /* Flat amber. The old gradient-clipped text rendered as a washed-out
+       smear at 13px - too small for a gradient to read as anything. */
+    color: var(--amber);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
 }
 
 #resources {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: 6px;
     align-items: center;
-    font-size: 11px;
+    font-size: 12px;
     flex: 1;
     justify-content: center;
 }
 
-#food, #ants, #food-rate, #flying-ant-stats {
+#food, #ants, #food-rate, #flying-ant-stats, #score-display {
     display: flex;
     align-items: center;
-    padding: 3px 8px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
-    border-radius: 15px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin: 2px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    transition: all 0.3s ease;
+    padding: 5px 11px;
+    background: var(--soil-900);
+    border-radius: 999px;
+    box-shadow: var(--shadow-row);
+    margin: 0;
+    border: 1px solid var(--bark);
+    color: var(--cream-dim);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.35;
+    transition: border-color 0.2s ease, color 0.2s ease;
     position: relative;
+}
+
+#food:hover, #ants:hover, #food-rate:hover, #flying-ant-stats:hover {
+    border-color: var(--bark-lit);
+    color: var(--cream);
 }
 
 /* Subtle Score Display */
 #score-display {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 10px;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    margin: 2px;
-    font-size: 11px;
-    color: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    font-weight: 500;
+    gap: 6px;
 }
 
 #score-display #session-timer,
 #score-display #current-score {
-    font-weight: bold;
-    color: white;
+    font-weight: 700;
+    color: var(--cream);
+    font-variant-numeric: tabular-nums;
 }
 
 /* Abilities Bar (God Powers) */
 #abilities-bar {
     display: flex;
-    gap: 4px;
-    padding: 4px;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 8px;
-    margin: 4px 2px;
+    gap: 6px;
+    padding: 5px;
+    background: var(--soil-900);
+    border: 1px solid var(--bark);
+    border-radius: 11px;
+    margin: 0;
     flex-wrap: wrap;
     justify-content: center;
 }
 
 .ability-btn {
     position: relative;
-    width: 45px;
-    height: 45px;
-    background: linear-gradient(135deg, rgba(100, 50, 200, 0.4), rgba(150, 100, 255, 0.3));
-    border: 2px solid rgba(150, 100, 255, 0.5);
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(180deg, var(--soil-500), var(--soil-600));
+    border: 1px solid var(--bark-lit);
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    box-shadow: var(--shadow-row);
 }
 
 .ability-btn:hover:not(.on-cooldown) {
-    background: linear-gradient(135deg, rgba(100, 50, 200, 0.6), rgba(150, 100, 255, 0.5));
-    border-color: rgba(200, 150, 255, 0.8);
-    transform: scale(1.05);
-    box-shadow: 0 0 15px rgba(150, 100, 255, 0.6);
+    border-color: var(--amber);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45), 0 0 12px rgba(232, 178, 58, 0.35);
 }
 
 .ability-btn:active:not(.on-cooldown) {
-    transform: scale(0.95);
+    transform: translateY(0) scale(0.96);
 }
 
 .ability-btn.on-cooldown {
     cursor: not-allowed;
-    opacity: 0.5;
-    background: linear-gradient(135deg, rgba(50, 50, 50, 0.4), rgba(80, 80, 80, 0.3));
-    border-color: rgba(100, 100, 100, 0.5);
+    background: linear-gradient(180deg, var(--soil-700), var(--soil-800));
+    border-color: var(--bark);
+    /* Dimmed via colour rather than opacity so the cooldown sweep below
+       stays fully legible. */
+    filter: saturate(0.4);
 }
 
 .ability-btn.active {
-    border-color: rgba(255, 215, 0, 0.9);
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+    border-color: var(--amber-lit);
+    box-shadow: 0 0 18px rgba(255, 217, 122, 0.75);
     animation: pulse-ability 1s ease-in-out infinite;
 }
 
 @keyframes pulse-ability {
     0%, 100% {
-        box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+        box-shadow: 0 0 16px rgba(255, 217, 122, 0.65);
     }
     50% {
-        box-shadow: 0 0 30px rgba(255, 215, 0, 1);
+        box-shadow: 0 0 28px rgba(255, 217, 122, 1);
     }
 }
 
@@ -185,12 +272,14 @@ html {
     position: absolute;
     bottom: 2px;
     right: 2px;
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
+    background: var(--soil-900);
+    color: var(--amber-lit);
     font-size: 10px;
-    font-weight: bold;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
     padding: 1px 4px;
-    border-radius: 3px;
+    border-radius: 4px;
+    border: 1px solid var(--bark);
     z-index: 3;
     display: none;
 }
@@ -256,8 +345,10 @@ html {
 }
 
 #food-count, #ant-count, #ant-max, #food-per-second, #flying-ant-count, #flying-ant-max {
-    font-weight: bold;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    font-weight: 700;
+    color: var(--cream);
+    /* Tabular figures stop the HUD jittering as counters tick up. */
+    font-variant-numeric: tabular-nums;
 }
 
 #upgrades {
@@ -293,7 +384,7 @@ html {
     min-width: 110px;
     padding: 8px 12px;
     font-size: 11px;
-    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%);
+    background: linear-gradient(180deg, var(--soil-600) 0%, var(--soil-700) 100%);
     color: white;
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 25px;
@@ -315,7 +406,7 @@ html {
 }
 
 .upgrade-btn:hover {
-    background: linear-gradient(135deg, #FF8E8E 0%, #66D9D6 50%, #67C3F3 100%);
+    background: linear-gradient(180deg, var(--soil-500) 0%, var(--soil-600) 100%);
     transform: translateY(-4px) scale(1.05);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     border-color: rgba(255, 255, 255, 0.6);
@@ -328,7 +419,7 @@ html {
 
 .upgrade-btn:disabled,
 .upgrade-btn.disabled {
-    background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+    background: var(--soil-800);
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
@@ -337,7 +428,7 @@ html {
 }
 
 .upgrade-btn.disabled:hover {
-    background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+    background: var(--soil-800);
     transform: none;
 }
 
@@ -423,18 +514,18 @@ canvas {
 /* Override for disabled special buttons - must come after regular styles */
 .special-btn:disabled,
 .special-btn.disabled {
-    background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+    background: var(--soil-800);
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
     opacity: 0.7;
     pointer-events: none;
-    color: #666;
+    color: var(--cream-faint);
 }
 
 .special-btn:disabled:hover,
 .special-btn.disabled:hover {
-    background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+    background: var(--soil-800);
     transform: none;
     box-shadow: none;
 }
@@ -450,18 +541,18 @@ canvas {
 /* Override for disabled automation buttons - must come after regular styles */
 .automation-btn:disabled,
 .automation-btn.disabled {
-    background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+    background: var(--soil-800);
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
     opacity: 0.7;
     pointer-events: none;
-    color: #666;
+    color: var(--cream-faint);
 }
 
 .automation-btn:disabled:hover,
 .automation-btn.disabled:hover {
-    background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+    background: var(--soil-800);
     transform: none;
     box-shadow: none;
 }
@@ -505,19 +596,42 @@ canvas {
 /* Mobile-specific UI improvements */
 @media (max-width: 768px) {
     #ui-container {
-        padding: 6px 10px;
-        max-height: 34vh;
+        /* The HUD is a status strip, not a panel. Capping it low stops the
+           resource pills wrapping into three rows and swallowing a third of
+           a phone screen, which is what it did before.
+           The right padding reserves room for the #ui-toggle chevron, which
+           is absolutely positioned and used to sit on top of a pill. */
+        padding: 5px 42px 5px 8px;
+        max-height: none;
         width: 100%;
         max-width: 100%;
-        border-radius: 0 0 12px 12px;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
         box-sizing: border-box;
+        gap: 5px;
+        row-gap: 4px;
+        justify-content: center;
     }
 
+    /* Tighter ability buttons - six of them plus the resource pills were
+       pushing the HUD past 20% of the viewport. */
+    #abilities-bar { padding: 4px; gap: 5px; }
+    .ability-btn { width: 38px; height: 38px; }
+    .ability-icon { font-size: 20px; }
+
+    #game-title {
+        /* The wordmark is decoration; on a phone the screen space is better
+           spent on the numbers the player actually reads. */
+        display: none;
+    }
+
+    /* Flatten the resources wrapper so its pills become direct children of
+       the HUD row. As a nested flex box with flex:1 it claimed a full row
+       to itself and centred inside it, which is what made the pills stack
+       raggedly instead of flowing with the score readout. */
     #resources {
-        gap: 6px;
-        margin-bottom: 4px;
-        padding: 0 6px;
-        font-size: 12px;
+        display: contents;
     }
 
     #food, #ants, #flying-ant-stats {
@@ -565,47 +679,45 @@ canvas {
         width: 44px;
         height: 44px;
         font-size: 18px;
-        background: rgba(0, 0, 0, 0.7);
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     }
+
+    /* The abilities row scrolls sideways rather than wrapping. */
+    #abilities-bar {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+        max-width: 100%;
+    }
+    #abilities-bar::-webkit-scrollbar { display: none; }
+    .ability-btn { flex: 0 0 auto; }
 }
 
 /* For phones - prioritize readability/tap targets */
 @media (max-width: 480px) {
     #ui-container {
-        padding: 8px 10px;
-        max-height: 40vh;
-        border-radius: 0 0 10px 10px;
+        /* Keep the right-hand gutter for the #ui-toggle chevron; a plain
+           `padding: 6px 8px` here silently undid the reservation made in
+           the 768px block and let a pill slide under the button. */
+        padding: 5px 42px 5px 8px;
+        max-height: none;
+        border-radius: 0;
     }
 
-    #game-title { font-size: 12px; min-width: auto; margin-right: 4px; gap: 2px; }
+    #food, #ants, #flying-ant-stats { padding: 5px 9px; font-size: 12.5px; border-radius: 999px; margin: 0; }
+    #food-rate { padding: 5px 9px; font-size: 12px; border-radius: 999px; }
+}
 
-    #resources { font-size: 13px; gap: 4px; }
+/* Handheld action-button sizing. The docking and layout rules for
+   #action-bar itself live further down the file, immediately after the
+   base rule they need to override. */
+@media (max-width: 768px) {
+    /* (.action-btn sizing lives further down, after the base rule it must
+       override. Keeping it in one place avoids the two rules drifting.) */
 
-    #food, #ants, #flying-ant-stats { padding: 6px 8px; font-size: 13px; border-radius: 10px; margin: 0; }
-    #food-rate { padding: 6px 8px; font-size: 13px; border-radius: 10px; }
-
-    /* Bottom sticky action bar */
-    #action-bar {
-        position: fixed;
-        left: 0; right: 0; bottom: 0;
-        padding: 10px 8px calc(10px + env(safe-area-inset-bottom, 0));
-        background: linear-gradient(135deg, rgba(255,107,107,0.95) 0%, rgba(78,205,196,0.95) 50%, rgba(69,183,209,0.95) 100%);
-        backdrop-filter: blur(2px);
-        z-index: 1000;
-        gap: 8px;
-        justify-content: space-around;
-    }
-
-    .action-btn {
-        min-width: 70px;
-        height: 54px;
-        font-size: 13px;
-        padding: 8px 6px;
-        border-radius: 12px;
-    }
-
-    .action-btn i { font-size: 20px; margin-bottom: 3px; }
+    /* Keep the world clear of the docked bar. */
+    #game-canvas-container { padding-bottom: 0; }
 }
 
 /* Ultra-condensed mode for phones */
@@ -672,20 +784,31 @@ canvas {
 /* Add a collapsible UI option */
 #ui-toggle {
     position: absolute;
-    top: 5px;
-    right: 5px;
+    top: 6px;
+    right: 8px;
     z-index: 20;
-    background: rgba(0, 0, 0, 0.5);
-    color: white;
-    border: none;
+    background: var(--soil-900);
+    color: var(--amber);
+    border: 1px solid var(--bark);
     border-radius: 50%;
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     font-size: 12px;
+    transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+#ui-toggle:hover {
+    color: var(--amber-lit);
+    border-color: var(--amber);
+}
+
+#ui-toggle:focus-visible {
+    outline: 2px solid var(--amber-lit);
+    outline-offset: 2px;
 }
 
 /* Mobile-specific UI toggle button */
@@ -895,12 +1018,30 @@ input, textarea {
     flex-wrap: wrap;
 }
 
-/* Mobile action bar - much more condensed */
+/* Mobile action bar - docked to the bottom edge, one scrolling row.
+   These declarations have to live *after* the base #action-bar rule above:
+   media queries add no specificity, so the base `flex-wrap: wrap` would
+   otherwise win and the buttons would stack into three rows. */
 @media (max-width: 768px) {
     #action-bar {
-        gap: 4px;
-        margin: 4px 0;
+        position: fixed;
+        left: 0; right: 0; bottom: 0;
+        margin: 0;
+        gap: 8px;
+        padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0));
+        background: linear-gradient(180deg, var(--soil-700) 0%, var(--soil-900) 100%);
+        border-top: 1px solid var(--bark);
+        box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
     }
+
+    #action-bar::-webkit-scrollbar { display: none; }
 }
 
 .action-btn {
@@ -908,47 +1049,151 @@ input, textarea {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 8px 6px;
-    min-width: 70px;
+    gap: 3px;
+    padding: 7px 8px;
+    min-width: 74px;
     height: 50px;
-    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%);
-    color: white;
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    border-radius: 10px;
+    background: linear-gradient(180deg, var(--soil-500) 0%, var(--soil-700) 100%);
+    color: var(--cream-dim);
+    border: 1px solid var(--bark-lit);
+    border-radius: var(--radius-row);
     cursor: pointer;
-    font-weight: bold;
-    transition: all 0.3s ease;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+    font-weight: 600;
     font-size: 11px;
+    letter-spacing: 0.2px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease,
+                border-color 0.15s ease, color 0.15s ease;
+    box-shadow: var(--shadow-row);
 }
 
 .action-btn i {
-    font-size: 18px;
-    margin-bottom: 3px;
+    font-size: 17px;
+    margin-bottom: 0;
+    color: var(--amber);
+    transition: color 0.15s ease;
+}
+
+/* Handheld sizing for the docked bar. This has to sit AFTER the base
+   .action-btn rules above: media queries add no specificity, so the base
+   `min-width: 74px` would otherwise win and force every button to a fixed
+   width, overflowing the bar and pushing Settings off-screen.
+
+   `flex: 1 1 0` lets the buttons share whatever width the phone has, so the
+   full production set fits with nothing to scroll. `min-width` is the floor
+   at which they stop shrinking - below that (debug mode adds two more
+   buttons, or a very narrow phone) the bar falls back to scrolling. */
+@media (max-width: 768px) {
+    .action-btn {
+        flex: 1 1 0;
+        min-width: 48px;
+        max-width: 110px;
+        /* 48px is the minimum comfortable touch target. */
+        height: 54px;
+        font-size: 10.5px;
+        padding: 6px 3px;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .action-btn i { font-size: 19px; margin-bottom: 0; }
+
+    /* Long labels ellipsize rather than wrapping to two lines and shoving
+       the icon out of the button. */
+    .action-btn span {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+/* Phone labels. Even sharing the width evenly, "Leaderboard" and
+   "Automation" only get ~70-80% of the room they need and ellipsize to
+   "Leaderb..." - legible but scruffy. Swap in the short label each button
+   carries in `data-short` instead, so phone labels are whole words. */
+@media (max-width: 480px) {
+    .action-btn span[data-short] {
+        /* Collapse the real label, then print the short one. The text stays
+           in the DOM for screen readers and for wider breakpoints. */
+        font-size: 0;
+    }
+    .action-btn span[data-short]::after {
+        content: attr(data-short);
+        /* Sized so the longest phone label ("Upgrades") fits inside the
+           narrowest button the flex row produces, with letter-spacing off -
+           at this size it costs more width than it buys in legibility. */
+        font-size: 10px;
+        letter-spacing: 0;
+    }
+}
+
+/* Very narrow phones (iPhone SE and similar). Tightening the gutters buys
+   the ~30px needed for all six buttons to fit here too, rather than leaving
+   Settings just off the edge. */
+@media (max-width: 380px) {
+    #action-bar { gap: 4px; padding-left: 6px; padding-right: 6px; }
+    .action-btn { min-width: 44px; padding: 6px 2px; }
+    .action-btn i { font-size: 17px; }
+    .action-btn span[data-short]::after { font-size: 8.5px; }
 }
 
 .action-btn:hover {
-    background: linear-gradient(135deg, #FF8E8E 0%, #66D9D6 50%, #67C3F3 100%);
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
-    border-color: rgba(255, 255, 255, 0.6);
+    background: linear-gradient(180deg, var(--soil-400) 0%, var(--soil-600) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
+    border-color: var(--amber);
+    color: var(--cream);
+}
+
+.action-btn:hover i { color: var(--amber-lit); }
+
+/* Debug-only buttons. Marked with a rust edge so they are obviously not
+   part of the real game UI, without the loud pink/orange fills they used
+   to carry as inline styles. */
+.action-btn--debug {
+    border-color: var(--rust);
+    color: #e5a68c;
+}
+.action-btn--debug i { color: var(--rust); }
+.action-btn--debug:hover {
+    border-color: #e0693a;
+    color: #ffd6c4;
+}
+.action-btn--debug:hover i { color: #e0693a; }
+
+.action-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) inset;
+}
+
+/* Keyboard focus needs its own visible ring - hover styling alone leaves
+   keyboard users with no indication of where they are. */
+.action-btn:focus-visible,
+.modal-btn:focus-visible,
+.ability-btn:focus-visible,
+.modal-close:focus-visible {
+    outline: 2px solid var(--amber-lit);
+    outline-offset: 2px;
 }
 
 /* Override for disabled action buttons - must come after regular styles */
 .action-btn:disabled,
 .action-btn.disabled {
-    background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+    background: var(--soil-800);
+    border-color: var(--soil-600);
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
-    opacity: 0.7;
     pointer-events: none;
-    color: #666;
+    color: var(--cream-faint);
 }
+
+.action-btn:disabled i,
+.action-btn.disabled i { color: var(--cream-faint); }
 
 .action-btn:disabled:hover,
 .action-btn.disabled:hover {
-    background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+    background: var(--soil-800);
     transform: none;
     box-shadow: none;
 }
@@ -956,12 +1201,17 @@ input, textarea {
 /* Modal Backdrop */
 .modal-backdrop {
     position: fixed;
-    top: 20px;
+    /* Clear of the HUD strip: these panels are all shops, and covering the
+       food counter while the player decides what to buy is the one thing
+       they must not do. */
+    top: 78px;
     left: 50%;
     transform: translateX(-50%);
-    width: 350px;
+    /* Wider than before: rows now carry an icon, a label and a cost pill,
+       and 350px forced long ant names to wrap. */
+    width: 400px;
     max-width: 95vw;
-    max-height: calc(100vh - 40px);
+    max-height: calc(100vh - 98px);
     z-index: 9999;
     display: none;
     overflow: visible;
@@ -973,96 +1223,149 @@ input, textarea {
 
 /* Modal Container */
 .modal-container {
-    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%);
-    border-radius: 15px;
-    padding: 15px;
+    background: var(--soil-800);
+    border-radius: var(--radius-panel);
+    padding: 0 16px 16px;
     width: 100%;
-    max-height: calc(100vh - 80px);
+    max-height: calc(100vh - 98px);
     overflow-y: auto;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-    color: white;
+    box-shadow: var(--shadow-panel);
+    color: var(--cream);
     position: relative;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid var(--bark);
 }
+
+/* Scrollbar styled to match, so long panels like Colony do not sprout a
+   bright default bar down one side. */
+.modal-container::-webkit-scrollbar { width: 10px; }
+.modal-container::-webkit-scrollbar-track {
+    background: var(--soil-900);
+    border-radius: 0 var(--radius-panel) var(--radius-panel) 0;
+}
+.modal-container::-webkit-scrollbar-thumb {
+    background: var(--soil-500);
+    border: 2px solid var(--soil-900);
+    border-radius: 999px;
+}
+.modal-container::-webkit-scrollbar-thumb:hover { background: var(--bark-lit); }
 
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
-    padding-bottom: 8px;
+    /* Sticky so the title and close button stay reachable while scrolling
+       a long list. */
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    margin: 0 -16px 14px;
+    padding: 13px 16px;
+    background: linear-gradient(180deg, var(--soil-700), var(--soil-800));
+    border-bottom: 1px solid var(--bark);
+    border-radius: var(--radius-panel) var(--radius-panel) 0 0;
 }
 
 .modal-title {
-    font-size: 18px;
-    font-weight: bold;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--cream);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 9px;
 }
 
+.modal-title i { color: var(--amber); font-size: 15px; }
+
 .modal-close {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    border: none;
+    background: var(--soil-900);
+    color: var(--cream-dim);
+    border: 1px solid var(--bark);
     border-radius: 50%;
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s ease;
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
 
 .modal-close:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(1.1);
+    background: var(--rust);
+    border-color: var(--rust);
+    color: #fff;
+    transform: none;
 }
 
 .modal-content {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
 }
 
 .modal-section {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 12px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    border: none;
 }
 
+/* Section labels read as headers in the layout rather than as another
+   nested box - the old panel-inside-a-panel nesting ate horizontal space
+   and blurred the hierarchy. */
 .modal-section h3 {
     margin: 0 0 8px 0;
-    color: #FFD700;
-    text-align: center;
-    font-size: 14px;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+    color: var(--amber);
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    text-shadow: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Hairline rule filling the space to the right of each label. */
+.modal-section h3::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--bark), transparent);
 }
 
 .modal-btn {
     width: 100%;
-    padding: 8px;
-    margin: 4px 0;
-    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%);
-    color: white;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 10px;
+    padding: 10px 12px;
+    margin: 0 0 6px 0;
+    background: linear-gradient(180deg, var(--soil-600) 0%, var(--soil-700) 100%);
+    color: var(--cream);
+    border: 1px solid var(--bark);
+    border-left: 3px solid var(--bark-lit);
+    border-radius: var(--radius-row);
     cursor: pointer;
-    font-weight: bold;
-    transition: all 0.3s ease;
-    font-size: 11px;
+    font-weight: 600;
+    transition: transform 0.12s ease, border-color 0.15s ease,
+                background 0.15s ease, box-shadow 0.15s ease;
+    font-size: 12.5px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 10px;
     text-align: left;
+    box-shadow: var(--shadow-row);
 }
 
 .modal-btn i {
-    margin-right: 8px;
+    margin-right: 9px;
+    color: var(--amber);
+    width: 15px;
+    text-align: center;
+    flex-shrink: 0;
 }
 
 .modal-btn span:first-child {
@@ -1071,59 +1374,88 @@ input, textarea {
     margin-right: 10px;
 }
 
+/* Cost sits in its own pill so the eye can scan a column of prices. */
 .modal-btn span:last-child {
     text-align: right !important;
     flex-shrink: 0;
-    min-width: 50px;
+    min-width: 54px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--soil-900);
+    border: 1px solid var(--bark);
+    color: var(--amber-lit);
+    font-weight: 700;
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
 }
 
 .modal-btn:hover {
-    background: linear-gradient(135deg, #FF8E8E 0%, #66D9D6 50%, #67C3F3 100%);
-    transform: scale(1.02);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(180deg, var(--soil-500) 0%, var(--soil-600) 100%);
+    border-color: var(--bark-lit);
+    border-left-color: var(--amber);
+    transform: translateX(2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
 .modal-btn:active {
-    transform: scale(0.98);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transform: translateX(2px) scale(0.995);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) inset;
 }
 
 .modal-btn:disabled,
 .modal-btn.disabled,
 button.modal-btn:disabled,
 button.modal-btn.disabled {
-    background: linear-gradient(to bottom, #cccccc, #aaaaaa) !important;
+    background: var(--soil-800) !important;
+    border-color: var(--soil-600) !important;
+    border-left-color: var(--soil-600) !important;
     cursor: not-allowed !important;
     transform: none !important;
-    opacity: 0.7 !important;
     pointer-events: none !important;
-    color: #666 !important;
+    color: var(--cream-faint) !important;
     box-shadow: none !important;
+}
+
+.modal-btn:disabled i,
+.modal-btn.disabled i { color: var(--cream-faint) !important; }
+
+/* Unaffordable costs go rust-red rather than simply greying out, so the
+   reason a row is disabled is legible at a glance. */
+.modal-btn:disabled span:last-child,
+.modal-btn.disabled span:last-child {
+    color: var(--rust) !important;
+    background: var(--soil-900) !important;
+    border-color: var(--soil-600) !important;
 }
 
 .modal-btn.disabled:hover,
 .modal-btn:disabled:hover,
 button.modal-btn.disabled:hover,
 button.modal-btn:disabled:hover {
-    background: linear-gradient(to bottom, #cccccc, #aaaaaa) !important;
+    background: var(--soil-800) !important;
     transform: none !important;
     box-shadow: none !important;
 }
 
 .modal-stats {
-    font-size: 11px;
+    font-size: 11.5px;
     margin-top: 10px;
-    padding: 8px;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 8px;
+    padding: 10px 12px;
+    background: var(--soil-900);
+    border: 1px solid var(--bark);
+    border-radius: var(--radius-row);
+    color: var(--cream-dim);
     text-align: center;
+    line-height: 1.5;
 }
 
 /* Mobile Modal Adjustments */
 @media (max-width: 768px) {
-    .action-btn { min-width: 70px; height: 54px; font-size: 13px; padding: 8px 6px; }
-    .action-btn i { font-size: 20px; margin-bottom: 3px; }
-    
+    /* (.action-btn sizing lives in the handheld block earlier in this file.
+       A duplicate `min-width: 70px` here used to override it - same
+       specificity, later in the source - which forced the bar back to a
+       fixed width per button and pushed Settings off-screen again.) */
+
     .modal-backdrop {
         position: fixed !important;
         top: 5px !important;
@@ -1153,10 +1485,10 @@ button.modal-btn:disabled:hover {
     .modal-header {
         position: sticky !important;
         top: 0 !important;
-        background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%) !important;
+        background: linear-gradient(180deg, var(--soil-700), var(--soil-800)) !important;
         z-index: 10 !important;
-        margin-bottom: 15px !important;
-        padding-bottom: 10px !important;
+        margin: 0 -16px 15px !important;
+        padding: 14px 16px !important;
     }
     
     .modal-title {
@@ -1227,34 +1559,34 @@ button.modal-btn:disabled:hover {
     /* Disabled button states - must override mobile styles */
     .modal-btn:disabled,
     .modal-btn.disabled {
-        background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+        background: var(--soil-800);
         cursor: not-allowed;
         transform: none;
         opacity: 0.7;
         pointer-events: none;
-        color: #666;
+        color: var(--cream-faint);
     }
     
     .modal-btn:disabled:hover,
     .modal-btn.disabled:hover {
-        background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+        background: var(--soil-800);
         transform: none;
         box-shadow: none;
     }
     
     .upgrade-btn:disabled,
     .upgrade-btn.disabled {
-        background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+        background: var(--soil-800);
         cursor: not-allowed;
         transform: none;
         opacity: 0.7;
         pointer-events: none;
-        color: #666;
+        color: var(--cream-faint);
     }
     
     .upgrade-btn:disabled:hover,
     .upgrade-btn.disabled:hover {
-        background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+        background: var(--soil-800);
         transform: none;
         box-shadow: none;
     }
@@ -1262,18 +1594,18 @@ button.modal-btn:disabled:hover {
     /* Mobile disabled styles for action buttons */
     .action-btn:disabled,
     .action-btn.disabled {
-        background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+        background: var(--soil-800);
         cursor: not-allowed;
         transform: none;
         opacity: 0.7;
         pointer-events: none;
-        color: #666;
+        color: var(--cream-faint);
         box-shadow: none;
     }
 
     .action-btn:disabled:hover,
     .action-btn.disabled:hover {
-        background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+        background: var(--soil-800);
         transform: none;
         box-shadow: none;
     }
@@ -1281,18 +1613,18 @@ button.modal-btn:disabled:hover {
     /* Mobile disabled styles for special buttons */
     .special-btn:disabled,
     .special-btn.disabled {
-        background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+        background: var(--soil-800);
         cursor: not-allowed;
         transform: none;
         opacity: 0.7;
         pointer-events: none;
-        color: #666;
+        color: var(--cream-faint);
         box-shadow: none;
     }
 
     .special-btn:disabled:hover,
     .special-btn.disabled:hover {
-        background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+        background: var(--soil-800);
         transform: none;
         box-shadow: none;
     }
@@ -1300,18 +1632,18 @@ button.modal-btn:disabled:hover {
     /* Mobile disabled styles for automation buttons */
     .automation-btn:disabled,
     .automation-btn.disabled {
-        background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+        background: var(--soil-800);
         cursor: not-allowed;
         transform: none;
         opacity: 0.7;
         pointer-events: none;
-        color: #666;
+        color: var(--cream-faint);
         box-shadow: none;
     }
 
     .automation-btn:disabled:hover,
     .automation-btn.disabled:hover {
-        background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+        background: var(--soil-800);
         transform: none;
         box-shadow: none;
     }

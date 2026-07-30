@@ -182,9 +182,10 @@ IdleAnts.Managers.UIManager = class {
         addSafeClickListener('unlock-banana-throwing-ants', () => this.game.unlockBananaThrowingAnts());
         addSafeClickListener('buy-banana-throwing-ant', () => this.game.buyBananaThrowingAnt());
         
-        // DPS Ant (Special) 
-        addSafeClickListener('unlock-dps-ants', () => this.game.unlockDpsAnts());
-        addSafeClickListener('buy-dps-ant', () => this.game.buyDpsAnt());
+        // (No DPS ant listeners: that ant type was never implemented. There
+        // are no #unlock-dps-ants / #buy-dps-ant elements and no
+        // Game.unlockDpsAnts / Game.buyDpsAnt methods to call, so these only
+        // ever logged a "not found" warning on every load.)
 
         // Newly added ant type buttons
         addSafeClickListener('unlock-acid-ants', () => this.game.unlockAcidAnts());
@@ -523,21 +524,19 @@ IdleAnts.Managers.UIManager = class {
         
         // Helper function to show/hide element (both original and modal versions)
         const toggleElementVisibility = (id, show) => {
-            // Update original element
-            const element = document.getElementById(id);
-            if (element) {
-                element.style.display = show ? 'block' : 'none';
-                if (show && element.tagName === 'BUTTON') element.classList.remove('hidden');
-                else if (!show && element.tagName === 'BUTTON') element.classList.add('hidden');
-            }
-            
-            // Update modal element if it exists
-            const modalElement = document.getElementById('modal-' + id);
-            if (modalElement) {
-                modalElement.style.display = show ? 'block' : 'none';
-                if (show && modalElement.tagName === 'BUTTON') modalElement.classList.remove('hidden');
-                else if (!show && modalElement.tagName === 'BUTTON') modalElement.classList.add('hidden');
-            }
+            // Showing clears the inline display so the element falls back to
+            // its stylesheet value. Forcing 'block' here overrode the
+            // `display: flex` on .modal-btn, which is why revealed rows lost
+            // their layout and the cost pill collapsed against the label
+            // instead of sitting at the right edge.
+            const setVisible = (el) => {
+                if (!el) return;
+                el.style.display = show ? '' : 'none';
+                if (el.tagName === 'BUTTON') el.classList.toggle('hidden', !show);
+            };
+
+            setVisible(document.getElementById(id));
+            setVisible(document.getElementById('modal-' + id));
         };
         
         // Regular ant buttons

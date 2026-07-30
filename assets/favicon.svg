@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Tab icon: a top-down worker ant on soil, using the same palette as the
+       game's UI and sprite art. Drawn as vectors so it stays crisp at every
+       size a browser or bookmark bar asks for. -->
+  <rect width="32" height="32" rx="7" fill="#2f2517"/>
+  <rect x="0.75" y="0.75" width="30.5" height="30.5" rx="6.4" fill="none" stroke="#5c4629" stroke-width="1.5"/>
+
+  <g stroke="#2e1a0e" stroke-width="1.6" stroke-linecap="round" fill="none">
+    <!-- Legs, three pairs, drawn behind the body -->
+    <path d="M13 12 L8.5 9.5 M13 16 L7.5 16 M13 20 L8.5 23"/>
+    <path d="M19 12 L23.5 9.5 M19 16 L24.5 16 M19 20 L23.5 23"/>
+    <!-- Antennae -->
+    <path d="M14.4 9 L12 5.5 M17.6 9 L20 5.5"/>
+  </g>
+
+  <!-- Gaster, thorax, head -->
+  <ellipse cx="16" cy="21.5" rx="5" ry="6" fill="#3a2213"/>
+  <ellipse cx="16" cy="21.2" rx="4.1" ry="5.1" fill="#6b4326"/>
+  <ellipse cx="15.2" cy="20.2" rx="2.6" ry="3.4" fill="#8f5c31"/>
+
+  <ellipse cx="16" cy="14.6" rx="3.1" ry="3.6" fill="#3a2213"/>
+  <ellipse cx="16" cy="14.4" rx="2.4" ry="2.9" fill="#6b4326"/>
+  <ellipse cx="15.4" cy="13.7" rx="1.4" ry="1.8" fill="#8f5c31"/>
+
+  <ellipse cx="16" cy="8.6" rx="3.4" ry="3.2" fill="#3a2213"/>
+  <ellipse cx="16" cy="8.5" rx="2.7" ry="2.5" fill="#6b4326"/>
+  <ellipse cx="15.3" cy="7.9" rx="1.5" ry="1.4" fill="#a4632e"/>
+
+  <!-- Eyes -->
+  <circle cx="14.3" cy="8.2" r="0.8" fill="#120a05"/>
+  <circle cx="17.7" cy="8.2" r="0.8" fill="#120a05"/>
+  <circle cx="14.05" cy="7.95" r="0.3" fill="#ffffff"/>
+  <circle cx="17.45" cy="7.95" r="0.3" fill="#ffffff"/>
+</svg>

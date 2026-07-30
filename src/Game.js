@@ -104,11 +104,126 @@ IdleAnts.Game = class {
         // Don't load game assets yet - wait for user to press key
     }
     
+    /**
+     * Paint the title screen backdrop to the current viewport: a deep soil
+     * gradient with a soft green pool of light behind the logo. Called again
+     * on resize so it always covers the screen.
+     */
+    drawTitleBackdrop() {
+        if (!this.titleBackdrop) return;
+        const w = this.app.screen.width;
+        const h = this.app.screen.height;
+
+        this.titleBackdrop.clear();
+        // Vertical gradient faked with horizontal bands - cheap, drawn once,
+        // and invisible as banding at this contrast.
+        const BANDS = 24;
+        for (let i = 0; i < BANDS; i++) {
+            const t = i / (BANDS - 1);
+            this.titleBackdrop.beginFill(IdleAnts.Graphics.mix(0x1d2a14, 0x0b0f07, t));
+            this.titleBackdrop.drawRect(0, Math.floor(h * i / BANDS), w, Math.ceil(h / BANDS) + 1);
+            this.titleBackdrop.endFill();
+        }
+
+        if (this.titleVignette) {
+            this.titleVignette.position.set(w / 2, h * 0.45);
+            this.titleVignette.width = Math.max(w, h) * 1.3;
+            this.titleVignette.height = Math.max(w, h) * 1.3;
+        }
+    }
+
+    /**
+     * Size and place the logo and the start prompt for the current viewport.
+     * Safe to call repeatedly - it is re-run when the logo texture finishes
+     * loading and on every resize.
+     */
+    layoutTitleScreen() {
+        if (!this.titleSprite) return;
+        const w = this.app.screen.width;
+        const h = this.app.screen.height;
+        const isMobile = w <= 768;
+        const isPhone = w <= 480;
+
+        const texW = this.titleSprite.texture.width;
+        const texH = this.titleSprite.texture.height;
+
+        let scale;
+        if (isPhone) {
+            scale = Math.min((w * 0.8) / texW, (h * 0.35) / texH, 0.3);
+        } else if (isMobile) {
+            scale = Math.min((w * 0.8) / texW, (h * 0.45) / texH, 0.4);
+        } else {
+            scale = Math.min((w * 0.55) / texW, (h * 0.55) / texH, 0.6);
+        }
+
+        this.titleSprite.scale.set(scale);
+        this.titleSprite.x = w / 2;
+        // Sit slightly above centre to leave room for the prompt beneath.
+        this.titleSprite.y = h * 0.45;
+
+        if (this.titleFrame) {
+            const cw = texW * scale;
+            const ch = texH * scale;
+            const cx = this.titleSprite.x - cw / 2;
+            const cy = this.titleSprite.y - ch / 2;
+
+            this.titleFrame.clear();
+            // Soft drop shadow, built from a few expanding rounded rects.
+            for (let i = 5; i >= 1; i--) {
+                this.titleFrame.beginFill(0x000000, 0.07);
+                this.titleFrame.drawRoundedRect(cx - i * 3, cy - i * 2 + 6, cw + i * 6, ch + i * 4, 18 + i * 2);
+                this.titleFrame.endFill();
+            }
+            // Bark mat plus an amber hairline, matching the menu panels.
+            this.titleFrame.beginFill(0x2f2517);
+            this.titleFrame.drawRoundedRect(cx - 10, cy - 10, cw + 20, ch + 20, 16);
+            this.titleFrame.endFill();
+            this.titleFrame.lineStyle(2, 0xe8b23a, 0.55);
+            this.titleFrame.drawRoundedRect(cx - 6, cy - 6, cw + 12, ch + 12, 13);
+            this.titleFrame.lineStyle(0);
+        }
+
+        if (this.titleText) {
+            const fontSize = isPhone ? 15 : isMobile ? 19 : 27;
+            this.titleText.style.fontSize = fontSize;
+            this.titleText.style.letterSpacing = Math.max(2, Math.round(fontSize * 0.2));
+            this.titleText.text = (isMobile ? 'Tap to start' : 'Press any key to start').toUpperCase();
+
+            // texture height * scale, NOT sprite.height * scale - sprite.height
+            // already includes the scale, so the old code applied it twice.
+            const logoBottom = this.titleSprite.y + (texH * scale) / 2;
+            const margin = isPhone ? 26 : isMobile ? 34 : 44;
+            this.titleText.x = w / 2;
+            this.titleText.y = Math.min(logoBottom + margin, h - margin);
+        }
+
+        this.drawTitleBackdrop();
+    }
+
     showTitleScreen() {
         // Create title screen container
         this.titleContainer = new PIXI.Container();
         this.app.stage.addChild(this.titleContainer);
-        
+
+        // Backdrop: a dark, vignetted field rather than the flat green the
+        // logo PNG sits on. This is what stops the title card reading as a
+        // stray image pasted onto a green rectangle.
+        this.titleBackdrop = new PIXI.Graphics();
+        this.titleContainer.addChild(this.titleBackdrop);
+        this.titleVignette = new PIXI.Sprite(IdleAnts.Graphics.glowTexture());
+        this.titleVignette.anchor.set(0.5);
+        this.titleVignette.tint = 0x6FA83A;
+        this.titleVignette.alpha = 0.22;
+        this.titleVignette.blendMode = PIXI.BLEND_MODES.ADD;
+        this.titleContainer.addChild(this.titleVignette);
+        this.drawTitleBackdrop();
+
+        // Frame behind the logo card, drawn in layoutTitleScreen once the
+        // logo's real size is known. Without it the artwork's hard green edge
+        // reads as an image pasted onto the backdrop.
+        this.titleFrame = new PIXI.Graphics();
+        this.titleContainer.addChild(this.titleFrame);
+
         // Load and display title background (responsive scaling for mobile)
         this.titleSprite = PIXI.Sprite.from('assets/backgrounds/adil_ants_title_screen.png');
         this.titleSprite.anchor.set(0.5); // Center the anchor point
@@ -160,21 +275,25 @@ IdleAnts.Game = class {
             shadowDistance = 4;
         }
         
+        // Amber, letterspaced and small-caps rather than heavy white Impact,
+        // so the prompt matches the amber accent used throughout the menus.
         const textStyle = new PIXI.TextStyle({
-            fontFamily: 'Impact, Arial Black, sans-serif',
-            fontSize: fontSize,
-            fontWeight: 'bold',
-            fill: '#ffffff',
-            stroke: '#000000',
+            fontFamily: 'Segoe UI, system-ui, Helvetica Neue, Arial, sans-serif',
+            fontSize: Math.round(fontSize * 0.6),
+            fontWeight: '600',
+            letterSpacing: Math.max(2, Math.round(fontSize * 0.12)),
+            fill: '#e8b23a',
+            stroke: '#140f09',
             strokeThickness: strokeThickness,
             dropShadow: true,
             dropShadowColor: '#000000',
+            dropShadowAlpha: 0.7,
             dropShadowBlur: shadowBlur,
             dropShadowDistance: shadowDistance,
             align: 'center'
         });
         
-        const buttonText = isMobile ? 'Tap to start' : 'Press any key to start';
+        const buttonText = (isMobile ? 'Tap to start' : 'Press any key to start').toUpperCase();
         this.titleText = new PIXI.Text(buttonText, textStyle);
         this.titleText.anchor.set(0.5);
         this.titleText.x = this.app.screen.width / 2;
@@ -185,12 +304,24 @@ IdleAnts.Game = class {
         this.titleText.y = logoBottom + textMargin;
         
         this.titleContainer.addChild(this.titleText);
-        
-        // Add pulsing animation
+
+        // PIXI.Sprite.from() resolves its texture asynchronously. On the first
+        // pass the texture is still 1x1, so any layout derived from the
+        // logo's size lands in the wrong place - which is why the prompt used
+        // to sit on top of the artwork. Re-run the layout once it is ready.
+        this.layoutTitleScreen();
+        if (this.titleSprite.texture.baseTexture.valid) {
+            this.layoutTitleScreen();
+        } else {
+            this.titleSprite.texture.baseTexture.once('loaded', () => this.layoutTitleScreen());
+        }
+
+        // Add pulsing animation. Fading rather than scaling: scaling a
+        // PIXI.Text resamples its cached bitmap every frame, which left the
+        // prompt looking soft.
         const pulse = () => {
             if (this.state === IdleAnts.Game.States.TITLE && this.titleText) {
-                const scale = 1 + Math.sin(Date.now() * 0.003) * 0.1;
-                this.titleText.scale.set(scale);
+                this.titleText.alpha = 0.7 + Math.sin(Date.now() * 0.003) * 0.3;
                 requestAnimationFrame(pulse);
             }
         };
@@ -539,12 +670,8 @@ IdleAnts.Game = class {
         // Update minimap position and sizing
         this.updateMinimap();
         if (this.minimap) {
-            const padding = 10;
-            const size = 150;
-            this.minimap.position.set(
-                newWidth - size - padding,
-                newHeight - (size * (this.mapConfig.height / this.mapConfig.width)) - padding
-            );
+            const pos = this.getMinimapPosition(150);
+            this.minimap.position.set(pos.x, pos.y);
         }
         
         // Update UI manager
@@ -552,67 +679,15 @@ IdleAnts.Game = class {
             this.uiManager.updateUI();
         }
         
-        // Update title screen positioning if active with responsive scaling
+        // Update title screen positioning if active. Layout lives in one
+        // place so the resize path cannot drift from the initial one.
         if (this.state === IdleAnts.Game.States.TITLE && this.titleSprite) {
-            // Recalculate scale for new dimensions
-            const isMobile = newWidth <= 768;
-            const isPhone = newWidth <= 480;
-            let scale;
-            
-            if (isPhone) {
-                // Calculate scale to fit within viewport with more padding for text
-                const maxWidthScale = (newWidth * 0.8) / this.titleSprite.texture.width;
-                const maxHeightScale = (newHeight * 0.35) / this.titleSprite.texture.height;
-                scale = Math.min(maxWidthScale, maxHeightScale, 0.3);
-            } else if (isMobile) {
-                // Medium scale for tablets
-                const maxWidthScale = (newWidth * 0.8) / this.titleSprite.texture.width;
-                const maxHeightScale = (newHeight * 0.45) / this.titleSprite.texture.height;
-                scale = Math.min(maxWidthScale, maxHeightScale, 0.4);
-            } else {
-                scale = 0.6;
-            }
-            
-            this.titleSprite.scale.set(scale);
-            this.titleSprite.x = newWidth / 2;
-            
-            // Center vertically for all devices
-            this.titleSprite.y = newHeight / 2;
-            
-            // Also reposition the title text when screen resizes
-            if (this.titleText) {
-                this.titleText.x = newWidth / 2;
-                
-                // Position text below the centered logo for all devices
-                const logoBottom = this.titleSprite.y + (this.titleSprite.height * this.titleSprite.scale.y) / 2;
-                const textMargin = isPhone ? 40 : isMobile ? 60 : 80;
-                this.titleText.y = logoBottom + textMargin;
-            }
+            this.layoutTitleScreen();
         }
-        
-        if (this.state === IdleAnts.Game.States.TITLE && this.titleText) {
-            // Update text size and position for new dimensions
-            const isMobile = newWidth <= 768;
-            const isPhone = newWidth <= 480;
-            
-            let fontSize, bottomMargin;
-            if (isPhone) {
-                fontSize = 24;
-                bottomMargin = 50;
-            } else if (isMobile) {
-                fontSize = 32;
-                bottomMargin = 70;
-            } else {
-                fontSize = 48;
-                bottomMargin = 100;
-            }
-            
-            // Update text style
-            this.titleText.style.fontSize = fontSize;
-            this.titleText.text = isMobile ? 'Tap to start' : 'Press any key to start';
-            this.titleText.x = newWidth / 2;
-            this.titleText.y = newHeight - bottomMargin;
-        }
+
+        // (Title text sizing and placement is handled by layoutTitleScreen
+        // above. A second block here used to re-position and re-style the
+        // prompt immediately afterwards, silently undoing the first.)
     }
     
     updateHoverIndicator(x, y) {
@@ -711,24 +786,45 @@ IdleAnts.Game = class {
         };
     }
     
+    /**
+     * Where the minimap sits, in screen coordinates.
+     *
+     * On handheld widths the action bar is docked along the bottom edge, so
+     * the minimap has to be lifted clear of it or it ends up hidden behind
+     * the buttons. The bar's height is measured rather than hard-coded so
+     * this stays correct if its styling changes.
+     */
+    getMinimapPosition(size) {
+        const padding = 10;
+        const height = size * (this.mapConfig.height / this.mapConfig.width);
+
+        let bottomInset = 0;
+        const actionBar = document.getElementById('action-bar');
+        if (actionBar && getComputedStyle(actionBar).position === 'fixed') {
+            bottomInset = actionBar.getBoundingClientRect().height;
+        }
+
+        return {
+            x: this.app.screen.width - size - padding,
+            y: this.app.screen.height - height - padding - bottomInset
+        };
+    }
+
     setupMinimap() {
         // Settings for the minimap
-        const padding = 10;
         const size = 150;
         const scale = size / Math.max(this.mapConfig.width, this.mapConfig.height);
-        
+
         // Create minimap background
         this.minimap = new PIXI.Graphics();
         this.minimap.beginFill(0x000000, 0.6);
         this.minimap.drawRect(0, 0, size, size * (this.mapConfig.height / this.mapConfig.width));
         this.minimap.endFill();
-        
-        // Position at bottom right of the screen
-        this.minimap.position.set(
-            this.app.screen.width - size - padding,
-            this.app.screen.height - (size * (this.mapConfig.height / this.mapConfig.width)) - padding
-        );
-        
+
+        // Position at bottom right of the screen, clear of any docked UI
+        const pos = this.getMinimapPosition(size);
+        this.minimap.position.set(pos.x, pos.y);
+
         // Add to the minimap container
         this.minimapContainer.addChild(this.minimap);
         
@@ -1502,15 +1598,19 @@ IdleAnts.Game = class {
             }
         }, false);
         
-        // Disable double-tap to zoom
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', (e) => {
-            const now = Date.now();
-            if (now - lastTouchEnd < 300) {
-                e.preventDefault();
-            }
-            lastTouchEnd = now;
-        }, {passive: false});
+        // Double-tap-to-zoom is disabled in CSS via `touch-action`, not here.
+        //
+        // This used to be a document-level touchend listener that called
+        // preventDefault() whenever two taps landed within 300ms. That does
+        // stop double-tap zoom, but preventDefault() on touchend also
+        // suppresses the synthetic click the browser would otherwise fire -
+        // so on a phone every rapid second tap was swallowed and you could not
+        // hold-tap to buy ants or expand the colony. It also logged an
+        // Intervention warning on every tap made during a scroll, because a
+        // touchend raised mid-scroll is not cancelable.
+        //
+        // `touch-action: manipulation` gets the same result declaratively,
+        // without touching click dispatch.
     }
 
     /**
