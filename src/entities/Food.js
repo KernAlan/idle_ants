@@ -461,57 +461,57 @@ IdleAnts.Entities.Food = class extends PIXI.Sprite {
     }
     
     createGlow() {
+        // The glow is a soft radial falloff rather than a flat disc, so food
+        // reads as emitting light instead of sitting on a coloured coaster.
+        //
+        // It is wrapped in a container because the rest of this class animates
+        // `glow.scale` as a plain multiplier around 1.0. Sizing the sprite
+        // itself would write to that same scale and get clobbered by the pulse.
+        const buildGlow = (color, radius) => {
+            const holder = new PIXI.Container();
+            // The inner sprite's own alpha caps how strong the glow can ever
+            // get: callers drive `glow.alpha` up to 0.9, which on an unclamped
+            // glow reads as a white blob swallowing the food underneath.
+            const sprite = IdleAnts.Graphics.glow(radius, color, 0.45);
+            sprite.blendMode = PIXI.BLEND_MODES.SCREEN; // Softer than ADD; won't blow out
+            holder.addChild(sprite);
+            holder.alpha = 0.6;
+            return holder;
+        };
+
         try {
-            const glow = new PIXI.Graphics();
             const glowColor = this.foodType.glowColor || 0xFFFF99;
-            const glowAlpha = this.foodType.glowAlpha || 0.3;
-            
-            // Calculate glow size based on food type scale
-            let glowSize = 10; // Default size
-            
-            // If food type has scale defined, use the average of min and max for glow sizing
+
+            // Scale the glow to match the food type's own size.
+            let glowSize = 10;
             if (this.foodType.scale && typeof this.foodType.scale.min !== 'undefined' && typeof this.foodType.scale.max !== 'undefined') {
                 const avgScale = (this.foodType.scale.min + this.foodType.scale.max) / 2;
-                glowSize = 10 * avgScale; // Scale the glow size proportionally
+                glowSize = 10 * avgScale;
             }
-            
-            glow.beginFill(glowColor, glowAlpha);
-            glow.drawCircle(0, 0, glowSize);
-            glow.endFill();
-            glow.alpha = 0.6;
-            
-            // Store a reference to the glow for easier access
-            this.glow = glow;
-            
-            // Add the glow as the first child so it appears behind the food sprite
-            this.addChildAt(glow, 0);
+
+            this.glow = buildGlow(glowColor, glowSize * 1.15);
+            this.addChildAt(this.glow, 0);
         } catch (error) {
             console.error("Error creating glow:", error);
-            // Create a default glow as fallback
-            const glow = new PIXI.Graphics();
-            glow.beginFill(0xFFFF99, 0.3);
-            glow.drawCircle(0, 0, 10);
-            glow.endFill();
-            glow.alpha = 0.6;
-            
-            // Store a reference to the glow
-            this.glow = glow;
-            
-            // Add the glow as the first child
-            this.addChildAt(glow, 0);
+            this.glow = buildGlow(0xFFFF99, 11.5);
+            this.addChildAt(this.glow, 0);
         }
     }
-    
+
     createShadow() {
         try {
-            const shadow = new PIXI.Graphics();
-            const shadowColor = this.foodType.shadowColor || 0x000000;
-            
-            shadow.beginFill(shadowColor, 0.2);
-            shadow.drawEllipse(0, 6, 6, 3);
-            shadow.endFill();
-            
-            // Add the shadow as a child, but position it behind the sprite
+            let size = 7;
+            if (this.foodType.scale && typeof this.foodType.scale.min !== 'undefined' && typeof this.foodType.scale.max !== 'undefined') {
+                size = 7 * ((this.foodType.scale.min + this.foodType.scale.max) / 2);
+            }
+
+            const shadow = IdleAnts.Graphics.softShadow(size * 1.3, size * 0.75, 0.3);
+            shadow.position.set(1, 4);
+            if (this.foodType.shadowColor) {
+                shadow.tint = this.foodType.shadowColor;
+            }
+
+            // Behind everything, including the glow.
             this.addChildAt(shadow, 0);
         } catch (error) {
             console.error("Error creating shadow:", error);

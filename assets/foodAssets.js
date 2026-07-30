@@ -3,14 +3,42 @@
     // Get a reference to the AssetDefinition class
     const AssetDefinition = IdleAnts.Assets.AssetDefinition;
     
-    // Register basic food asset
+    // Register basic food asset.
+    //
+    // This is the most-seen sprite in the game after the ants themselves, and
+    // it is recoloured by tint for many food types - so it is drawn as a shaded
+    // seed/grain rather than a flat disc, keeping the same ~10px footprint the
+    // gameplay scaling expects.
     AssetDefinition.register('food', function(app) {
-        const foodGraphics = AssetDefinition.createGraphics();
-        foodGraphics.beginFill(0xEAD2AC); // Light beige (base color)
-        foodGraphics.drawCircle(0, 0, 5);
-        foodGraphics.endFill();
-        
-        return foodGraphics;
+        const g = AssetDefinition.createGraphics();
+
+        // Darker rim reads as the seed's shaded underside.
+        g.beginFill(0xA8845A);
+        g.drawEllipse(0, 0.4, 5.4, 5.8);
+        g.endFill();
+
+        // Main husk.
+        g.beginFill(0xE0C193);
+        g.drawEllipse(0, 0, 4.9, 5.3);
+        g.endFill();
+
+        // Lit upper-left face, matching the world's key light.
+        g.beginFill(0xF2DCB6);
+        g.drawEllipse(-0.9, -1, 3.5, 3.6);
+        g.endFill();
+
+        // Specular pop so it catches the eye against grass.
+        g.beginFill(0xFFF6E2, 0.9);
+        g.drawEllipse(-1.6, -2, 1.5, 1.4);
+        g.endFill();
+
+        // Central groove, the detail that makes it read as a seed.
+        g.lineStyle(0.8, 0xB08E60, 0.8);
+        g.moveTo(-0.6, -3.6);
+        g.quadraticCurveTo(1.1, 0, -0.6, 3.6);
+        g.lineStyle(0);
+
+        return g;
     });
     
     // Register apple food asset

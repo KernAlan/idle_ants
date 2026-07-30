@@ -15,127 +15,180 @@ IdleAnts.Entities.Nest = class extends PIXI.Container {
     }
     
     createAntHill() {
+        const G = IdleAnts.Graphics;
+
+        // Soft cast shadow so the mound sits *on* the ground rather than
+        // floating as a flat disc of brown. Kept tight to the mound's footprint
+        // so it grounds the shape instead of ringing it with a dark halo.
+        const cast = G.softShadow(56, 50, 0.26);
+        cast.position.set(5, 7);
+        this.addChild(cast);
+
         // Main hill mound - bird's eye view
         this.hillBody = new PIXI.Graphics();
-        
-        // Outer ring - darkest brown (represents the excavated dirt ring)
-        this.hillBody.beginFill(0x654321);
-        this.hillBody.drawCircle(0, 0, 50); // Large outer circle
+
+        // The mound is built from many concentric rings interpolating from the
+        // dark excavated rim up to the sunlit crest. Each ring is offset a
+        // little toward the upper-left light, which turns a flat bullseye into
+        // a shape that reads as a raised cone.
+        const RIM = 0x6b4a28;
+        const MID = 0xa9773c;
+        const CREST = 0xe4c496;
+        const RINGS = 24;
+        for (let i = 0; i < RINGS; i++) {
+            const t = i / (RINGS - 1);
+            const radius = 52 - t * 38;
+            // Reaches the crest colour early so the mound reads as a broad
+            // sunlit dome; only the outermost band stays in shadow.
+            const color = t < 0.3
+                ? G.mix(RIM, MID, t / 0.3)
+                : G.mix(MID, CREST, (t - 0.3) / 0.7);
+            this.hillBody.beginFill(color);
+            this.hillBody.drawEllipse(-t * 5, -t * 6, radius, radius * 0.94);
+            this.hillBody.endFill();
+        }
+
+        // Shadowed lower-right flank - a thin crescent along the base only.
+        this.hillBody.beginFill(0x4a3218, 0.2);
+        this.hillBody.moveTo(-40, 22);
+        this.hillBody.quadraticCurveTo(0, 54, 42, 18);
+        this.hillBody.quadraticCurveTo(4, 40, -40, 22);
         this.hillBody.endFill();
-        
-        // Middle ring - medium brown
-        this.hillBody.beginFill(0x8B4513);
-        this.hillBody.drawCircle(0, 0, 35); // Medium circle
-        this.hillBody.endFill();
-        
-        // Inner hill - lightest brown
-        this.hillBody.beginFill(0xA0522D);
-        this.hillBody.drawCircle(0, 0, 25); // Inner circle
-        this.hillBody.endFill();
-        
-        // Central mound - raised center
-        this.hillBody.beginFill(0xD2B48C);
-        this.hillBody.drawCircle(0, 0, 15); // Central raised area
-        this.hillBody.endFill();
-        
-        // Add texture with small dirt particles scattered around
+
+        // Loose dirt granules over the whole mound, brighter on the lit side.
         this.hillBody.lineStyle(0);
-        this.hillBody.beginFill(0x5D4037, 0.6);
-        for(let i = 0; i < 25; i++){
+        for (let i = 0; i < 90; i++) {
             const angle = Math.random() * Math.PI * 2;
-            const distance = Math.random() * 45; // Spread across the hill
+            const distance = Math.random() * 50;
             const x = Math.cos(angle) * distance;
-            const y = Math.sin(angle) * distance;
-            this.hillBody.drawCircle(x, y, 1 + Math.random() * 2);
+            const y = Math.sin(angle) * distance * 0.94;
+            // Grains facing the light get the highlight colour.
+            const facingLight = (x < 0 && y < 0);
+            this.hillBody.beginFill(facingLight ? 0xf6e0bc : 0x6b4a28, facingLight ? 0.5 : 0.3);
+            this.hillBody.drawCircle(x, y, 0.8 + Math.random() * 1.8);
+            this.hillBody.endFill();
         }
-        this.hillBody.endFill();
-        
-        // Add small rocks and debris
-        this.hillBody.beginFill(0x696969, 0.8);
-        for(let i = 0; i < 12; i++){
+
+        // Small rocks and debris embedded in the dirt, each with a highlight.
+        for (let i = 0; i < 16; i++) {
             const angle = Math.random() * Math.PI * 2;
-            const distance = 15 + Math.random() * 30;
+            const distance = 15 + Math.random() * 32;
             const x = Math.cos(angle) * distance;
-            const y = Math.sin(angle) * distance;
-            this.hillBody.drawCircle(x, y, 1.5 + Math.random() * 2);
+            const y = Math.sin(angle) * distance * 0.94;
+            const r = 1.5 + Math.random() * 2;
+            this.hillBody.beginFill(0x5a564f, 0.9);
+            this.hillBody.drawEllipse(x, y, r, r * 0.8);
+            this.hillBody.endFill();
+            this.hillBody.beginFill(0x9c988f, 0.9);
+            this.hillBody.drawEllipse(x - r * 0.25, y - r * 0.3, r * 0.55, r * 0.4);
+            this.hillBody.endFill();
         }
-        this.hillBody.endFill();
-        
+
+        // Rim light along the top-left edge of the mound.
+        this.hillBody.lineStyle(3, 0xffeecb, 0.4);
+        this.hillBody.arc(0, 0, 49, Math.PI * 0.9, Math.PI * 1.7);
+        this.hillBody.lineStyle(0);
+
         this.addChild(this.hillBody);
-        
+
         // Create entrance tunnels
         this.createEntrances();
-        
+
         // Add some grass around the hill
         this.createVegetation();
     }
     
     createEntrances() {
-        // Main entrance - large tunnel opening in center
+        const G = IdleAnts.Graphics;
+
+        // Main entrance - a tunnel mouth, not a flat dark dot. A bright lip of
+        // piled soil, then rings darkening toward the centre so the hole looks
+        // like it actually goes down into the ground.
         this.mainEntrance = new PIXI.Graphics();
-        this.mainEntrance.beginFill(0x2F1B14); // Very dark brown - tunnel interior
-        this.mainEntrance.drawCircle(0, 0, 8); // Main entrance hole
+
+        this.mainEntrance.beginFill(0xe0bd90, 0.9);
+        this.mainEntrance.drawEllipse(-1, -1.5, 12, 11);
         this.mainEntrance.endFill();
-        
-        // Add depth shadow
-        this.mainEntrance.beginFill(0x1A0F0A, 0.8);
-        this.mainEntrance.drawCircle(0, 0, 6); // Inner shadow
+        this.mainEntrance.beginFill(0x9c6c38);
+        this.mainEntrance.drawEllipse(0, 0, 10, 9.2);
         this.mainEntrance.endFill();
-        
-        // Secondary entrances around the main one
+
+        const DEPTH_RINGS = 8;
+        for (let i = 0; i < DEPTH_RINGS; i++) {
+            const t = i / (DEPTH_RINGS - 1);
+            const r = 8.6 - t * 6;
+            // Shift each deeper ring down-right: the near wall of the shaft is
+            // lit, the far wall falls into shadow.
+            this.mainEntrance.beginFill(G.mix(0x5a3a1e, 0x0b0603, t));
+            this.mainEntrance.drawEllipse(t * 1.6, t * 1.8, r, r * 0.92);
+            this.mainEntrance.endFill();
+        }
+
+        // Secondary entrances - same treatment at smaller scale.
         this.secondaryEntrance = new PIXI.Graphics();
-        this.secondaryEntrance.beginFill(0x2F1B14);
-        this.secondaryEntrance.drawCircle(-20, -10, 4); // Top-left entrance
-        this.secondaryEntrance.drawCircle(18, 12, 3); // Bottom-right entrance
-        this.secondaryEntrance.drawCircle(-8, 22, 3); // Bottom entrance
-        this.secondaryEntrance.endFill();
-        
+        for (const [x, y, r] of [[-20, -10, 4.5], [18, 12, 3.6], [-8, 22, 3.6]]) {
+            this.secondaryEntrance.beginFill(0xd6b083, 0.75);
+            this.secondaryEntrance.drawEllipse(x - 0.5, y - 0.8, r + 1.6, r + 1.3);
+            this.secondaryEntrance.endFill();
+            for (let i = 0; i < 4; i++) {
+                const t = i / 3;
+                this.secondaryEntrance.beginFill(G.mix(0x4e3218, 0x0b0603, t));
+                this.secondaryEntrance.drawEllipse(x + t * 0.9, y + t, r - t * r * 0.55, (r - t * r * 0.55) * 0.9);
+                this.secondaryEntrance.endFill();
+            }
+        }
+
         this.addChild(this.mainEntrance);
         this.addChild(this.secondaryEntrance);
     }
     
     createVegetation() {
-        // Add small grass tufts around the hill - bird's eye view
+        // A fringe of real grass blades and flowers around the mound, which
+        // softens the transition from bare dirt to lawn.
         this.vegetation = new PIXI.Graphics();
-        
-        // Grass represented as small green circles/dots
+        const G = IdleAnts.Graphics;
+
+        for (let i = 0; i < 46; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 46 + Math.random() * 16;
+            const x = Math.cos(angle) * distance;
+            const y = Math.sin(angle) * distance * 0.96;
+
+            // Blades radiate outward from the mound, leaning away from it.
+            const length = 5 + Math.random() * 9;
+            const lean = Math.cos(angle) * 4;
+            const lit = Math.random() > 0.5;
+            const color = G.shade(lit ? 0x5aa84c : 0x2f6f2c, 0.9 + Math.random() * 0.25);
+
+            this.vegetation.lineStyle(1.9, G.shade(color, 0.55), 0.5);
+            this.vegetation.moveTo(x, y);
+            this.vegetation.quadraticCurveTo(x + lean * 0.4, y - length * 0.6, x + lean, y - length);
+            this.vegetation.lineStyle(1.1, color);
+            this.vegetation.moveTo(x, y);
+            this.vegetation.quadraticCurveTo(x + lean * 0.4, y - length * 0.6, x + lean, y - length);
+        }
         this.vegetation.lineStyle(0);
-        this.vegetation.beginFill(0x228B22, 0.8);
-        for(let i = 0; i < 15; i++){
+
+        // Little five-petal flowers rather than plain dots.
+        for (let i = 0; i < 9; i++) {
             const angle = Math.random() * Math.PI * 2;
-            const distance = 45 + Math.random() * 15; // Around the outer edge
+            const distance = 48 + Math.random() * 14;
             const x = Math.cos(angle) * distance;
-            const y = Math.sin(angle) * distance;
-            
-            // Small grass clumps
-            this.vegetation.drawCircle(x, y, 2 + Math.random() * 2);
-            // Add smaller dots around for texture
-            this.vegetation.drawCircle(x + Math.random() * 4 - 2, y + Math.random() * 4 - 2, 1);
+            const y = Math.sin(angle) * distance * 0.96;
+            const white = Math.random() > 0.45;
+            const size = 1.8 + Math.random();
+
+            this.vegetation.beginFill(white ? 0xF6F4E8 : 0xFFD86B);
+            for (let p = 0; p < 5; p++) {
+                const a = (p / 5) * Math.PI * 2;
+                this.vegetation.drawCircle(x + Math.cos(a) * size, y + Math.sin(a) * size, size * 0.8);
+            }
+            this.vegetation.endFill();
+            this.vegetation.beginFill(white ? 0xE8A83A : 0xB8862B);
+            this.vegetation.drawCircle(x, y, size * 0.62);
+            this.vegetation.endFill();
         }
-        this.vegetation.endFill();
-        
-        // Small flowers as tiny colored dots
-        this.vegetation.beginFill(0xFFD700, 0.9); // Yellow flowers
-        for(let i = 0; i < 6; i++){
-            const angle = Math.random() * Math.PI * 2;
-            const distance = 50 + Math.random() * 10;
-            const x = Math.cos(angle) * distance;
-            const y = Math.sin(angle) * distance;
-            this.vegetation.drawCircle(x, y, 1.5);
-        }
-        this.vegetation.endFill();
-        
-        // White flowers
-        this.vegetation.beginFill(0xFFFAFA, 0.8);
-        for(let i = 0; i < 4; i++){
-            const angle = Math.random() * Math.PI * 2;
-            const distance = 48 + Math.random() * 12;
-            const x = Math.cos(angle) * distance;
-            const y = Math.sin(angle) * distance;
-            this.vegetation.drawCircle(x, y, 1);
-        }
-        this.vegetation.endFill();
-        
+
         this.addChild(this.vegetation);
     }
     

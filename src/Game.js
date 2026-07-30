@@ -50,10 +50,16 @@ IdleAnts.Game = class {
         this.lastMouseY = undefined;
         
         // Create the PIXI application
+        // Render at device pixel density (capped at 2x) with antialiasing so the
+        // vector-drawn ants, nest and decor stay crisp instead of stair-stepped.
         this.app = new PIXI.Application({
-            background: 0x269c3f, // Matching green background
+            background: 0x2f7d3a, // Deep grass green, matches the new ground tile
             width: window.innerWidth,
             height: window.innerHeight,
+            antialias: true,
+            autoDensity: true,
+            resolution: Math.min(window.devicePixelRatio || 1, 2),
+            powerPreference: 'high-performance',
             resizeTo: window // Enable automatic resizing
         });
         

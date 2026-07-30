@@ -23,11 +23,11 @@ IdleAnts.Managers.CameraManager = class {
     initializeZoomLevels() {
         // Calculate the minimum zoom level based on map and viewport dimensions
         // This needs to run after app view is available
-        if (this.app && this.app.view && this.app.view.width > 0 && this.app.view.height > 0 &&
+        if (this.app && this.app.view && this.app.screen.width > 0 && this.app.screen.height > 0 &&
             this.mapConfig && this.mapConfig.width > 0 && this.mapConfig.height > 0) {
             
-            const minZoomX = this.app.view.width / this.mapConfig.width;
-            const minZoomY = this.app.view.height / this.mapConfig.height;
+            const minZoomX = this.app.screen.width / this.mapConfig.width;
+            const minZoomY = this.app.screen.height / this.mapConfig.height;
             const dynamicMinZoom = Math.max(minZoomX, minZoomY);
 
             // Ensure zoom object and its properties exist with defaults if not already set
@@ -55,7 +55,7 @@ IdleAnts.Managers.CameraManager = class {
             cameraMoved = true;
         }
         if (keysPressed.ArrowRight || keysPressed.d) {
-            const maxX = Math.max(0, this.mapConfig.width - (this.app.view.width / this.mapConfig.zoom.level));
+            const maxX = Math.max(0, this.mapConfig.width - (this.app.screen.width / this.mapConfig.zoom.level));
             this.mapConfig.viewport.x = Math.min(maxX, this.mapConfig.viewport.x + adjustedSpeed);
             cameraMoved = true;
         }
@@ -64,7 +64,7 @@ IdleAnts.Managers.CameraManager = class {
             cameraMoved = true;
         }
         if (keysPressed.ArrowDown || keysPressed.s) {
-            const maxY = Math.max(0, this.mapConfig.height - (this.app.view.height / this.mapConfig.zoom.level));
+            const maxY = Math.max(0, this.mapConfig.height - (this.app.screen.height / this.mapConfig.zoom.level));
             this.mapConfig.viewport.y = Math.min(maxY, this.mapConfig.viewport.y + adjustedSpeed);
             cameraMoved = true;
         }
@@ -203,8 +203,8 @@ IdleAnts.Managers.CameraManager = class {
         this.mapConfig.viewport.x = worldX - (mouseX / this.mapConfig.zoom.level);
         this.mapConfig.viewport.y = worldY - (mouseY / this.mapConfig.zoom.level);
         
-        const newWorldWidth = this.app.view.width / this.mapConfig.zoom.level;
-        const newWorldHeight = this.app.view.height / this.mapConfig.zoom.level;
+        const newWorldWidth = this.app.screen.width / this.mapConfig.zoom.level;
+        const newWorldHeight = this.app.screen.height / this.mapConfig.zoom.level;
         
         this.mapConfig.viewport.x = Math.max(0, Math.min(
             this.mapConfig.viewport.x,
@@ -238,12 +238,12 @@ IdleAnts.Managers.CameraManager = class {
 
         this.mapConfig.viewport.x = Math.max(0, Math.min(
             this.mapConfig.viewport.x - worldDeltaX, // Subtract worldDeltaX
-            this.mapConfig.width - (this.app.view.width / this.mapConfig.zoom.level)
+            this.mapConfig.width - (this.app.screen.width / this.mapConfig.zoom.level)
         ));
         
         this.mapConfig.viewport.y = Math.max(0, Math.min(
             this.mapConfig.viewport.y - worldDeltaY, // Subtract worldDeltaY
-            this.mapConfig.height - (this.app.view.height / this.mapConfig.zoom.level)
+            this.mapConfig.height - (this.app.screen.height / this.mapConfig.zoom.level)
         ));
         
         this.worldContainer.position.set(
@@ -264,8 +264,8 @@ IdleAnts.Managers.CameraManager = class {
         }
         this.worldContainer.scale.set(this.mapConfig.zoom.level, this.mapConfig.zoom.level);
         
-        const newWorldWidth = this.app.view.width / this.mapConfig.zoom.level;
-        const newWorldHeight = this.app.view.height / this.mapConfig.zoom.level;
+        const newWorldWidth = this.app.screen.width / this.mapConfig.zoom.level;
+        const newWorldHeight = this.app.screen.height / this.mapConfig.zoom.level;
 
         this.mapConfig.viewport.x = Math.max(0, Math.min(
             this.mapConfig.viewport.x,
@@ -306,8 +306,8 @@ IdleAnts.Managers.CameraManager = class {
         }
         
         // Update viewport position to maintain current view
-        const newWorldWidth = this.app.view.width / this.mapConfig.zoom.level;
-        const newWorldHeight = this.app.view.height / this.mapConfig.zoom.level;
+        const newWorldWidth = this.app.screen.width / this.mapConfig.zoom.level;
+        const newWorldHeight = this.app.screen.height / this.mapConfig.zoom.level;
         
         this.mapConfig.viewport.x = Math.max(0, Math.min(
             this.mapConfig.viewport.x,

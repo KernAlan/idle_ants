@@ -1,9 +1,41 @@
 // src/managers/AssetManager.js
 IdleAnts.Managers.AssetManager = class {
+    // Vector art is baked into textures once at load time. Baking at a higher
+    // resolution than the screen means ants/food/props stay smooth when the
+    // player zooms in, instead of turning into a blurry enlargement.
+    static TEXTURE_RESOLUTION = 3;
+
+    // Tiling sprites sample their texture in raw pixels, so a supersampled
+    // texture would tile at the wrong size. These bake at 1:1.
+    static NATIVE_RESOLUTION_ASSETS = ['ground'];
+
     constructor(app) {
         this.app = app;
         this.textures = {};
         this.assetDefinitions = {}; // Reinstate this for AssetDefinition.register
+    }
+
+    /**
+     * Turn whatever an asset generator returned into a texture.
+     * Generators may return a PIXI.Texture directly (for canvas-painted assets
+     * such as the ground tile) or any DisplayObject to be rasterized.
+     */
+    _bakeTexture(result, name) {
+        if (result instanceof PIXI.Texture) {
+            return result;
+        }
+
+        if (!(result instanceof PIXI.DisplayObject)) {
+            console.error(`AssetManager: Generator for ${name} returned neither a Texture nor a DisplayObject.`);
+            return undefined;
+        }
+
+        const native = IdleAnts.Managers.AssetManager.NATIVE_RESOLUTION_ASSETS.includes(name);
+        return this.app.renderer.generateTexture(result, {
+            resolution: native ? 1 : IdleAnts.Managers.AssetManager.TEXTURE_RESOLUTION,
+            scaleMode: PIXI.SCALE_MODES.LINEAR,
+            multisample: PIXI.MSAA_QUALITY.HIGH
+        });
     }
 
     /**
@@ -41,11 +73,9 @@ IdleAnts.Managers.AssetManager = class {
                                         } else if (assetConfig.generator && typeof assetConfig.generator === 'function') {
                                             // Generate texture from generator function
                                             try {
-                                                const graphics = assetConfig.generator(this.app, this);
-                                                if (graphics instanceof PIXI.Graphics) {
-                                                    this.textures[assetConfig.id] = this.app.renderer.generateTexture(graphics);
-                                                } else {
-                                                    console.error(`AssetManager: Generator for ${assetConfig.id} did not return a PIXI.Graphics object.`);
+                                                const baked = this._bakeTexture(assetConfig.generator(this.app, this), assetConfig.id);
+                                                if (baked) {
+                                                    this.textures[assetConfig.id] = baked;
                                                 }
                                             } catch (error) {
                                                 console.error(`AssetManager: Error generating texture for ${assetConfig.id}:`, error);
@@ -66,11 +96,9 @@ IdleAnts.Managers.AssetManager = class {
             if (this.assetDefinitions && Object.keys(this.assetDefinitions).length > 0) { // Check this.assetDefinitions
                 for (const [name, definitionFn] of Object.entries(this.assetDefinitions)) { // Iterate over this.assetDefinitions
                     try {
-                        const graphics = definitionFn(this.app);
-                        if (graphics instanceof PIXI.Graphics) {
-                           this.textures[name] = this.app.renderer.generateTexture(graphics);
-                        } else {
-                            console.error(`AssetManager: Generator for registered asset ${name} did not return a PIXI.Graphics object.`);
+                        const baked = this._bakeTexture(definitionFn(this.app), name);
+                        if (baked) {
+                            this.textures[name] = baked;
                         }
                     } catch (error) {
                         console.error(`AssetManager: Error generating texture for registered asset ${name}:`, error);
