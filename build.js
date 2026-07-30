@@ -15,7 +15,10 @@ const scriptFiles = [
     'src/effects/LarvaeEffect.js',
     'src/effects/index.js',
     // Asset Definitions
+    'assets/GraphicsUtils.js',
+    'assets/CreatureArt.js',
     'assets/AssetDefinition.js',
+    'assets/decorAssets.js',
     'assets/antAssets.js',
     'assets/anteaterBossAsset.js',
     'assets/foodAssets.js',

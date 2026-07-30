@@ -47,6 +47,21 @@ IdleAnts.Entities.Enemy = class extends PIXI.Sprite {
         this.setupTooltip();
     }
 
+    /**
+     * Contact shadow beneath the creature. Subclasses call this at the top of
+     * their createBody() so the shadow lands under every other part; giving it
+     * to the base class means no enemy can be added later without one.
+     * @param {number} rx horizontal radius in local units
+     * @param {number} ry vertical radius in local units
+     */
+    createShadow(rx, ry, alpha = 0.3) {
+        const shadow = IdleAnts.Graphics.softShadow(rx, ry, alpha);
+        shadow.position.set(rx * 0.14, ry * 0.18);
+        this.addChildAt(shadow, 0);
+        this.shadowSprite = shadow;
+        return shadow;
+    }
+
     setupTooltip() {
         this.on('pointerover', () => {
             this.showTooltip();
@@ -111,9 +126,11 @@ IdleAnts.Entities.Enemy = class extends PIXI.Sprite {
             this.addChild(this.healthBarContainer);
         }
 
+        // Matches the ant bar's shape so the two read as one HUD language,
+        // distinguished by colour (hostile red) rather than by style.
         this.healthBarBg = new PIXI.Graphics();
-        this.healthBarBg.beginFill(0x000000,0.6);
-        this.healthBarBg.drawRect(-10,0,20,3);
+        this.healthBarBg.beginFill(0x140806, 0.72);
+        this.healthBarBg.drawRoundedRect(-10.5, -0.5, 21, 4, 2);
         this.healthBarBg.endFill();
         this.healthBarContainer.addChild(this.healthBarBg);
 
@@ -126,11 +143,19 @@ IdleAnts.Entities.Enemy = class extends PIXI.Sprite {
     updateHealthBar() {
         const ratio = Math.max(this.hp,0)/this.maxHp;
         this.healthBarFg.clear();
-        this.healthBarFg.beginFill(0xFF0000);
-        this.healthBarFg.drawRect(-10,0,20*ratio,3);
-        this.healthBarFg.endFill();
-        this.healthBarContainer.visible=true;
-        this.healthBarTimer=1800;
+        if (ratio > 0) {
+            // Deep crimson as it nears death, hot red while still dangerous.
+            this.healthBarFg.beginFill(IdleAnts.Graphics.mix(0x7A1512, 0xFF4136, ratio));
+            this.healthBarFg.drawRoundedRect(-9.5, 0, 19 * ratio, 3, 1.5);
+            this.healthBarFg.endFill();
+            this.healthBarFg.beginFill(0xFFFFFF, 0.28);
+            this.healthBarFg.drawRoundedRect(-9.5, 0.2, 19 * ratio, 1.1, 0.55);
+            this.healthBarFg.endFill();
+        }
+        // Wounded only - see the note in AntBase.updateHealthBar.
+        const damaged = this.hp < this.maxHp;
+        this.healthBarContainer.visible = damaged;
+        this.healthBarTimer = damaged ? 1800 : 0;
         this.healthBarContainer.x = this.x;
         this.healthBarContainer.y = this.y - 20;
         this.healthBarContainer.rotation = 0;

@@ -144,12 +144,12 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
     }
     
     createShadow() {
-        const shadow = new PIXI.Graphics();
-        shadow.beginFill(0x000000, 0.2);
-        shadow.drawEllipse(0, 0, 8, 4);
-        shadow.endFill();
-        shadow.y = 8; // Position under the ant
+        // Soft gradient blob rather than a hard-edged ellipse, offset down-right
+        // to match the world's upper-left key light.
+        const shadow = IdleAnts.Graphics.softShadow(11, 7, 0.32);
+        shadow.position.set(1.5, 3);
         this.addChild(shadow);
+        this.shadowSprite = shadow;
     }
     
     createFoodIndicator() {
@@ -192,9 +192,11 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
         }
         this.healthBarContainer.visible = false;
 
+        // Rounded capsule with a dark surround, so it stays legible over both
+        // light dirt and dark shadow without shouting for attention.
         this.healthBarBg = new PIXI.Graphics();
-        this.healthBarBg.beginFill(0x000000, 0.6);
-        this.healthBarBg.drawRect(-10, 0, 20, 3);
+        this.healthBarBg.beginFill(0x0b1408, 0.72);
+        this.healthBarBg.drawRoundedRect(-10.5, -0.5, 21, 4, 2);
         this.healthBarBg.endFill();
         this.healthBarContainer.addChild(this.healthBarBg);
 
@@ -204,13 +206,34 @@ IdleAnts.Entities.AntBase = class extends PIXI.Sprite {
     }
 
     updateHealthBar() {
-        const ratio = Math.max(this.hp,0) / this.maxHp;
+        const ratio = Math.max(this.hp, 0) / this.maxHp;
+
+        // Green when healthy, ramping through amber to red as HP drops - the
+        // colour alone tells the player how urgent an ant's situation is.
+        const G = IdleAnts.Graphics;
+        const color = ratio > 0.5
+            ? G.mix(0xE8C93A, 0x4CD137, (ratio - 0.5) * 2)
+            : G.mix(0xD63031, 0xE8C93A, ratio * 2);
+
         this.healthBarFg.clear();
-        this.healthBarFg.beginFill(0x00FF00);
-        this.healthBarFg.drawRect(-10, 0, 20 * ratio, 3);
-        this.healthBarFg.endFill();
-        this.healthBarContainer.visible = true;
-        this.healthBarTimer = 1800; // 30 seconds at 60fps
+        if (ratio > 0) {
+            this.healthBarFg.beginFill(color);
+            this.healthBarFg.drawRoundedRect(-9.5, 0, 19 * ratio, 3, 1.5);
+            this.healthBarFg.endFill();
+            // Highlight along the top edge gives the bar a little dimension.
+            this.healthBarFg.beginFill(0xFFFFFF, 0.3);
+            this.healthBarFg.drawRoundedRect(-9.5, 0.2, 19 * ratio, 1.1, 0.55);
+            this.healthBarFg.endFill();
+        }
+
+        // Only show the bar for a wounded ant. Every subclass constructor calls
+        // this method to resize the bar for its own HP pool; revealing it
+        // unconditionally left the whole colony permanently plastered with full
+        // green bars. Gating on actual damage fixes all of them at once, and a
+        // healthy colony stays clean.
+        const damaged = this.hp < this.maxHp;
+        this.healthBarContainer.visible = damaged;
+        this.healthBarTimer = damaged ? 1800 : 0; // 30 seconds at 60fps
 
         // Ensure bar is positioned just above the ant and always horizontal
         this.healthBarContainer.x = this.x;

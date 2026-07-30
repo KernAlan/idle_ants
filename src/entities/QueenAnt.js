@@ -434,13 +434,24 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
         }
         
         const ratio = Math.max(this.hp, 0) / this.maxHp;
-        
-        // Clear and redraw health bar
+        const G = IdleAnts.Graphics;
+
+        // Clear and redraw health bar. The queen's bar stays permanently
+        // visible - losing her ends the run, so her HP is always relevant -
+        // and it is wider and gold-framed to mark it out from worker bars.
         this.healthBarFg.clear();
-        this.healthBarFg.beginFill(ratio > 0.5 ? 0x00FF00 : ratio > 0.25 ? 0xFFFF00 : 0xFF0000);
-        this.healthBarFg.drawRect(-10, 0, 20 * ratio, 3);
-        this.healthBarFg.endFill();
-        
+        if (ratio > 0) {
+            const color = ratio > 0.5
+                ? G.mix(0xE8C93A, 0x4CD137, (ratio - 0.5) * 2)
+                : G.mix(0xD63031, 0xE8C93A, ratio * 2);
+            this.healthBarFg.beginFill(color);
+            this.healthBarFg.drawRoundedRect(-13, 0, 26 * ratio, 3.4, 1.7);
+            this.healthBarFg.endFill();
+            this.healthBarFg.beginFill(0xFFFFFF, 0.32);
+            this.healthBarFg.drawRoundedRect(-13, 0.25, 26 * ratio, 1.2, 0.6);
+            this.healthBarFg.endFill();
+        }
+
         // Show health bar
         this.healthBarContainer.visible = true;
     }
@@ -456,11 +467,13 @@ IdleAnts.Entities.QueenAnt = class extends IdleAnts.Entities.AntBase {
         }
         this.healthBarContainer.visible = false;
         
-        // Background bar
+        // Background bar with a thin gold frame befitting the queen.
         this.healthBarBg = new PIXI.Graphics();
-        this.healthBarBg.beginFill(0x000000, 0.6);
-        this.healthBarBg.drawRect(-10, 0, 20, 3);
+        this.healthBarBg.beginFill(0x0b1408, 0.78);
+        this.healthBarBg.drawRoundedRect(-14, -0.6, 28, 4.6, 2.3);
         this.healthBarBg.endFill();
+        this.healthBarBg.lineStyle(0.7, 0xE8C24A, 0.75);
+        this.healthBarBg.drawRoundedRect(-14, -0.6, 28, 4.6, 2.3);
         this.healthBarContainer.addChild(this.healthBarBg);
         
         // Foreground bar

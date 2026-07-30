@@ -46,148 +46,131 @@ IdleAnts.Entities.FrogEnemy = class extends IdleAnts.Entities.Enemy {
     createFrogBody() {
         // Clear any existing graphics
         this.removeChildren();
-        
-        // Main body (frog sitting position - wide and low)
+
+        const A = IdleAnts.Art;
+        const Gr = IdleAnts.Graphics;
+
+        // Damp, mottled amphibian greens - a frog should look wet, which means
+        // strong speculars and a pale underbelly rather than flat forest green.
+        const SKIN = 0x4F8F32;
+        const SKIN_DARK = 0x27501C;
+        const BELLY = 0xE4EFC4;
+
+        this.createShadow(11, 8, 0.3);
+
+        // Squat, wide body seen from above.
         const body = new PIXI.Graphics();
-        body.beginFill(0x228B22); // Forest green
-        body.drawEllipse(0, 2, 8, 5); // Wide, low body
+        A.volume(body, { x: 0, y: 2, rx: 8.5, ry: 6, color: SKIN, outlineWidth: 0.8 });
+        // Pale throat/belly showing at the front edge.
+        body.beginFill(BELLY, 0.55);
+        body.drawPolygon(A.ellipsePath(0, 3.6, 4.6, 2.8, 0, 20));
         body.endFill();
-        
-        // Body shading
-        body.beginFill(0x1F5F1F, 0.3); // Darker green shadow
-        body.drawEllipse(1, 3, 6, 3);
+
+        // Mottled dorsal blotches - the classic frog pattern.
+        const rand = Gr.rng(404);
+        body.beginFill(SKIN_DARK, 0.5);
+        for (let i = 0; i < 9; i++) {
+            const a = rand() * Math.PI * 2;
+            const r = Math.sqrt(rand());
+            body.drawPolygon(A.ellipsePath(
+                Math.cos(a) * r * 6.4, 2 + Math.sin(a) * r * 4.4,
+                0.9 + rand() * 1.5, 0.7 + rand() * 1.1, rand() * 3, 10));
+        }
         body.endFill();
-        
-        // Belly
-        body.beginFill(0xF0F8E8); // Light cream belly
-        body.drawEllipse(0, 3, 5, 3);
+
+        // Wet sheen down the back.
+        body.beginFill(0xFFFFFF, 0.2);
+        body.drawPolygon(A.ellipsePath(-2.8, -0.4, 2.4, 3.4, -0.25, 18));
         body.endFill();
-        
         this.addChild(body);
-        
-        // Head (connected to body, not separate)
+
+        // Head, blending into the body.
         const head = new PIXI.Graphics();
-        head.beginFill(0x228B22); // Same green as body
-        head.drawEllipse(0, -2, 6, 4); // Wide head
+        A.volume(head, { x: 0, y: -3, rx: 6.4, ry: 4.8, color: SKIN, outlineWidth: 0.7 });
+        head.beginFill(0xFFFFFF, 0.18);
+        head.drawPolygon(A.ellipsePath(-2, -4.4, 2.2, 1.6, -0.2, 14));
         head.endFill();
-        
-        // Head highlight
-        head.beginFill(0x32CD32, 0.6);
-        head.drawEllipse(-1, -3, 4, 2.5);
-        head.endFill();
-        
         this.addChild(head);
-        
-        // Mouth line
+
+        // Wide mouth line.
         const mouth = new PIXI.Graphics();
-        mouth.lineStyle(1, 0x1F5F1F);
-        mouth.moveTo(-3, 1);
-        mouth.lineTo(3, 1);
+        mouth.lineStyle(1, SKIN_DARK, 0.85);
+        mouth.moveTo(-4.4, -5.6);
+        mouth.quadraticCurveTo(0, -7.6, 4.4, -5.6);
         this.addChild(mouth);
-        
-        // Eyes (on top of head like real frogs)
-        const leftEye = new PIXI.Graphics();
-        leftEye.beginFill(0x000000); // Black base
-        leftEye.drawCircle(-2, -4, 1.5);
-        leftEye.endFill();
-        leftEye.beginFill(0xFFD700); // Gold iris
-        leftEye.drawCircle(-2, -4, 1);
-        leftEye.endFill();
-        leftEye.beginFill(0x000000); // Black pupil
-        leftEye.drawCircle(-2, -4, 0.4);
-        leftEye.endFill();
-        leftEye.beginFill(0xFFFFFF, 0.8); // White highlight
-        leftEye.drawCircle(-2.3, -4.3, 0.2);
-        leftEye.endFill();
-        
-        const rightEye = new PIXI.Graphics();
-        rightEye.beginFill(0x000000);
-        rightEye.drawCircle(2, -4, 1.5);
-        rightEye.endFill();
-        rightEye.beginFill(0xFFD700);
-        rightEye.drawCircle(2, -4, 1);
-        rightEye.endFill();
-        rightEye.beginFill(0x000000);
-        rightEye.drawCircle(2, -4, 0.4);
-        rightEye.endFill();
-        rightEye.beginFill(0xFFFFFF, 0.8);
-        rightEye.drawCircle(1.7, -4.3, 0.2);
-        rightEye.endFill();
-        
+
+        // Bulging eyes that sit proud of the skull - a frog's whole character.
+        const frogEye = (dir) => {
+            const e = new PIXI.Graphics();
+            // Domed eyelid mound.
+            A.volume(e, { x: dir * 2.8, y: -4.6, rx: 2.6, ry: 2.4, color: SKIN, outlineWidth: 0.6 });
+            // Gold iris with a slit pupil.
+            e.beginFill(0x1A1206);
+            e.drawCircle(dir * 2.8, -4.8, 1.75);
+            e.endFill();
+            e.beginFill(0xE8B321);
+            e.drawCircle(dir * 2.8, -4.8, 1.35);
+            e.endFill();
+            e.beginFill(0xF7DE7A, 0.85);
+            e.drawCircle(dir * 2.8, -4.4, 0.9);
+            e.endFill();
+            e.beginFill(0x120C04);
+            e.drawPolygon(A.ellipsePath(dir * 2.8, -4.8, 0.42, 1.15, 0, 12));
+            e.endFill();
+            e.beginFill(0xFFFFFF, 0.95);
+            e.drawCircle(dir * 2.8 - 0.7, -5.5, 0.5);
+            e.endFill();
+            return e;
+        };
+        const leftEye = frogEye(-1);
+        const rightEye = frogEye(1);
         this.addChild(leftEye);
         this.addChild(rightEye);
-        
-        // Front legs (small, positioned at front of body)
-        const leftFrontLeg = new PIXI.Graphics();
-        leftFrontLeg.beginFill(0x228B22);
-        leftFrontLeg.drawEllipse(-5, 1, 1.5, 2); // Small front leg
-        leftFrontLeg.endFill();
-        leftFrontLeg.beginFill(0x1F5F1F);
-        leftFrontLeg.drawCircle(-5, 2.5, 0.8); // Front foot
-        leftFrontLeg.endFill();
-        
-        const rightFrontLeg = new PIXI.Graphics();
-        rightFrontLeg.beginFill(0x228B22);
-        rightFrontLeg.drawEllipse(5, 1, 1.5, 2);
-        rightFrontLeg.endFill();
-        rightFrontLeg.beginFill(0x1F5F1F);
-        rightFrontLeg.drawCircle(5, 2.5, 0.8);
-        rightFrontLeg.endFill();
-        
+
+        // Front legs - short, tucked under the chin.
+        const frontLeg = (dir) => {
+            const l = new PIXI.Graphics();
+            A.limb(l, [[dir * 4.5, -1.5], [dir * 6.5, 1], [dir * 6, 4]], 1.8, SKIN);
+            // Splayed toes.
+            l.lineStyle({ width: 0.9, color: SKIN_DARK, alpha: 0.9, cap: PIXI.LINE_CAP.ROUND });
+            for (let t = -1; t <= 1; t++) {
+                l.moveTo(dir * 6, 4);
+                l.lineTo(dir * 6 + t * 1.6, 6.4);
+            }
+            l.lineStyle(0);
+            return l;
+        };
+        const leftFrontLeg = frontLeg(-1);
+        const rightFrontLeg = frontLeg(1);
         this.addChild(leftFrontLeg);
         this.addChild(rightFrontLeg);
-        
-        // Back legs (large, folded for sitting position)
-        const leftBackLeg = new PIXI.Graphics();
-        leftBackLeg.beginFill(0x228B22);
-        // Thigh (horizontal when sitting)
-        leftBackLeg.drawEllipse(-6, 4, 3, 1.5);
-        leftBackLeg.endFill();
-        leftBackLeg.beginFill(0x228B22);
-        // Lower leg (folded back)
-        leftBackLeg.drawEllipse(-8, 5, 2, 1);
-        leftBackLeg.endFill();
-        leftBackLeg.beginFill(0x1F5F1F);
-        // Large webbed foot
-        leftBackLeg.drawEllipse(-9, 6, 2.5, 1);
-        leftBackLeg.endFill();
-        // Webbing lines
-        leftBackLeg.lineStyle(0.5, 0x0F3F0F);
-        leftBackLeg.moveTo(-10.5, 6);
-        leftBackLeg.lineTo(-7.5, 6);
-        leftBackLeg.moveTo(-10, 5.5);
-        leftBackLeg.lineTo(-8, 6.5);
-        
-        const rightBackLeg = new PIXI.Graphics();
-        rightBackLeg.beginFill(0x228B22);
-        rightBackLeg.drawEllipse(6, 4, 3, 1.5);
-        rightBackLeg.endFill();
-        rightBackLeg.beginFill(0x228B22);
-        rightBackLeg.drawEllipse(8, 5, 2, 1);
-        rightBackLeg.endFill();
-        rightBackLeg.beginFill(0x1F5F1F);
-        rightBackLeg.drawEllipse(9, 6, 2.5, 1);
-        rightBackLeg.endFill();
-        // Webbing lines
-        rightBackLeg.lineStyle(0.5, 0x0F3F0F);
-        rightBackLeg.moveTo(7.5, 6);
-        rightBackLeg.lineTo(10.5, 6);
-        rightBackLeg.moveTo(8, 6.5);
-        rightBackLeg.lineTo(10, 5.5);
-        
+
+        // Back legs - big folded thighs with webbed feet, the source of the hop.
+        const backLeg = (dir) => {
+            const l = new PIXI.Graphics();
+            A.volume(l, { x: dir * 7, y: 3.5, rx: 4.2, ry: 2.6, rot: dir * 0.3, color: SKIN, outlineWidth: 0.6 });
+            A.limb(l, [[dir * 9, 4.5], [dir * 10.5, 7.5]], 1.8, SKIN);
+            // Webbed foot as a filled fan.
+            l.beginFill(Gr.shade(SKIN, 0.75));
+            l.drawPolygon([
+                dir * 10.5, 7.5,
+                dir * 13.5, 10.5,
+                dir * 10.5, 12,
+                dir * 7.5, 10.5
+            ]);
+            l.endFill();
+            l.lineStyle(0.5, SKIN_DARK, 0.8);
+            l.moveTo(dir * 10.5, 7.5); l.lineTo(dir * 10.5, 12);
+            l.moveTo(dir * 10.5, 7.5); l.lineTo(dir * 12.5, 11);
+            l.moveTo(dir * 10.5, 7.5); l.lineTo(dir * 8.5, 11);
+            l.lineStyle(0);
+            return l;
+        };
+        const leftBackLeg = backLeg(-1);
+        const rightBackLeg = backLeg(1);
         this.addChild(leftBackLeg);
         this.addChild(rightBackLeg);
-        
-        // Add some spots for frog pattern
-        const spots = new PIXI.Graphics();
-        spots.beginFill(0x1F5F1F, 0.4);
-        spots.drawCircle(-2, 0, 0.8);
-        spots.drawCircle(3, 1, 0.6);
-        spots.drawCircle(-1, 3, 0.5);
-        spots.drawCircle(2, -1, 0.4);
-        spots.endFill();
-        this.addChild(spots);
-        
+
         // Store references for animation
         this.leftBackLeg = leftBackLeg;
         this.rightBackLeg = rightBackLeg;

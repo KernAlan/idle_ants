@@ -3,139 +3,99 @@
     const AssetDefinition = IdleAnts.Assets.AssetDefinition;
 
     // --- Tarantula Assets ---
+    // Tarantula: a heavy, hairy mygalomorph seen from above. The old sprite was
+    // a flat brown polygon; this one is built from shaded volumes with a dense
+    // bristle coat, which is the defining texture of the animal.
     AssetDefinition.register('tarantula_body', () => {
         const g = AssetDefinition.createGraphics();
-        
-        // CEPHALOTHORAX (front section) - more defined shape
-        g.beginFill(0x4A2C17); // Medium dark brown
-        // Draw a more shield-like shape for cephalothorax
-        g.moveTo(0, -20);      // Top point
-        g.lineTo(-18, -10);    // Top left
-        g.lineTo(-20, 5);      // Bottom left
-        g.lineTo(0, 8);        // Bottom center
-        g.lineTo(20, 5);       // Bottom right
-        g.lineTo(18, -10);     // Top right
-        g.lineTo(0, -20);      // Back to top
+        const A = IdleAnts.Art;
+
+        const CARAPACE = 0x6B4423;
+        const ABDOMEN = 0x4A2C17;
+        const HAIR = 0x8A5A2E;
+        const HAIR_TIP = 0xC98F4A;
+
+        // ABDOMEN (opisthosoma) - the big hairy rear, drawn first so the
+        // cephalothorax overlaps it at the waist.
+        A.fuzz(g, { x: 0, y: 20, rx: 26, ry: 23, color: HAIR, count: 120, length: 5.5, width: 1.5, alpha: 0.8, sweep: 0.9, seed: 11 });
+        A.fuzz(g, { x: 0, y: 20, rx: 24, ry: 21, color: HAIR_TIP, count: 70, length: 7.5, width: 1, alpha: 0.42, sweep: 1.1, seed: 12 });
+        A.volume(g, { x: 0, y: 20, rx: 26, ry: 22, color: ABDOMEN, outlineWidth: 2, rimAlpha: 0.4 });
+
+        // Urticating-hair patch: the bald, darker oval tarantulas kick hairs from.
+        g.beginFill(0x2E1A0D, 0.55);
+        g.drawPolygon(A.ellipsePath(0, 24, 11, 9, 0, 20));
         g.endFill();
-        
-        // Cephalothorax outline
-        g.lineStyle(2, 0x2C1810);
-        g.moveTo(0, -20);
-        g.lineTo(-18, -10);
-        g.lineTo(-20, 5);
-        g.lineTo(0, 8);
-        g.lineTo(20, 5);
-        g.lineTo(18, -10);
-        g.lineTo(0, -20);
-        g.lineStyle(0);
-        
-        // ABDOMEN (back section) - round but not a perfect circle
-        g.beginFill(0x3E2117);
-        g.drawEllipse(0, 20, 26, 22); // Slightly oval
+        // Chevron markings running down the abdomen.
+        g.beginFill(HAIR_TIP, 0.35);
+        for (let i = 0; i < 3; i++) {
+            const y = 12 + i * 7;
+            const w = 9 - i * 1.6;
+            g.drawPolygon([0, y, -w, y + 5, -w * 0.55, y + 6.5, 0, y + 3, w * 0.55, y + 6.5, w, y + 5]);
+        }
         g.endFill();
-        
-        // Abdomen outline
-        g.lineStyle(2, 0x2C1810);
-        g.drawEllipse(0, 20, 26, 22);
-        g.lineStyle(0);
-        
-        // PEDICEL (waist connection) - thin connection between sections
+
+        // PEDICEL (waist).
         g.beginFill(0x2C1810);
-        g.drawRect(-3, 6, 6, 6);
+        g.drawPolygon(A.ellipsePath(0, 7, 5, 4, 0, 14));
         g.endFill();
-        
-        // MARKINGS - more geometric and spider-like
-        // Central fovea (groove) on cephalothorax
-        g.lineStyle(2, 0x2C1810);
-        g.moveTo(0, -15);
-        g.lineTo(0, 0);
-        g.lineStyle(0);
-        
-        // Radial pattern on cephalothorax
-        g.lineStyle(1, 0x654321, 0.8);
-        for (let i = 0; i < 8; i++) {
-            const angle = (i / 8) * Math.PI * 2;
-            const innerR = 8;
-            const outerR = 15;
-            g.moveTo(Math.cos(angle) * innerR, -8 + Math.sin(angle) * innerR);
-            g.lineTo(Math.cos(angle) * outerR, -8 + Math.sin(angle) * outerR);
+
+        // CEPHALOTHORAX (prosoma) - a domed shield, harder than the abdomen, so
+        // it gets a tighter, glossier highlight.
+        A.fuzz(g, { x: 0, y: -6, rx: 20, ry: 15, color: HAIR, count: 90, length: 4, width: 1.3, alpha: 0.75, sweep: 0.9, seed: 13 });
+        A.volume(g, { x: 0, y: -6, rx: 20, ry: 15, color: CARAPACE, outlineWidth: 1.8, rimAlpha: 0.6 });
+
+        // Fovea (the central pit) and the radial grooves fanning out from it.
+        g.lineStyle(2, 0x33200F, 0.8);
+        g.moveTo(0, -10); g.lineTo(0, 0);
+        g.lineStyle(1, 0x33200F, 0.45);
+        for (let i = 0; i < 10; i++) {
+            const a = (i / 10) * Math.PI * 2;
+            g.moveTo(Math.cos(a) * 6, -6 + Math.sin(a) * 4.5);
+            g.lineTo(Math.cos(a) * 17, -6 + Math.sin(a) * 12.5);
         }
         g.lineStyle(0);
-        
-        // Chevron pattern on abdomen
-        g.beginFill(0x8B4513);
-        // Central chevron
-        g.moveTo(0, 12);
-        g.lineTo(-4, 18);
-        g.lineTo(-2, 20);
-        g.lineTo(0, 16);
-        g.lineTo(2, 20);
-        g.lineTo(4, 18);
-        g.lineTo(0, 12);
+
+        // Metallic sheen across the carapace.
+        g.beginFill(0xE0A860, 0.22);
+        g.drawPolygon(A.ellipsePath(-6, -11, 8, 5, -0.3, 18));
         g.endFill();
-        
-        // Side patterns
-        g.beginFill(0x654321);
-        // Left side
-        g.drawEllipse(-10, 16, 3, 8);
-        g.drawEllipse(-8, 24, 2, 6);
-        // Right side  
-        g.drawEllipse(10, 16, 3, 8);
-        g.drawEllipse(8, 24, 2, 6);
-        g.endFill();
-        
+
         return g;
     });
 
     AssetDefinition.register('tarantula_head', () => {
         const g = AssetDefinition.createGraphics();
-        
-        // FACE area - smaller, more focused on features
-        g.beginFill(0x4A2C17);
-        g.drawEllipse(0, 0, 16, 12);
-        g.endFill();
-        
-        // Face outline
-        g.lineStyle(1, 0x2C1810);
-        g.drawEllipse(0, 0, 16, 12);
-        g.lineStyle(0);
-        
-        // EYES - simplified but clear arrangement
-        g.beginFill(0x000000);
-        // Main front eyes (large)
-        g.drawCircle(-5, -2, 2.5);
-        g.drawCircle(5, -2, 2.5);
-        // Secondary eyes (smaller)
-        g.drawCircle(-7, -5, 1.5);
-        g.drawCircle(7, -5, 1.5);
-        g.drawCircle(-2, -5, 1);
-        g.drawCircle(2, -5, 1);
-        g.endFill();
-        
-        // Eye shine on main eyes
-        g.beginFill(0xFFFFFF);
-        g.drawCircle(-5, -3, 0.8);
-        g.drawCircle(5, -3, 0.8);
-        g.endFill();
-        
-        // CHELICERAE - simplified but menacing
-        g.beginFill(0x2C1810);
-        g.drawEllipse(-2, 6, 4, 6);
-        g.drawEllipse(2, 6, 4, 6);
-        g.endFill();
-        
-        // FANGS - simple but sharp
-        g.beginFill(0x000000);
-        g.moveTo(-2, 9);
-        g.lineTo(-1, 12);
-        g.lineTo(-3, 12);
-        g.lineTo(-2, 9);
-        g.moveTo(2, 9);
-        g.lineTo(3, 12);
-        g.lineTo(1, 12);
-        g.lineTo(2, 9);
-        g.endFill();
-        
+        const A = IdleAnts.Art;
+
+        // Face plate at the front of the carapace.
+        A.volume(g, { x: 0, y: 0, rx: 16, ry: 12, color: 0x5A3A1C, outlineWidth: 1.2, rimAlpha: 0.5 });
+
+        // The eight-eye cluster: two large principal eyes with six smaller ones
+        // around them. That tight cluster is what makes this read as a spider
+        // rather than a beetle.
+        A.eye(g, -5, -2, 3, { squash: 1, color: 0x0C0804, innerColor: 0x6B2A1E, specAlpha: 0.95 });
+        A.eye(g,  5, -2, 3, { squash: 1, color: 0x0C0804, innerColor: 0x6B2A1E, specAlpha: 0.95 });
+        A.eye(g, -8.5, -6.5, 1.7, { squash: 1, color: 0x0C0804, innerColor: 0x4A1E14 });
+        A.eye(g,  8.5, -6.5, 1.7, { squash: 1, color: 0x0C0804, innerColor: 0x4A1E14 });
+        A.eye(g, -2.6, -6.8, 1.3, { squash: 1, color: 0x0C0804, innerColor: 0x4A1E14 });
+        A.eye(g,  2.6, -6.8, 1.3, { squash: 1, color: 0x0C0804, innerColor: 0x4A1E14 });
+
+        // CHELICERAE - the heavy fang bases, with bristles.
+        for (const dir of [-1, 1]) {
+            A.fuzz(g, { x: dir * 3.4, y: 6, rx: 4, ry: 6, color: 0x7A4E24, count: 14, length: 3, width: 0.9, alpha: 0.8, seed: 30 + dir });
+            A.volume(g, { x: dir * 3.4, y: 6, rx: 4.2, ry: 6.4, color: 0x3E2413, outlineWidth: 0.9, rimAlpha: 0.55 });
+        }
+
+        // FANGS - curved, glossy and unmistakably sharp.
+        for (const dir of [-1, 1]) {
+            g.beginFill(0x140A04);
+            g.drawPolygon([dir * 1.6, 10, dir * 5.6, 10.6, dir * 4.6, 17.5, dir * 2.6, 13.5]);
+            g.endFill();
+            g.beginFill(0x8A6A48, 0.7);
+            g.drawPolygon([dir * 2.4, 11, dir * 4.6, 11.4, dir * 4.2, 16]);
+            g.endFill();
+        }
+
         return g;
     });
 

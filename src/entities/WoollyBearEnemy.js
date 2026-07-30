@@ -22,119 +22,79 @@ IdleAnts.Entities.WoollyBearEnemy = class extends IdleAnts.Entities.Enemy {
     }
 
     createBody(){
+        const A = IdleAnts.Art;
         this.segments = [];
         const segmentCount = 10; // more segments for realism
         const segmentRadius = 3.5;
-        
-        // Realistic woolly bear colors
-        const rustBrown = 0x8B4513;
-        const darkBrown = 0x654321;
-        const blackBand = 0x2F1B14;
-        const fuzzyOrange = 0xFF8C00;
-        
+
+        // The real Isabella tiger moth caterpillar: black at both ends, a rusty
+        // band across the middle, and a dense bristle coat over the whole thing.
+        const RUST = 0xB05A16;
+        const BLACK = 0x241708;
+        const BRISTLE_RUST = 0xE08A2E;
+        const BRISTLE_BLACK = 0x4A3520;
+
+        // The body is oriented along X (head toward -X), so the contact shadow
+        // is wider than it is tall.
+        this.createShadow(segmentCount * segmentRadius * 0.85, segmentRadius * 1.6, 0.26);
+
         for(let i=0;i<segmentCount;i++){
             const seg = new PIXI.Graphics();
-            
-            // Realistic woolly bear pattern: black ends, rusty middle
-            let baseColor;
-            if(i < 2 || i >= segmentCount-2){
-                baseColor = blackBand; // black ends
-            } else {
-                baseColor = rustBrown; // rusty brown middle
-            }
-            
-            // Main segment body
-            seg.beginFill(baseColor);
-            seg.drawEllipse(0, 0, segmentRadius, segmentRadius*0.8); // slightly flattened
-            seg.endFill();
-            
-            // Add fuzzy texture with small bristles
-            seg.beginFill(fuzzyOrange, 0.6);
-            for(let j = 0; j < 12; j++){
-                const angle = (j / 12) * Math.PI * 2;
-                const bristleX = Math.cos(angle) * (segmentRadius + 1);
-                const bristleY = Math.sin(angle) * (segmentRadius*0.8 + 1);
-                seg.drawCircle(bristleX, bristleY, 0.4);
-            }
-            seg.endFill();
-            
-            // Inner fuzzy texture
-            const innerFuzz = (i < 2 || i >= segmentCount-2) ? 0x8B4513 : fuzzyOrange;
-            seg.beginFill(innerFuzz, 0.4);
-            for(let j = 0; j < 8; j++){
-                const angle = (j / 8) * Math.PI * 2;
-                const fuzzX = Math.cos(angle) * (segmentRadius * 0.6);
-                const fuzzY = Math.sin(angle) * (segmentRadius * 0.5);
-                seg.drawCircle(fuzzX, fuzzY, 0.3);
-            }
-            seg.endFill();
-            
-            // Segment lines for definition
-            seg.lineStyle(0.8, darkBrown, 0.7);
-            seg.drawEllipse(0, 0, segmentRadius*0.8, segmentRadius*0.6);
-            
+            const isEnd = i < 2 || i >= segmentCount-2;
+            const baseColor = isEnd ? BLACK : RUST;
+
+            // Bristles first, radiating outward from behind the segment so the
+            // body reads as a fuzzy coat rather than a string of beads.
+            A.fuzz(seg, {
+                x: 0, y: 0,
+                rx: segmentRadius * 0.9, ry: segmentRadius * 0.75,
+                color: isEnd ? BRISTLE_BLACK : BRISTLE_RUST,
+                count: 22, length: segmentRadius * 1.5, width: 0.85,
+                alpha: 0.9, seed: 100 + i
+            });
+            // A second, longer and sparser layer gives the coat depth.
+            A.fuzz(seg, {
+                x: 0, y: 0,
+                rx: segmentRadius * 0.7, ry: segmentRadius * 0.55,
+                color: isEnd ? 0x6B5237 : 0xF2A84E,
+                count: 12, length: segmentRadius * 2.1, width: 0.6,
+                alpha: 0.55, seed: 500 + i
+            });
+
+            A.volume(seg, {
+                x: 0, y: 0, rx: segmentRadius, ry: segmentRadius * 0.82,
+                color: baseColor, outlineWidth: 0.5, rimAlpha: 0.45
+            });
+
             seg.x = (i - segmentCount/2) * (segmentRadius*1.6);
             this.addChild(seg);
             this.segments.push(seg);
         }
-        
-        // Enhanced head with more detail
+
+        // Head capsule - glossy black, distinct from the fuzzy body.
         this.head = new PIXI.Graphics();
-        
-        // Head capsule
-        this.head.beginFill(blackBand);
-        this.head.drawEllipse(0, 0, segmentRadius*1.3, segmentRadius);
+        A.fuzz(this.head, {
+            x: 0, y: 0, rx: segmentRadius * 1.1, ry: segmentRadius * 0.85,
+            color: BRISTLE_BLACK, count: 16, length: segmentRadius * 1.3, width: 0.8, seed: 7
+        });
+        A.volume(this.head, {
+            x: 0, y: 0, rx: segmentRadius * 1.25, ry: segmentRadius,
+            color: 0x322110, outlineWidth: 0.6, rimAlpha: 0.75
+        });
+
+        // Eyes sit on the side of the head capsule; the body points along -X,
+        // so they are offset along Y rather than X.
+        A.eye(this.head, -1.2, -2.2, 1.1, { squash: 1, innerColor: 0x8A5A1E });
+        A.eye(this.head, -1.2,  2.2, 1.1, { squash: 1, innerColor: 0x8A5A1E });
+
+        // Mandibles at the front of the head (-X).
+        this.head.beginFill(0x5A3A18);
+        this.head.drawPolygon(A.ellipsePath(-3.4, 0, 1.4, 1.9, 0, 14));
         this.head.endFill();
-        
-        // Head texture/fuzz
-        this.head.beginFill(darkBrown, 0.5);
-        for(let i = 0; i < 8; i++){
-            const angle = (i / 8) * Math.PI * 2;
-            const x = Math.cos(angle) * segmentRadius;
-            const y = Math.sin(angle) * segmentRadius * 0.7;
-            this.head.drawCircle(x, y, 0.4);
-        }
+        this.head.beginFill(0x8A6030, 0.8);
+        this.head.drawPolygon(A.ellipsePath(-3.7, -0.5, 0.7, 1, 0, 10));
         this.head.endFill();
-        
-        // Large compound eyes (more prominent)
-        this.head.beginFill(0x000000);
-        this.head.drawEllipse(-2.5, -1, 1.8, 2.2);
-        this.head.drawEllipse(2.5, -1, 1.8, 2.2);
-        this.head.endFill();
-        
-        // Eye highlights
-        this.head.beginFill(0xFFFFFF, 0.8);
-        this.head.drawCircle(-2.5, -1.2, 0.8);
-        this.head.drawCircle(2.5, -1.2, 0.8);
-        this.head.endFill();
-        
-        // Pupils
-        this.head.beginFill(0x000000);
-        this.head.drawCircle(-2.5, -1, 0.4);
-        this.head.drawCircle(2.5, -1, 0.4);
-        this.head.endFill();
-        
-        // Mandibles/mouth
-        this.head.beginFill(darkBrown);
-        this.head.drawEllipse(0, 1.5, 1.5, 1);
-        this.head.endFill();
-        
-        // Simple antennae
-        this.head.lineStyle(1, darkBrown);
-        this.head.moveTo(-1.5, -2);
-        this.head.lineTo(-2.5, -4);
-        this.head.moveTo(1.5, -2);
-        this.head.lineTo(2.5, -4);
-        
-        // Prolegs (caterpillar feet) - small dots along bottom
-        this.head.lineStyle(0);
-        this.head.beginFill(darkBrown);
-        for(let i = 0; i < 4; i++){
-            const x = -1.5 + i;
-            this.head.drawCircle(x, segmentRadius*0.8, 0.3);
-        }
-        this.head.endFill();
-        
+
         // Position head at front
         this.head.x = -(segmentCount/2)*segmentRadius*1.6 - segmentRadius*1.2;
         this.addChild(this.head);

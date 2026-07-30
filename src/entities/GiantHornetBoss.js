@@ -82,153 +82,124 @@ IdleAnts.Entities.GiantHornetBoss = class extends PIXI.Container {
         this.bodyContainer = new PIXI.Container();
         this.addChild(this.bodyContainer);
         
-        // MASSIVE MENACING HORNET - 2x larger
-        
-        // Create thorax (middle section) - muscular and robust
+        const A = IdleAnts.Art;
+
+        // Japanese giant hornet: burnt orange thorax, banded amber/black
+        // abdomen. Everything is built from shaded volumes so the boss reads as
+        // armoured rather than as flat orange cutouts.
+        const ORANGE = 0xE07818;
+        const ORANGE_DARK = 0x8A4408;
+        const AMBER = 0xF0B41C;
+        const BAND = 0x14100A;
+
+        // THORAX - heavy and muscular, with a fine pile.
         this.thorax = new PIXI.Graphics();
-        this.thorax.beginFill(0xFF8C00); // Deep orange
-        this.thorax.drawEllipse(0, -8, 20, 14); // Much larger thorax
-        this.thorax.endFill();
-        
-        // Thorax armor plating
-        this.thorax.lineStyle(2, 0xCC6600, 1.0);
-        this.thorax.drawEllipse(0, -8, 20, 14);
-        this.thorax.moveTo(-15, -15);
-        this.thorax.lineTo(15, -15);
-        this.thorax.moveTo(-18, -4);
-        this.thorax.lineTo(18, -4);
-        this.thorax.moveTo(-16, 2);
-        this.thorax.lineTo(16, 2);
+        A.fuzz(this.thorax, { x: 0, y: -8, rx: 20, ry: 14, color: 0xFFC964, count: 40, length: 3.6, width: 1.1, alpha: 0.5, seed: 61 });
+        A.volume(this.thorax, { x: 0, y: -8, rx: 20, ry: 14, color: ORANGE, outlineWidth: 1.8, rimAlpha: 0.55 });
+
+        // Armour plating: segment seams across the thorax.
+        this.thorax.lineStyle(1.6, ORANGE_DARK, 0.85);
+        this.thorax.moveTo(-15, -16); this.thorax.quadraticCurveTo(0, -13, 15, -16);
+        this.thorax.moveTo(-18, -5);  this.thorax.quadraticCurveTo(0, -1, 18, -5);
         this.thorax.lineStyle(0);
-        
-        // Muscle definition
-        this.thorax.beginFill(0xCC6600, 0.6);
-        this.thorax.drawEllipse(-8, -6, 6, 4);
-        this.thorax.drawEllipse(8, -6, 6, 4);
+        // Dark shoulder blotches, characteristic of the species.
+        this.thorax.beginFill(BAND, 0.55);
+        this.thorax.drawPolygon(A.ellipsePath(-12, -6, 5, 6, -0.3, 16));
+        this.thorax.drawPolygon(A.ellipsePath(12, -6, 5, 6, 0.3, 16));
         this.thorax.endFill();
-        
-        // Create MASSIVE abdomen with interlocking yellow and black ovals like the bee
+
+        // ABDOMEN - one tapered amber volume with black bands over it. Stacking
+        // alternating-colour ellipses (the old approach) let each one's edge
+        // cover the previous, muddying the stripes into a brown smear.
         this.abdomen = new PIXI.Graphics();
-        
-        // Interlocking yellow and black stripe pattern like bee enemy
-        const hornetColors = [0xFFDD00, 0x000000, 0xFFDD00, 0x000000, 0xFFDD00, 0x000000, 0xFFDD00];
-        hornetColors.forEach((color, idx) => {
-            this.abdomen.beginFill(color);
-            const y = 10 + idx * 6; // Larger spacing for bigger hornet
-            const width = 25 - idx * 1.5; // tapers toward end like bee
-            this.abdomen.drawEllipse(0, y, width, 5);
-            this.abdomen.endFill();
-        });
-        
-        // Larger wasp waist connection
+        A.volume(this.abdomen, { x: 0, y: 30, rx: 24, ry: 30, color: AMBER, outlineWidth: 2, rimAlpha: 0.5 });
+        this.abdomen.beginFill(BAND);
+        for (let i = 0; i < 4; i++) {
+            const by = 12 + i * 13;
+            const t = (by - 30) / 30;
+            const w = 24 * Math.sqrt(Math.max(0.05, 1 - t * t));
+            this.abdomen.drawPolygon(A.ellipsePath(0, by, w, 4.2, 0, 22));
+        }
+        this.abdomen.endFill();
+        // Warm rim down the lit flank.
+        this.abdomen.beginFill(0xFFE49A, 0.4);
+        this.abdomen.drawPolygon(A.ellipsePath(-9, 22, 5, 16, -0.1, 20));
+        this.abdomen.endFill();
+
+        // Wasp waist (petiole).
         this.waist = new PIXI.Graphics();
-        this.waist.beginFill(0xFF8C00);
-        this.waist.drawEllipse(0, 5, 7, 6);
-        this.waist.endFill();
-        
-        // Waist armor
-        this.waist.lineStyle(2, 0xCC6600);
-        this.waist.drawEllipse(0, 5, 7, 6);
-        this.waist.lineStyle(0);
-        
+        A.volume(this.waist, { x: 0, y: 5, rx: 7, ry: 6, color: ORANGE_DARK, outlineWidth: 1.2 });
+
         this.bodyContainer.addChild(this.thorax);
         this.bodyContainer.addChild(this.waist);
         this.bodyContainer.addChild(this.abdomen);
     }
     
     createHornetHead() {
+        const A = IdleAnts.Art;
         this.head = new PIXI.Graphics();
-        
-        // MASSIVE menacing head - much larger and more intimidating
-        this.head.beginFill(0xFF8C00); // Deep orange
-        this.head.drawEllipse(0, -30, 16, 12); // Much larger head
-        this.head.endFill();
-        
-        // Head armor plating
-        this.head.lineStyle(2, 0xCC6600);
-        this.head.drawEllipse(0, -30, 16, 12);
-        this.head.moveTo(-12, -35);
-        this.head.lineTo(12, -35);
+
+        const FACE = 0xE8B23A;   // Hornets have a pale yellow face plate
+        const FACE_DARK = 0x8A6410;
+
+        // Broad, squared-off head.
+        A.volume(this.head, { x: 0, y: -30, rx: 16, ry: 12, color: FACE, outlineWidth: 1.6, rimAlpha: 0.5 });
+        this.head.lineStyle(1.4, FACE_DARK, 0.7);
+        this.head.moveTo(-11, -36); this.head.quadraticCurveTo(0, -33.5, 11, -36);
         this.head.lineStyle(0);
-        
-        // HUGE compound eyes - absolutely terrifying
-        this.head.beginFill(0x000000);
-        this.head.drawEllipse(-10, -33, 7, 8); // Much larger left eye
-        this.head.drawEllipse(10, -33, 7, 8);  // Much larger right eye
-        this.head.endFill();
-        
-        // Compound eye texture
-        this.head.beginFill(0x330000);
-        // Left eye hexagonal pattern
-        for (let i = 0; i < 4; i++) {
-            for (let j = 0; j < 3; j++) {
-                this.head.drawCircle(-10 + i * 2 - 3, -35 + j * 2, 0.8);
+
+        // Huge wrap-around compound eyes. Kidney-shaped and angled, which is
+        // what makes a hornet look predatory rather than cute.
+        for (const dir of [-1, 1]) {
+            A.eye(this.head, dir * 10, -32, 6.4, {
+                squash: 1.25, rot: dir * 0.35,
+                color: 0x1A0E04, innerColor: 0x8A3A10, specAlpha: 0.95
+            });
+            // Facet texture across the eye.
+            this.head.lineStyle(0.5, 0x3A1A08, 0.5);
+            for (let i = -2; i <= 2; i++) {
+                this.head.moveTo(dir * 10 - 5, -32 + i * 2.4);
+                this.head.lineTo(dir * 10 + 5, -32 + i * 2.4);
             }
+            this.head.lineStyle(0);
         }
-        // Right eye hexagonal pattern
-        for (let i = 0; i < 4; i++) {
-            for (let j = 0; j < 3; j++) {
-                this.head.drawCircle(10 - i * 2 + 3, -35 + j * 2, 0.8);
+
+        // Three ocelli on the crown.
+        this.head.beginFill(0x1A0E04);
+        this.head.drawCircle(-3, -38.5, 1.1);
+        this.head.drawCircle(0, -40, 1.1);
+        this.head.drawCircle(3, -38.5, 1.1);
+        this.head.endFill();
+
+        // Massive serrated mandibles - the hornet's actual weapon.
+        for (const dir of [-1, 1]) {
+            this.head.beginFill(0x140D04);
+            this.head.drawPolygon([
+                dir * 7, -23,
+                dir * 16, -17,
+                dir * 14, -10,
+                dir * 8, -12,
+                dir * 4, -18
+            ]);
+            this.head.endFill();
+            // Lit facet.
+            this.head.beginFill(0x8A6A2A, 0.6);
+            this.head.drawPolygon([dir * 7.5, -22, dir * 14, -17, dir * 12.5, -13, dir * 7, -16]);
+            this.head.endFill();
+            // Teeth along the cutting edge.
+            this.head.lineStyle(1, 0x4A3A16, 0.9);
+            for (let i = 0; i < 3; i++) {
+                const t = 0.25 + i * 0.25;
+                this.head.moveTo(dir * (16 - t * 8), -17 + t * 7);
+                this.head.lineTo(dir * (13 - t * 7), -14 + t * 6);
             }
+            this.head.lineStyle(0);
         }
-        this.head.endFill();
-        
-        // Terrifying eye glow
-        this.head.beginFill(0xFF0000, 0.9);
-        this.head.drawEllipse(-10, -35, 4, 5);
-        this.head.drawEllipse(10, -35, 4, 5);
-        this.head.endFill();
-        
-        // Bright menacing highlights
-        this.head.beginFill(0xFFFFFF);
-        this.head.drawCircle(-10, -37, 1.5);
-        this.head.drawCircle(10, -37, 1.5);
-        this.head.endFill();
-        
-        // MASSIVE menacing mandibles - much larger and sharper
-        this.head.beginFill(0x000000);
-        // Left mandible - much larger
-        this.head.moveTo(-8, -22);
-        this.head.lineTo(-15, -15);
-        this.head.lineTo(-12, -12);
-        this.head.lineTo(-4, -18);
-        this.head.closePath();
-        // Right mandible - much larger
-        this.head.moveTo(8, -22);
-        this.head.lineTo(15, -15);
-        this.head.lineTo(12, -12);
-        this.head.lineTo(4, -18);
-        this.head.closePath();
-        this.head.endFill();
-        
-        // Mandible serrations for extra menace
-        this.head.lineStyle(1, 0x444444);
-        this.head.moveTo(-12, -16);
-        this.head.lineTo(-10, -14);
-        this.head.moveTo(-11, -15);
-        this.head.lineTo(-9, -13);
-        this.head.moveTo(12, -16);
-        this.head.lineTo(10, -14);
-        this.head.moveTo(11, -15);
-        this.head.lineTo(9, -13);
-        this.head.lineStyle(0);
-        
-        // Longer, more menacing antennae
-        this.head.lineStyle(3, 0x000000);
-        this.head.moveTo(-6, -40);
-        this.head.lineTo(-12, -50);
-        this.head.lineTo(-15, -58);
-        this.head.moveTo(6, -40);
-        this.head.lineTo(12, -50);
-        this.head.lineTo(15, -58);
-        this.head.lineStyle(0);
-        
-        // Antenna joints
-        this.head.beginFill(0x333333);
-        this.head.drawCircle(-12, -50, 2);
-        this.head.drawCircle(12, -50, 2);
-        this.head.endFill();
-        
+
+        // Elbowed antennae, thick and black.
+        A.antenna(this.head, -6, -38, -1, { length: 22, spread: 0.75, width: 2.6, color: 0x14100A });
+        A.antenna(this.head,  6, -38,  1, { length: 22, spread: 0.75, width: 2.6, color: 0x14100A });
+
         this.bodyContainer.addChild(this.head);
     }
     
@@ -310,70 +281,44 @@ IdleAnts.Entities.GiantHornetBoss = class extends PIXI.Container {
         this.wingsContainer = new PIXI.Container();
         this.addChild(this.wingsContainer);
         
-        // Create LARGE menacing hornet wings
+        // Long, smoky wings. Real hornet wings are amber-tinted and translucent
+        // rather than opaque white, and letting the banded abdomen read through
+        // them is what sells the scale of the boss.
+        const A = IdleAnts.Art;
+        const shape = (dir) => [
+            0, 0,
+            dir * 6, -5,
+            dir * 22, -7,
+            dir * 36, -2.5,
+            dir * 38, 1.5,
+            dir * 24, 5.5,
+            dir * 6, 4
+        ];
+        const veins = (dir) => [
+            [dir * 3, -1.5, dir * 34, -2.5],
+            [dir * 4, 1.5, dir * 26, 3],
+            [dir * 12, -5.5, dir * 14, 4],
+            [dir * 22, -6, dir * 23, 4.5]
+        ];
+
         this.leftWing = new PIXI.Graphics();
-        this.leftWing.beginFill(0xFFFFFF, 0.85);
-        // Much larger hornet wing shape
-        this.leftWing.moveTo(0, 0);
-        this.leftWing.lineTo(-4, -3);
-        this.leftWing.lineTo(-20, -5);
-        this.leftWing.lineTo(-25, 0);
-        this.leftWing.lineTo(-20, 5);
-        this.leftWing.lineTo(-4, 3);
-        this.leftWing.closePath();
-        this.leftWing.endFill();
-        this.leftWing.position.set(-15, -12); // Positioned for larger body
-        
+        A.wing(this.leftWing, shape(-1), {
+            color: 0xE8C89A, alpha: 0.45, edgeColor: 0xB08A50, edgeAlpha: 0.7,
+            edgeWidth: 1.2, veins: veins(-1), veinColor: 0xA07C46, veinWidth: 0.8
+        });
+        this.leftWing.position.set(-14, -12);
+
         this.rightWing = new PIXI.Graphics();
-        this.rightWing.beginFill(0xFFFFFF, 0.85);
-        this.rightWing.moveTo(0, 0);
-        this.rightWing.lineTo(4, -3);
-        this.rightWing.lineTo(20, -5);
-        this.rightWing.lineTo(25, 0);
-        this.rightWing.lineTo(20, 5);
-        this.rightWing.lineTo(4, 3);
-        this.rightWing.closePath();
-        this.rightWing.endFill();
-        this.rightWing.position.set(15, -12);
-        
-        // Add wing venation
-        this.addWingVenation(this.leftWing);
-        this.addWingVenation(this.rightWing);
-        
+        A.wing(this.rightWing, shape(1), {
+            color: 0xE8C89A, alpha: 0.45, edgeColor: 0xB08A50, edgeAlpha: 0.7,
+            edgeWidth: 1.2, veins: veins(1), veinColor: 0xA07C46, veinWidth: 0.8
+        });
+        this.rightWing.position.set(14, -12);
+
         this.wingsContainer.addChild(this.leftWing);
         this.wingsContainer.addChild(this.rightWing);
     }
     
-    addWingVenation(wing) {
-        // Professional wing veins for larger wings
-        wing.lineStyle(1.5, 0x555555, 0.7);
-        
-        // Main wing veins
-        wing.moveTo(-2, 0);
-        wing.lineTo(-20, 0);
-        
-        wing.moveTo(-4, -2);
-        wing.lineTo(-18, -3);
-        wing.moveTo(-4, 2);
-        wing.lineTo(-18, 3);
-        
-        // Cross veins for wing structure
-        wing.lineStyle(1, 0x666666, 0.6);
-        wing.moveTo(-8, -3);
-        wing.lineTo(-8, 3);
-        wing.moveTo(-12, -3);
-        wing.lineTo(-12, 3);
-        wing.moveTo(-16, -2);
-        wing.lineTo(-16, 2);
-        
-        // Wing tip reinforcement
-        wing.lineStyle(1.2, 0x444444, 0.8);
-        wing.moveTo(-18, -2);
-        wing.lineTo(-22, 0);
-        wing.lineTo(-18, 2);
-        
-        wing.lineStyle(0);
-    }
 
     // --- Inherited/Adapted Methods from Enemy.js ---
     setupTooltip() {

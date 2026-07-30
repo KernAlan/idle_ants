@@ -286,75 +286,73 @@ IdleAnts.Entities.TarantulaBoss = class extends PIXI.Container {
     // Draw a realistic spider leg with proper segments
     drawSpiderLeg(graphics, baseAngle) {
         graphics.clear();
-        
-        // Leg segments with realistic proportions - MUCH THICKER
+        const A = IdleAnts.Art;
+
+        // Spider legs taper from a thick coxa to a fine tarsus and bend sharply
+        // at the patella. The previous version drew each segment as a separate
+        // thick line capped with a circle joint, which read as a string of
+        // beads; here the whole leg is one tapering polyline so it flows.
         const segments = [
-            { length: 20, thickness: 12, color: 0x4A2C17 },  // Coxa (very thick base)
-            { length: 15, thickness: 10, color: 0x3E2117 },  // Trochanter  
-            { length: 35, thickness: 9, color: 0x2C1810 },   // Femur (longest, thick)
-            { length: 30, thickness: 8, color: 0x2C1810 },   // Patella
-            { length: 25, thickness: 7, color: 0x1A0F08 },   // Tibia
-            { length: 15, thickness: 6, color: 0x1A0F08 }    // Tarsus (foot)
+            { length: 20, thickness: 11 },  // Coxa
+            { length: 15, thickness: 9.5 }, // Trochanter
+            { length: 35, thickness: 8 },   // Femur
+            { length: 30, thickness: 6.5 }, // Patella
+            { length: 25, thickness: 5 },   // Tibia
+            { length: 15, thickness: 3.5 }  // Tarsus
         ];
-        
-        let currentX = 0;
-        let currentY = 0;
-        let currentAngle = baseAngle;
-        
-        segments.forEach((segment, index) => {
-            // Calculate end point
-            const endX = currentX + Math.cos(currentAngle) * segment.length;
-            const endY = currentY + Math.sin(currentAngle) * segment.length;
-            
-            // Draw segment as thick line
-            graphics.lineStyle(segment.thickness, segment.color);
-            graphics.moveTo(currentX, currentY);
-            graphics.lineTo(endX, endY);
-            
-            // Add darker outline for definition
-            graphics.lineStyle(segment.thickness + 2, 0x1A0F08, 0.3);
-            graphics.moveTo(currentX, currentY);
-            graphics.lineTo(endX, endY);
-            
-            // Redraw the main segment on top
-            graphics.lineStyle(segment.thickness, segment.color);
-            graphics.moveTo(currentX, currentY);
-            graphics.lineTo(endX, endY);
-            
-            // Add joint between segments (except last one)
-            if (index < segments.length - 1) {
-                graphics.beginFill(segment.color);
-                graphics.drawCircle(endX, endY, segment.thickness * 0.8);
-                graphics.endFill();
-                
-                // Joint outline
-                graphics.lineStyle(2, 0x1A0F08);
-                graphics.drawCircle(endX, endY, segment.thickness * 0.8);
-            }
-            
-            // Move to next segment
-            currentX = endX;
-            currentY = endY;
-            
-            // Adjust angle for natural leg bend
-            if (index === 1) currentAngle += 0.3; // Bend at trochanter
-            if (index === 3) currentAngle -= 0.4; // Bend at patella
-            if (index === 4) currentAngle += 0.2; // Slight bend at tibia
+
+        const joints = [[0, 0]];
+        let x = 0, y = 0, angle = baseAngle;
+        segments.forEach((seg, i) => {
+            x += Math.cos(angle) * seg.length;
+            y += Math.sin(angle) * seg.length;
+            joints.push([x, y]);
+            // Natural leg bend, unchanged so the silhouette and reach match
+            // the existing animation and hitbox expectations.
+            if (i === 1) angle += 0.3;
+            if (i === 3) angle -= 0.4;
+            if (i === 4) angle += 0.2;
         });
-        
-        // Add larger foot/claw at the end
-        graphics.beginFill(0x000000);
-        graphics.drawCircle(currentX, currentY, 5);
-        graphics.endFill();
-        
-        // Draw more prominent claws
-        graphics.lineStyle(2, 0x000000);
-        const clawAngle1 = currentAngle + 0.5;
-        const clawAngle2 = currentAngle - 0.5;
-        graphics.moveTo(currentX, currentY);
-        graphics.lineTo(currentX + Math.cos(clawAngle1) * 6, currentY + Math.sin(clawAngle1) * 6);
-        graphics.moveTo(currentX, currentY);
-        graphics.lineTo(currentX + Math.cos(clawAngle2) * 6, currentY + Math.sin(clawAngle2) * 6);
+
+        // Draw each span at its own width, darkest at the base, so the taper
+        // is continuous rather than stepped.
+        for (let i = 0; i < segments.length; i++) {
+            const t = i / (segments.length - 1);
+            const color = IdleAnts.Graphics.mix(0x5A3A1C, 0x1A0F08, t);
+            A.limb(graphics, [joints[i], joints[i + 1]], segments[i].thickness, color, {
+                highlightAlpha: 0.5
+            });
+        }
+
+        // Bristles along the femur and tibia - tarantula legs are visibly hairy
+        // even at boss scale.
+        graphics.lineStyle({ width: 1.4, color: 0x8A5A2E, alpha: 0.7, cap: PIXI.LINE_CAP.ROUND });
+        for (let i = 1; i < joints.length - 1; i++) {
+            const [ax, ay] = joints[i];
+            const [bx, by] = joints[i + 1];
+            const nx = -(by - ay), ny = (bx - ax);
+            const len = Math.hypot(nx, ny) || 1;
+            for (let s = 0; s < 3; s++) {
+                const t = (s + 0.5) / 3;
+                const px = ax + (bx - ax) * t;
+                const py = ay + (by - ay) * t;
+                const spread = segments[i].thickness * 0.75;
+                graphics.moveTo(px, py);
+                graphics.lineTo(px + (nx / len) * spread, py + (ny / len) * spread);
+                graphics.moveTo(px, py);
+                graphics.lineTo(px - (nx / len) * spread, py - (ny / len) * spread);
+            }
+        }
+        graphics.lineStyle(0);
+
+        // Paired tarsal claws at the tip.
+        const [fx, fy] = joints[joints.length - 1];
+        graphics.lineStyle({ width: 2, color: 0x120A04, cap: PIXI.LINE_CAP.ROUND });
+        for (const off of [0.55, -0.55]) {
+            graphics.moveTo(fx, fy);
+            graphics.lineTo(fx + Math.cos(angle + off) * 7, fy + Math.sin(angle + off) * 7);
+        }
+        graphics.lineStyle(0);
     }
 
     attack(target) {

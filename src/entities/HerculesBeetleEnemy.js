@@ -33,156 +33,108 @@ IdleAnts.Entities.HerculesBeetleEnemy = class extends IdleAnts.Entities.Enemy {
     }
 
     createBody(){
+        const A = IdleAnts.Art;
+        const Gr = IdleAnts.Graphics;
         const g = new PIXI.Graphics();
-        // Realistic hercules beetle colors with metallic sheen
-        const shellCol = 0x2F1B14; // very dark brown/black
-        const metallicSheen = 0x8B4513; // bronze highlights
-        const hornCol = 0x1A0F0A; // almost black horns
-        const lightBrown = 0x654321;
-        
-        // Elytra (wing covers) - characteristic beetle feature
-        g.beginFill(shellCol);
-        g.drawEllipse(0, 12, 8, 22); // main shell
-        g.endFill();
-        
-        // Elytra seam line down the middle
-        g.lineStyle(1, 0x000000, 0.8);
-        g.moveTo(0, -2);
-        g.lineTo(0, 28);
-        
-        // Elytra texture lines (beetle wing cover ridges)
-        g.lineStyle(0.8, metallicSheen, 0.4);
-        for(let i = -1; i <= 1; i += 2){
-            g.moveTo(i * 3, 2);
-            g.lineTo(i * 3, 26);
-            g.moveTo(i * 6, 4);
-            g.lineTo(i * 6, 24);
+
+        // Hercules beetles are olive-bronze with a hard gloss, not the flat
+        // near-black the old sprite used - the sheen is the whole character.
+        const SHELL = 0x6B5A2A;
+        const SHELL_DARK = 0x2A2110;
+        const HORN = 0x241A0C;
+        const HEAD = 0x3E3116;
+        const SHEEN = 0xD8C87A;
+
+        this.createShadow(20, 26, 0.34);
+
+        // Elytra (wing covers) - one big glossy dome.
+        A.volume(g, { x: 0, y: 12, rx: 8.5, ry: 22, color: SHELL, outlineWidth: 1.1, rimAlpha: 0.7 });
+
+        // Seam down the middle and the longitudinal ridges.
+        g.lineStyle(1.2, SHELL_DARK, 0.9);
+        g.moveTo(0, -8); g.lineTo(0, 32);
+        g.lineStyle(0.7, Gr.shade(SHELL, 0.65), 0.6);
+        for (const i of [-1, 1]) {
+            g.moveTo(i * 3.2, 0); g.lineTo(i * 3.4, 28);
+            g.moveTo(i * 6, 3); g.lineTo(i * 6.2, 24);
         }
-        
-        // Metallic highlights on elytra
         g.lineStyle(0);
-        g.beginFill(metallicSheen, 0.3);
-        g.drawEllipse(-2, 8, 2, 8);
-        g.drawEllipse(2, 8, 2, 8);
+
+        // Hard specular streak - what makes chitin look lacquered.
+        g.beginFill(SHEEN, 0.35);
+        g.drawPolygon(A.ellipsePath(-3.4, 5, 2.2, 9, -0.06, 20));
         g.endFill();
-        
-        // Pronotum (thorax shield)
-        g.beginFill(shellCol);
-        g.drawEllipse(0, -6, 7, 10);
+        g.beginFill(0xFFFFFF, 0.22);
+        g.drawPolygon(A.ellipsePath(-3.8, 2, 1.1, 5.2, -0.06, 16));
         g.endFill();
-        
-        // Pronotum markings and texture
-        g.lineStyle(1, metallicSheen, 0.5);
-        g.drawEllipse(0, -6, 5, 7); // inner outline
-        g.moveTo(-4, -10);
-        g.lineTo(4, -10);
-        g.moveTo(-3, -2);
-        g.lineTo(3, -2);
-        
-        // Head capsule - more angular for realism
-        g.lineStyle(0);
-        g.beginFill(lightBrown);
-        g.drawPolygon([
-            -5, -14,  // left side
-            -4, -20,  // left upper
-            0, -22,   // top center
-            4, -20,   // right upper
-            5, -14,   // right side
-            3, -12,   // right lower
-            -3, -12   // left lower
-        ]);
-        g.endFill();
-        
-        // Head texture
-        g.beginFill(metallicSheen, 0.2);
-        for(let i = 0; i < 6; i++){
-            const x = (Math.random() - 0.5) * 6;
-            const y = -17 + (Math.random() - 0.5) * 6;
-            g.drawCircle(x, y, 0.5);
+
+        // Black speckling, characteristic of the species.
+        const rand = Gr.rng(88);
+        g.beginFill(SHELL_DARK, 0.55);
+        for (let i = 0; i < 14; i++) {
+            const a = rand() * Math.PI * 2;
+            const r = Math.sqrt(rand());
+            g.drawCircle(Math.cos(a) * r * 7, 12 + Math.sin(a) * r * 19, 0.7 + rand() * 1.3);
         }
         g.endFill();
-        
-        // Compound eyes - small but visible
-        g.beginFill(0x000000);
-        g.drawEllipse(-3, -18, 1.5, 2);
-        g.drawEllipse(3, -18, 1.5, 2);
-        g.endFill();
-        
-        // Eye highlights
-        g.beginFill(0xFFFFFF, 0.4);
-        g.drawCircle(-3, -18, 0.6);
-        g.drawCircle(3, -18, 0.6);
-        g.endFill();
-        
-        // Mandibles (jaws)
-        g.beginFill(hornCol);
-        g.drawPolygon([
-            -2, -14,
-            -4, -16,
-            -3, -12
-        ]);
-        g.drawPolygon([
-            2, -14,
-            4, -16,
-            3, -12
-        ]);
-        g.endFill();
-        
-        // Enhanced twin horns - Hercules beetle's signature feature
-        // Upper horn (larger, more detailed)
-        const upperHorn = new PIXI.Graphics();
-        upperHorn.beginFill(hornCol);
-        upperHorn.drawPolygon([
-            -4, -18,   // base left
-             4, -18,   // base right
-             8, -42,   // mid right
-             0, -58,   // tip
-            -8, -42    // mid left
-        ]);
-        upperHorn.endFill();
-        
-        // Horn ridges and texture
-        upperHorn.lineStyle(1, metallicSheen, 0.6);
-        upperHorn.moveTo(-2, -22);
-        upperHorn.lineTo(0, -50);
-        upperHorn.moveTo(2, -22);
-        upperHorn.lineTo(0, -50);
 
-        // Lower horn (smaller, more curved)
-        const lowerHorn = new PIXI.Graphics();
-        lowerHorn.beginFill(hornCol);
-        lowerHorn.drawPolygon([
-            -3, -18,   // base left
-             3, -18,   // base right
-             8,  6,    // downward mid
-             0, 12,    // lower tip
-            -8,  6     // mid left
-        ]);
-        lowerHorn.endFill();
-        
-        // Lower horn ridges
-        lowerHorn.lineStyle(1, metallicSheen, 0.4);
-        lowerHorn.moveTo(-1, -14);
-        lowerHorn.lineTo(0, 8);
-        lowerHorn.moveTo(1, -14);
-        lowerHorn.lineTo(0, 8);
+        // Pronotum (thorax shield).
+        A.volume(g, { x: 0, y: -6, rx: 7.2, ry: 10, color: Gr.shade(SHELL, 0.8), outlineWidth: 1 });
 
-        // Short, club-like antennae (beetle characteristic)
+        // Head capsule.
+        A.volume(g, { x: 0, y: -16, rx: 4.8, ry: 5.6, color: HEAD, outlineWidth: 0.8 });
+        A.eye(g, -3.2, -17.5, 1.4, { squash: 1.3, innerColor: 0x7A6428 });
+        A.eye(g,  3.2, -17.5, 1.4, { squash: 1.3, innerColor: 0x7A6428 });
+
+        // Twin horns - the signature. Built as shaded polygons with a lit
+        // upper-left facet and a ridged spine, so they read as solid chitin.
+        const horn = (pts, litPts) => {
+            const h = new PIXI.Graphics();
+            h.beginFill(Gr.shade(HORN, 0.5));
+            h.drawPolygon(pts.map((v, i) => i % 2 === 0 ? v * 1.14 : v * 1.03));
+            h.endFill();
+            h.beginFill(HORN);
+            h.drawPolygon(pts);
+            h.endFill();
+            h.beginFill(Gr.shade(HORN, 2.6), 0.75);
+            h.drawPolygon(litPts);
+            h.endFill();
+            h.beginFill(SHEEN, 0.3);
+            h.drawPolygon(litPts.map((v, i) => i % 2 === 0 ? v * 0.45 : v));
+            h.endFill();
+            return h;
+        };
+
+        // The two horns form forward-facing pincers, which is what a Hercules
+        // beetle actually looks like from above. Both sweep FORWARD (-Y) with a
+        // gap between them; drawing one of them sweeping back over the elytra
+        // just hid the shell.
+        //
+        // Thoracic horn: the long upper one, curving in toward the centreline.
+        const upperHorn = horn(
+            [-4.6, -18, 3.2, -19, 4.2, -30, 1.4, -40, -1.6, -45, -1.4, -37, -6.2, -28],
+            [-3.6, -20, -1.2, -21, -1.4, -40, -3, -29]
+        );
+        // Serrations along the inner (gripping) edge.
+        upperHorn.lineStyle(0.9, Gr.shade(HORN, 2.2), 0.55);
+        for (let i = 0; i < 3; i++) {
+            const t = 0.25 + i * 0.22;
+            upperHorn.moveTo(3.2 - t * 3, -20 - t * 22);
+            upperHorn.lineTo(1.4 - t * 2.6, -21 - t * 22);
+        }
+        upperHorn.lineStyle(0);
+
+        // Cephalic horn: shorter, below the thoracic one, curving up to meet it
+        // so the pair reads as a working set of jaws.
+        const lowerHorn = horn(
+            [-3, -15, 3.6, -15, 6.4, -24, 5.6, -33, 3.4, -30, 2.4, -23, -2.4, -20],
+            [-2.2, -16, 0.4, -16, 3.6, -30, 1.4, -22]
+        );
+
+        // Short club-tipped antennae.
         const antennae = new PIXI.Graphics();
-        antennae.lineStyle(1.5, lightBrown);
-        // Left antenna
-        antennae.moveTo(-2, -20);
-        antennae.lineTo(-4, -26);
-        // Right antenna
-        antennae.moveTo(2, -20);
-        antennae.lineTo(4, -26);
-        
-        // Antenna clubs
-        antennae.lineStyle(0);
-        antennae.beginFill(lightBrown);
-        antennae.drawEllipse(-4, -28, 1.5, 3);
-        antennae.drawEllipse(4, -28, 1.5, 3);
-        antennae.endFill();
+        A.antenna(antennae, -3, -18.5, -1, { length: 8, spread: 0.8, width: 1.3, color: HEAD });
+        A.antenna(antennae,  3, -18.5,  1, { length: 8, spread: 0.8, width: 1.3, color: HEAD });
 
         // Legs – create animated legs similar to ants but larger
         this.legsContainer = new PIXI.Container();
@@ -193,8 +145,9 @@ IdleAnts.Entities.HerculesBeetleEnemy = class extends IdleAnts.Entities.Enemy {
 
         legPositions.forEach((baseY, idx)=>{
             // left leg
+            // No initial lineStyle: animateLegs() clears and redraws these
+            // every frame with its own styling.
             const leftLeg = new PIXI.Graphics();
-            leftLeg.lineStyle(2, shellCol);
             leftLeg.position.set(-8, baseY);
             leftLeg.baseY = baseY;
             leftLeg.index = idx;
@@ -204,7 +157,6 @@ IdleAnts.Entities.HerculesBeetleEnemy = class extends IdleAnts.Entities.Enemy {
 
             // right leg
             const rightLeg = new PIXI.Graphics();
-            rightLeg.lineStyle(2, shellCol);
             rightLeg.position.set(8, baseY);
             rightLeg.baseY = baseY;
             rightLeg.index = idx;
@@ -269,23 +221,25 @@ IdleAnts.Entities.HerculesBeetleEnemy = class extends IdleAnts.Entities.Enemy {
             const bendFactor = Math.max(0, -Math.sin(phase));
 
             leg.clear();
-            leg.lineStyle(2, 0x4E342E);
-            leg.moveTo(0,0);
-            let midX, midY, endX, endY;
             const scale = 2; // bigger than ants
-            if(leg.side==='left'){
-                midX = -4*scale - bendFactor*3;
-                midY = legMove - 2 - bendFactor*3;
-                endX = -8*scale;
-                endY = -5*scale/2 + legMove;
-            } else {
-                midX = 4*scale + bendFactor*3;
-                midY = legMove - 2 - bendFactor*3;
-                endX = 8*scale;
-                endY = -5*scale/2 + legMove;
+            const dir = leg.side === 'left' ? -1 : 1;
+
+            // Thick, powerful beetle legs with a spined tibia.
+            IdleAnts.Art.limb(leg, [
+                [0, 0],
+                [dir * (4*scale + bendFactor*3), legMove - 2 - bendFactor*3],
+                [dir * 8*scale, -5*scale/2 + legMove]
+            ], 2.6, 0x4A3A18, { foot: true });
+
+            leg.lineStyle(0.9, 0x1E1608, 0.8);
+            for (let s = 1; s <= 2; s++) {
+                const t = s / 3;
+                const px = dir * (4*scale + bendFactor*3) * (1 - t) + dir * 8*scale * t;
+                const py = (legMove - 2 - bendFactor*3) * (1 - t) + (-5*scale/2 + legMove) * t;
+                leg.moveTo(px, py);
+                leg.lineTo(px + dir * 2.4, py + 1.8);
             }
-            leg.lineTo(midX, midY);
-            leg.lineTo(endX, endY);
+            leg.lineStyle(0);
         });
     }
 }; 

@@ -32,156 +32,106 @@ IdleAnts.Entities.MantisEnemy = class extends IdleAnts.Entities.Enemy {
     }
 
     createBody(){
+        const A = IdleAnts.Art;
+        const Gr = IdleAnts.Graphics;
         const g = new PIXI.Graphics();
-        // Realistic mantis colors - browns and greens
-        const mantisGreen = 0x4A7C59;
-        const darkGreen = 0x2E4F3A;
-        const lightGreen = 0x6B8E5A;
-        const brownTone = 0x8B7355;
-        const eyeColor = 0x1B5E20;
-        
-        g.lineStyle(0);
-        
-        // Long, narrow abdomen with realistic segmentation
-        g.beginFill(mantisGreen);
-        g.drawEllipse(0, 18, 5, 32); // very long and thin
-        g.endFill();
-        
-        // Abdomen segments - mantises have distinct segments
-        g.lineStyle(1, darkGreen, 0.7);
-        for(let i = 0; i < 7; i++){
-            const y = -4 + i * 6;
-            g.moveTo(-4, y);
-            g.lineTo(4, y);
-        }
-        
-        // Wing covers (tegmina) - mantises have leathery forewings
-        g.lineStyle(0);
-        g.beginFill(brownTone, 0.9);
-        g.drawEllipse(-2, 12, 1.5, 18);
-        g.drawEllipse(2, 12, 1.5, 18);
-        g.endFill();
-        
-        // Wing membrane hints
-        g.beginFill(0xFFFFFF, 0.2);
-        g.drawEllipse(-2, 14, 1, 14);
-        g.drawEllipse(2, 14, 1, 14);
-        g.endFill();
-        
-        // Prothorax (elongated neck segment) - key mantis feature
-        g.beginFill(lightGreen);
-        g.drawEllipse(0, -8, 4, 12);
-        g.endFill();
-        
-        // Mesothorax and metathorax
-        g.beginFill(mantisGreen);
-        g.drawEllipse(0, 2, 5, 8);
-        g.endFill();
-        
-        // Realistic triangular head with proper proportions
-        g.beginFill(lightGreen);
-        g.drawPolygon([
-            -6, -18,   // left wide base
-            -4, -26,   // left upper
-            -2, -32,   // left top
-            0, -34,    // apex
-            2, -32,    // right top
-            4, -26,    // right upper
-            6, -18,    // right wide base
-            3, -14,    // right neck
-            -3, -14    // left neck
-        ]);
-        g.endFill();
-        
-        // Large compound eyes - mantises have excellent vision
-        g.beginFill(eyeColor);
-        g.drawEllipse(-4, -24, 2.5, 4); // large, prominent eyes
-        g.drawEllipse(4, -24, 2.5, 4);
-        g.endFill();
-        
-        // Eye highlights and pupils
-        g.beginFill(0x000000);
-        g.drawEllipse(-4, -24, 1.5, 2.5);
-        g.drawEllipse(4, -24, 1.5, 2.5);
-        g.endFill();
-        
-        g.beginFill(0xFFFFFF, 0.6);
-        g.drawCircle(-4, -25, 0.8);
-        g.drawCircle(4, -25, 0.8);
-        g.endFill();
-        
-        // Ocelli (simple eyes) - three dots on top of head
-        g.beginFill(0x000000);
-        g.drawCircle(-1, -30, 0.5);
-        g.drawCircle(0, -32, 0.5);
-        g.drawCircle(1, -30, 0.5);
-        g.endFill();
-        
-        // Mandibles and mouth parts
-        g.beginFill(brownTone);
-        g.drawEllipse(0, -16, 1.5, 3);
-        g.endFill();
-        
-        // Neck markings
-        g.lineStyle(1, darkGreen, 0.5);
-        g.moveTo(-3, -16);
-        g.lineTo(3, -16);
-        g.moveTo(-2, -12);
-        g.lineTo(2, -12);
 
-        // Enhanced raptorial arms (praying mantis signature feature)
+        // Saturated predatory greens. The old palette was so desaturated the
+        // mantis read as a grey ghost against the grass.
+        const GREEN = 0x4E8F3C;
+        const DARK = 0x2A5722;
+        const LIGHT = 0x76B84E;
+        const TEGMEN = 0x8FA33F;
+
+        this.createShadow(20, 30, 0.26);
+
+        // Long tapering abdomen.
+        A.segmentedAbdomen(g, {
+            x: 0, y: 0, length: 40, width: 5.6, count: 8,
+            colors: [GREEN], taper: 0.8, outlineWidth: 0.7
+        });
+
+        // Leathery forewings folded down the back, slightly splayed.
+        for (const dir of [-1, 1]) {
+            A.volume(g, {
+                x: dir * 2.2, y: 14, rx: 2.6, ry: 19, rot: dir * 0.05,
+                color: TEGMEN, outlineWidth: 0.6, rimAlpha: 0.45
+            });
+            g.lineStyle(0.5, Gr.shade(TEGMEN, 0.6), 0.5);
+            g.moveTo(dir * 2.2, -3);
+            g.lineTo(dir * 2.8, 31);
+            g.lineStyle(0);
+        }
+
+        // Elongated prothorax - the mantis's defining "neck".
+        A.volume(g, { x: 0, y: -8, rx: 3.8, ry: 13, color: LIGHT, outlineWidth: 0.8 });
+        // Ridge down the centre of the prothorax.
+        g.lineStyle(0.8, DARK, 0.55);
+        g.moveTo(0, -19); g.lineTo(0, 3);
+        g.lineStyle(0);
+
+        A.volume(g, { x: 0, y: 3, rx: 5, ry: 7.5, color: GREEN, outlineWidth: 0.7 });
+
+        // The iconic triangular head. Built as a shaded polygon: dark base
+        // silhouette, green face, lit upper-left facet.
+        const headOutline = [-7, -17, -5, -27, 0, -34, 5, -27, 7, -17, 3.5, -13, -3.5, -13];
+        g.beginFill(Gr.shade(LIGHT, 0.42));
+        g.drawPolygon(headOutline.map((v, i) => v * (i % 2 === 0 ? 1.1 : 1.06)));
+        g.endFill();
+        g.beginFill(LIGHT);
+        g.drawPolygon(headOutline);
+        g.endFill();
+        g.beginFill(Gr.shade(LIGHT, 1.25), 0.9);
+        g.drawPolygon([-5.4, -18, -3.6, -26, 0, -31.5, 0, -15]);
+        g.endFill();
+
+        // Huge angled compound eyes on the corners of the triangle - the single
+        // most characterful feature of a mantis.
+        A.eye(g, -4.6, -23, 2.8, { squash: 1.45, color: 0x1F3D14, innerColor: 0x7FBF4A, rot: -0.42, specAlpha: 0.95 });
+        A.eye(g,  4.6, -23, 2.8, { squash: 1.45, color: 0x1F3D14, innerColor: 0x7FBF4A, rot:  0.42, specAlpha: 0.95 });
+
+        // Three ocelli between the eyes.
+        g.beginFill(0x14240D);
+        g.drawCircle(-1.4, -29.5, 0.6);
+        g.drawCircle(0, -31.5, 0.6);
+        g.drawCircle(1.4, -29.5, 0.6);
+        g.endFill();
+
+        A.mandibles(g, 0, -15, { size: 4, color: 0x6B5A22 });
+
+        // Raptorial arms - the folded, spined forelegs mantises strike with.
         const makeArm = (dir)=>{
             const s = dir; // -1 left, 1 right
             const arm = new PIXI.Graphics();
-            
-            // Coxa (base segment)
-            arm.beginFill(lightGreen);
-            arm.drawEllipse(s*2, -10, 2, 4);
-            arm.endFill();
-            
-            // Femur (upper arm) - thick and powerful
-            arm.beginFill(mantisGreen);
-            arm.drawPolygon([
-                s*1, -8,
-                s*5, -10,
-                s*12, -22,
-                s*8, -20
-            ]);
-            arm.endFill();
 
-            // Tibia (forearm) with spines
-            arm.beginFill(darkGreen);
-            arm.drawPolygon([
-                s*12, -22,
-                s*15, -28,
-                s*20, -50,
-                s*17, -48,
-                s*13, -30
-            ]);
-            arm.endFill();
+            // Coxa, then the thick femur angled up and out.
+            A.volume(arm, { x: s * 2, y: -10, rx: 2.2, ry: 4, color: LIGHT, outlineWidth: 0.5 });
+            A.volume(arm, { x: s * 6.5, y: -15.5, rx: 2.9, ry: 8, rot: s * -0.75, color: GREEN, outlineWidth: 0.7 });
 
-            // Spines on tibia
-            arm.lineStyle(1.5, 0x1B5E20);
-            for(let i = 0; i < 4; i++){
-                const spineY = -25 - i * 6;
-                arm.moveTo(s*15, spineY);
-                arm.lineTo(s*18, spineY - 2);
+            // Tibia folded back against the femur, ending in a hooked claw.
+            A.limb(arm, [
+                [s * 11, -21],
+                [s * 16, -34],
+                [s * 19.5, -49]
+            ], 2.8, DARK, { highlight: true });
+
+            // Grasping spines along the inner edge - what actually catches prey.
+            arm.lineStyle({ width: 1.1, color: 0xD8E08A, alpha: 0.9, cap: PIXI.LINE_CAP.ROUND });
+            for(let i = 0; i < 5; i++){
+                const t = 0.12 + i * 0.19;
+                const px = s * (11 + (19.5 - 11) * t);
+                const py = -21 + (-49 + 21) * t;
+                arm.moveTo(px, py);
+                arm.lineTo(px - s * 3.2, py - 1.2);
             }
-            
-            // Tarsus (claw) - curved and sharp
             arm.lineStyle(0);
-            arm.beginFill(0x8B4513); // brown claw
-            arm.drawPolygon([
-                s*20, -50,
-                s*26, -62,
-                s*22, -58,
-                s*18, -52
-            ]);
+
+            // Hooked tarsal claw.
+            arm.beginFill(0x4A3A12);
+            arm.drawPolygon([s*19.5, -49, s*26, -60, s*23, -61.5, s*17.5, -51]);
             arm.endFill();
-            
-            // Claw tip highlight
-            arm.beginFill(0xFFFFFF, 0.3);
-            arm.drawCircle(s*24, -60, 1);
+            arm.beginFill(0xC9B96A, 0.75);
+            arm.drawPolygon([s*20.5, -50, s*25, -58.5, s*23.5, -59.5, s*19, -51]);
             arm.endFill();
 
             return arm;
@@ -199,7 +149,6 @@ IdleAnts.Entities.MantisEnemy = class extends IdleAnts.Entities.Enemy {
         this.legsContainer = new PIXI.Container();
         this.addChild(this.legsContainer);
 
-        const shellCol = 0x2E7D32;
         this.hindLegs = [];
 
         // left hind leg
@@ -216,24 +165,8 @@ IdleAnts.Entities.MantisEnemy = class extends IdleAnts.Entities.Enemy {
 
         // Long, thread-like antennae (mantis characteristic)
         const antG = new PIXI.Graphics();
-        antG.lineStyle(1.2, darkGreen);
-        // Left antenna - curved and segmented
-        antG.moveTo(-2, -32);
-        antG.lineTo(-5, -42);
-        antG.lineTo(-9, -50);
-        antG.lineTo(-11, -58);
-        // Right antenna - curved and segmented  
-        antG.moveTo(2, -32);
-        antG.lineTo(5, -42);
-        antG.lineTo(9, -50);
-        antG.lineTo(11, -58);
-        
-        // Antenna segments
-        antG.lineStyle(2, darkGreen);
-        antG.drawCircle(-3, -36, 0.5);
-        antG.drawCircle(-7, -46, 0.5);
-        antG.drawCircle(3, -36, 0.5);
-        antG.drawCircle(7, -46, 0.5);
+        A.antenna(antG, -2, -32, -1, { length: 27, spread: 0.42, width: 1.1, color: DARK, club: false });
+        A.antenna(antG,  2, -32,  1, { length: 27, spread: 0.42, width: 1.1, color: DARK, club: false });
         this.addChild(antG);
     }
 
@@ -270,47 +203,27 @@ IdleAnts.Entities.MantisEnemy = class extends IdleAnts.Entities.Enemy {
         const rate = Math.max(0.02, speedMag*0.12); // slower, more deliberate
         this.legPhase += rate;
 
-        const legColor = 0x4A7C59; // match body color
+        const A = IdleAnts.Art;
+        const GREEN = 0x4E8F3C;
         const scale = 2.2; // longer, more elegant legs
 
         this.hindLegs.forEach((legObj,idx)=>{
             const legG = legObj.g;
-            const side = legObj.side;
-            const phase = this.legPhase + (idx*Math.PI); 
+            const dir = legObj.side === 'left' ? -1 : 1;
+            const phase = this.legPhase + (idx*Math.PI);
             const lift = Math.sin(phase)*2; // more subtle movement
             const bend = Math.max(0, -Math.sin(phase)*0.8); // less pronounced bend
 
             legG.clear();
-            legG.lineStyle(2.5, legColor); // thicker legs
-            legG.moveTo(0,0);
 
-            // Mantis legs are longer and more graceful
-            let midX, midY, endX, endY;
-            if(side==='left'){
-                midX = -8*scale - bend*3;
-                midY = 8*scale/6 + lift - bend*3;
-                endX = -16*scale; // much longer reach
-                endY = 22*scale/6 + lift;
-            } else {
-                midX = 8*scale + bend*3;
-                midY = 8*scale/6 + lift - bend*3;
-                endX = 16*scale;
-                endY = 22*scale/6 + lift;
-            }
-            
-            // Draw femur (thigh)
-            legG.lineStyle(3, legColor);
-            legG.lineTo(midX, midY);
-            
-            // Draw tibia (shin) - thinner
-            legG.lineStyle(2, 0x2E4F3A);
-            legG.lineTo(endX, endY);
-            
-            // Add tarsus (foot) segments
-            legG.lineStyle(1.5, 0x2E4F3A);
-            const footX = endX + (side==='left' ? -2 : 2);
-            const footY = endY + 2;
-            legG.lineTo(footX, footY);
+            // Long, elegantly angled walking legs with a distinct knee, foot,
+            // and a taper from femur to tarsus.
+            A.limb(legG, [
+                [0, 0],
+                [dir * (8*scale + bend*3), 8*scale/6 + lift - bend*3],
+                [dir * 16*scale, 22*scale/6 + lift],
+                [dir * (16*scale + 2), 22*scale/6 + lift + 3]
+            ], 2.2, GREEN, { foot: true });
         });
     }
-}; 
+};
