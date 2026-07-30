@@ -157,16 +157,15 @@ IdleAnts.Managers.BackgroundManager = class {
     createMapBorder(width, height, interiorGrid = true) {
         const border = new PIXI.Graphics();
 
-        // Darkened, softening band just inside the edge so the map fades out
-        // instead of ending at a hard line.
-        for (let i = 0; i < 5; i++) {
-            const inset = i * 9;
-            border.lineStyle(10, 0x12240f, 0.1 + i * 0.06);
-            border.drawRect(inset, inset, width - inset * 2, height - inset * 2);
-        }
-
-        // Crisp outer frame.
-        border.lineStyle(4, 0x1b2b14, 0.85);
+        // A thin edge line, nothing more.
+        //
+        // This previously drew five stacked 10px bands of rising alpha as an
+        // inward "soft fade", plus a 4px frame. That is ~54px of darkening on
+        // every side, and since the player can zoom out far enough to see all
+        // four edges at once it read as a black overlay framing the screen
+        // rather than as an edge treatment. The world already has a
+        // screen-space vignette in createLighting() doing that job properly.
+        border.lineStyle(3, 0x1b2b14, 0.5);
         border.drawRect(0, 0, width, height);
 
         if (interiorGrid) {
@@ -224,12 +223,24 @@ IdleAnts.Managers.BackgroundManager = class {
     vignetteTexture() {
         // Painted once at a fixed size and stretched: a vignette is smooth by
         // nature, so the resampling is invisible.
+        //
+        // Two things were wrong with the first version and both made this read
+        // as a black frame laid over the game rather than as a vignette:
+        //
+        //  1. It reached 0.52 alpha - far too strong. A vignette should be
+        //     felt, not seen.
+        //  2. Its gradient ended at radius 168 on a 256px square whose corners
+        //     are at radius ~181, so everything past that clamped to the final
+        //     stop: a hard band of flat darkness around the whole edge.
+        //
+        // The gradient now starts well out from the centre (so the playfield
+        // is untouched) and runs past the corner radius (so nothing clamps).
         return IdleAnts.Graphics.canvasTexture(256, 256, (ctx) => {
-            const g = ctx.createRadialGradient(128, 128, 40, 128, 128, 168);
+            const g = ctx.createRadialGradient(128, 128, 96, 128, 128, 200);
             g.addColorStop(0, 'rgba(0,0,0,0)');
-            g.addColorStop(0.55, 'rgba(6,14,4,0.10)');
-            g.addColorStop(0.8, 'rgba(6,14,4,0.28)');
-            g.addColorStop(1, 'rgba(4,10,3,0.52)');
+            g.addColorStop(0.5, 'rgba(6,14,4,0.05)');
+            g.addColorStop(0.8, 'rgba(6,14,4,0.12)');
+            g.addColorStop(1, 'rgba(4,10,3,0.20)');
             ctx.fillStyle = g;
             ctx.fillRect(0, 0, 256, 256);
         });
