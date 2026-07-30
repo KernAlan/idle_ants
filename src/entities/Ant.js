@@ -62,7 +62,7 @@ IdleAnts.Entities.Ant = class extends IdleAnts.Entities.AntBase {
     
     drawLeg(leg) {
         leg.clear();
-        leg.lineStyle(1.5, 0x2A1B10);
+        leg.lineStyle(1.5, 0x120C07);
         
         // Draw leg extending outward from body - symmetrical for bird's eye view
         leg.moveTo(0, 0);
@@ -101,7 +101,7 @@ IdleAnts.Entities.Ant = class extends IdleAnts.Entities.AntBase {
             
             // Redraw the leg with animation
             leg.clear();
-            leg.lineStyle(1.5, 0x2A1B10);
+            leg.lineStyle(1.5, 0x120C07);
             leg.moveTo(0, 0);
             
             // Symmetrical leg animation for bird's eye view

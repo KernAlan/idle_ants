@@ -5,19 +5,22 @@
     
     // Register ant asset.
     //
-    // Top-down worker ant, lit from the upper left. Painted in a mid-tone
-    // chestnut rather than near-black: many ant subclasses recolour this same
-    // texture with `sprite.tint`, which multiplies, so a dark base would crush
-    // every variant into mud. Mid-tone base + dark outline keeps the silhouette
-    // readable on grass and lets the tinted types actually show their colour.
+    // Top-down worker ant, lit from the upper left. Painted in a dark, barely
+    // saturated brown-black - the colour of a real black garden ant - rather
+    // than the chestnut/gold it used to be. It stops short of true black on
+    // purpose: several ant subclasses recolour this same texture with
+    // `sprite.tint`, which multiplies, so a black base would crush every
+    // variant into mud. Dark brown base + near-black outline keeps the
+    // silhouette readable on grass and still leaves the tinted types some
+    // colour to work with.
     AssetDefinition.register('ant', function(app) {
         const g = AssetDefinition.createGraphics();
 
-        const SHELL_DARK = 0x3A2213;   // Outline / deepest shadow
-        const SHELL = 0x6B4326;        // Body midtone
-        const SHELL_LIT = 0x8F5C31;    // Lit upper-left surface
-        const SHELL_RIM = 0xC08B4E;    // Specular rim highlight
-        const JOINT = 0x2E1A0E;        // Legs and antennae
+        const SHELL_DARK = 0x160E08;   // Outline / deepest shadow
+        const SHELL = 0x3D2C1F;        // Body midtone
+        const SHELL_LIT = 0x5A4331;    // Lit upper-left surface
+        const SHELL_RIM = 0x7E6349;    // Specular rim highlight
+        const JOINT = 0x120C07;        // Legs and antennae
 
         // --- Legs, drawn first so the body overlaps their roots -------------
         // Each leg is two segments with a knee, which reads as a real insect
