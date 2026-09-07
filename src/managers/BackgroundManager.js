@@ -7,12 +7,12 @@ IdleAnts.Managers.BackgroundManager = class {
     // How many of each prop to scatter per million square pixels of map, so
     // density stays consistent if the map size ever changes.
     static DECOR_DENSITY = {
-        decorGrassTuft: 150,
+        decorGrassTuft: 65,
         decorClover: 46,
         decorLeaf: 26,
         decorPebble: 28,
-        decorTwig: 16,
-        decorFlower: 24,
+        decorTwig: 8,
+        decorFlower: 32,
         decorMushroom: 4,
         decorRock: 7
     };
@@ -98,7 +98,7 @@ IdleAnts.Managers.BackgroundManager = class {
 
         // Cool shaded hollows, then warm sunlit rises on top. Kept subtle: any
         // stronger and the brown ones read as mud smears rather than terrain.
-        blotch(30, 0x12351a, PIXI.BLEND_MODES.MULTIPLY, 200, 520, 0.18, 0.34);
+        blotch(30, 0x12351a, PIXI.BLEND_MODES.MULTIPLY, 200, 520, 0.06, 0.13);
         blotch(10, 0x7a6540, PIXI.BLEND_MODES.MULTIPLY, 120, 260, 0.06, 0.12);
         blotch(28, 0xfff3c4, PIXI.BLEND_MODES.SCREEN, 200, 480, 0.09, 0.2);
 
@@ -146,6 +146,29 @@ IdleAnts.Managers.BackgroundManager = class {
             }
         }
 
+        // Small garden islands make useful visual landmarks while leaving the
+        // nest and travel lanes open. These reuse the existing baked textures.
+        for (let island = 0; island < 14; island++) {
+            const angle = island * 2.39996;
+            const radius = 240 + (island % 4) * 185;
+            const cx = nest.x + Math.cos(angle) * radius;
+            const cy = nest.y + Math.sin(angle) * radius * 0.78;
+            const petalTint = G.pick(rand, [0xffe4a8, 0xffc4ce, 0xe3dcff, 0xffffff]);
+            for (let j = 0; j < 11; j++) {
+                const a = rand() * Math.PI * 2;
+                const r = Math.sqrt(rand()) * 58;
+                const name = j < 7 ? 'decorFlower' : 'decorClover';
+                const flower = new PIXI.Sprite(this.assetManager.getTexture(name));
+                flower.anchor.set(0.5);
+                flower.position.set(cx + Math.cos(a) * r, cy + Math.sin(a) * r * 0.6);
+                flower.scale.set(G.range(rand, 0.85, 1.5));
+                flower.tint = j < 7 ? petalTint : 0xc9e9a0;
+                decor.addChild(flower);
+            }
+        }
+        decor.eventMode = 'none';
+        decor.interactiveChildren = false;
+
         // Depth cue: draw props further "back" (higher on screen) first so
         // nearer ones overlap them.
         decor.children.sort((a, b) => a.y - b.y);
@@ -184,20 +207,13 @@ IdleAnts.Managers.BackgroundManager = class {
     }
 
     /**
-     * Screen-space finishing pass. Two parts:
-     *  - a colour grade on the world (slight contrast + saturation lift)
-     *  - a vignette and warm key-light gradient drawn over the world but under
-     *    the minimap and UI layers.
+     * Lightweight screen-space vignette and warm key-light sprites, drawn
+     * over the world but under the minimap and UI. Color lives in the baked
+     * assets so the world does not need an offscreen color-grading pass.
      */
     createLighting() {
-        const grade = new PIXI.ColorMatrixFilter();
-        grade.saturate(0.12, true);
-        grade.contrast(0.09, true);
-        grade.brightness(1.02, true);
-        this.worldContainer.filters = [grade];
-        // Without an explicit filter area PIXI would allocate a render target
-        // covering the entire 3000x2000 world instead of just the viewport.
-        this.worldContainer.filterArea = this.app.screen;
+        // The sunny palette is baked into the assets. Avoid a full-viewport
+        // color filter and its extra render target/pass on every frame.
 
         this.lightingContainer = new PIXI.Container();
         // Purely decorative, and it covers the screen - never let it eat clicks.
@@ -209,7 +225,7 @@ IdleAnts.Managers.BackgroundManager = class {
 
         this.keyLight = new PIXI.Sprite(this.keyLightTexture());
         this.keyLight.blendMode = PIXI.BLEND_MODES.ADD;
-        this.keyLight.alpha = 0.16;
+        this.keyLight.alpha = 0.07;
         this.lightingContainer.addChild(this.keyLight);
 
         // Insert directly above the world so the minimap and title screen,
@@ -266,6 +282,6 @@ IdleAnts.Managers.BackgroundManager = class {
         this.vignette.height = h;
         this.keyLight.width = w;
         this.keyLight.height = h;
-        this.worldContainer.filterArea = this.app.screen;
+
     }
 };

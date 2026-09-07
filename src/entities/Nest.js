@@ -96,8 +96,37 @@ IdleAnts.Entities.Nest = class extends PIXI.Container {
 
         // Add some grass around the hill
         this.createVegetation();
+        this.createColonyFlag();
     }
     
+    // A tiny leaf pennant makes home easy to spot. Static vector art, with no
+    // ticker or particles: it scales with the hill during nest upgrades.
+    createColonyFlag() {
+        const flag = new PIXI.Graphics();
+        flag.lineStyle(4, 0x654332);
+        flag.moveTo(32, -12);
+        flag.lineTo(32, -65);
+        flag.lineStyle(1.5, 0xffe4ac);
+        flag.moveTo(31, -14);
+        flag.lineTo(31, -65);
+        flag.lineStyle(2, 0x395d3b);
+        flag.beginFill(0xffce58);
+        flag.moveTo(33, -64);
+        flag.bezierCurveTo(46, -70, 53, -54, 68, -61);
+        flag.lineTo(61, -48);
+        flag.bezierCurveTo(49, -43, 43, -59, 33, -51);
+        flag.closePath();
+        flag.endFill();
+        flag.lineStyle(0);
+        flag.beginFill(0x517f47);
+        flag.drawEllipse(46, -57, 5, 3);
+        flag.endFill();
+        flag.beginFill(0xffedb6);
+        flag.drawCircle(32, -67, 3);
+        flag.endFill();
+        this.addChild(flag);
+    }
+
     createEntrances() {
         const G = IdleAnts.Graphics;
 

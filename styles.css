@@ -3,42 +3,42 @@
    ------------------------------------------------------------
    One earthy palette shared by every menu surface. The UI is
    meant to look like it belongs to the same world as the
-   sprites: soil browns, bark edges, amber lamplight.
+   sprites: leaf greens, golden edges, warm cream lettering.
    ============================================================ */
 :root {
     /* Panel depths, darkest to lightest */
-    --soil-900: #140f09;
-    --soil-800: #211a10;
-    --soil-700: #2f2517;
-    --soil-600: #3f3120;
-    --soil-500: #52402a;
-    --soil-400: #6b5335;
+    --soil-900: #173c32;
+    --soil-800: #214c3d;
+    --soil-700: #2b5c46;
+    --soil-600: #386c50;
+    --soil-500: #437c59;
+    --soil-400: #619466;
 
     /* Edges and rules */
-    --bark: #5c4629;
-    --bark-lit: #8a6c42;
+    --bark: #638a59;
+    --bark-lit: #a2bd77;
 
     /* Amber accent - section labels, costs, focus */
-    --amber: #e8b23a;
-    --amber-lit: #ffd97a;
-    --amber-dim: #a87c22;
+    --amber: #ffcf62;
+    --amber-lit: #ffe5a0;
+    --amber-dim: #cba34e;
 
     /* Type */
-    --cream: #f4ead6;
-    --cream-dim: #bfae90;
-    --cream-faint: #8d7f68;
+    --cream: #fff5db;
+    --cream-dim: #e0e9c9;
+    --cream-faint: #b6c7a1;
 
     /* Semantic */
     --moss: #7cb342;
     --rust: #c2562e;
 
-    --shadow-panel: 0 18px 44px rgba(0, 0, 0, 0.55), 0 2px 0 rgba(255, 226, 168, 0.06) inset;
+    --shadow-panel: 0 8px 22px rgba(20, 48, 30, 0.28), 0 2px 0 rgba(255, 226, 168, 0.06) inset;
     --shadow-row: 0 1px 0 rgba(255, 226, 168, 0.07) inset, 0 2px 4px rgba(0, 0, 0, 0.35);
 
     --radius-panel: 14px;
     --radius-row: 9px;
 
-    --ui-font: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --ui-font: 'Trebuchet MS', 'Avenir Next Rounded Pro', 'Nunito', sans-serif;
 }
 
 body {
@@ -1693,3 +1693,35 @@ button.modal-btn:disabled:hover {
     background: linear-gradient(to bottom, #d32f2f, #b71c1c);
     color: #fff;
 } 
+
+/* Garden field-kit finish. Layout and mobile docking stay in the existing rules. */
+#ui-container {
+    border-bottom: 3px solid var(--bark-lit);
+}
+#game-title {
+    letter-spacing: 0.6px;
+    text-shadow: 0 2px 0 #173c32;
+}
+#food, #ants, #food-rate, #flying-ant-stats, #score-display {
+    border-color: #719566;
+}
+.action-btn {
+    border-bottom-width: 3px;
+    box-shadow: 0 3px 0 #173c32, inset 0 1px 0 #ffffff20;
+}
+.action-btn:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #173c32;
+}
+button:focus-visible {
+    outline: 3px solid #ffe5a0;
+    outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

@@ -38,12 +38,12 @@
         const SIZE = 512;
 
         // Grass, from shadowed depths up to sun-bleached tips.
-        const GRASS_DEEP = 0x1f5c2a;
-        const GRASS_MID = 0x35803c;
-        const GRASS_LIT = 0x5aa84c;
+        const GRASS_DEEP = 0x659747;
+        const GRASS_MID = 0x80ad55;
+        const GRASS_LIT = 0xabc96c;
         // Bare earth showing through worn patches.
-        const SOIL_DARK = 0x4a3520;
-        const SOIL_LIT = 0x7a5a35;
+        const SOIL_DARK = 0xa38b55;
+        const SOIL_LIT = 0xc6ae73;
 
         return G.canvasTexture(SIZE, SIZE, (ctx) => {
             // Broad tonal variation, fine mottling, and a separate mask that
@@ -76,7 +76,7 @@
 
                     // Per-pixel grain keeps large flat areas from looking like
                     // a gradient mesh when the camera is zoomed out.
-                    const jitter = 0.94 + grain() * 0.12;
+                    const jitter = 0.98 + grain() * 0.04;
                     const i = (y * SIZE + x) * 4;
                     data[i] = Math.min(255, ((color >> 16) & 0xFF) * jitter);
                     data[i + 1] = Math.min(255, ((color >> 8) & 0xFF) * jitter);
@@ -102,7 +102,7 @@
             };
 
             ctx.lineCap = 'round';
-            for (let i = 0; i < 1400; i++) {
+            for (let i = 0; i < 480; i++) {
                 const x = rand() * SIZE;
                 const y = rand() * SIZE;
                 // Skip blades that would sit in the middle of a soil patch.

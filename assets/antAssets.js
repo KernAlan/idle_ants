@@ -101,18 +101,18 @@
         g.drawEllipse(-1.6, -15.8, 1.7, 2);
         g.endFill();
 
-        // Compound eyes: dark sphere, cool bounce light, tiny specular dot.
-        g.beginFill(0x120A05);
-        g.drawEllipse(-3.1, -15.2, 1.6, 1.9);
-        g.drawEllipse(3.1, -15.2, 1.6, 1.9);
+        // Big cream eyes read as friendly even at the normal camera scale.
+        g.beginFill(0xFFF4D6);
+        g.drawEllipse(-3, -15.3, 2.2, 2.7);
+        g.drawEllipse(3, -15.3, 2.2, 2.7);
         g.endFill();
-        g.beginFill(0x4A3A2A, 0.8);
-        g.drawEllipse(-3.1, -14.4, 1.1, 1.1);
-        g.drawEllipse(3.1, -14.4, 1.1, 1.1);
+        g.beginFill(0x201B24);
+        g.drawEllipse(-2.8, -16, 1.15, 1.6);
+        g.drawEllipse(3.2, -16, 1.15, 1.6);
         g.endFill();
-        g.beginFill(0xFFFFFF, 0.9);
-        g.drawEllipse(-3.6, -15.9, 0.6, 0.7);
-        g.drawEllipse(2.6, -15.9, 0.6, 0.7);
+        g.beginFill(0xFFFFFF);
+        g.drawCircle(-3.2, -16.7, 0.5);
+        g.drawCircle(2.8, -16.7, 0.5);
         g.endFill();
 
         // Mandibles - curved and tapered, meeting in front of the head.
